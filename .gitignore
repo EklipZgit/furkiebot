@@ -1,0 +1,5 @@
+FurkiebotCMR/bin/*
+FurkieBusterCMR/bin/*
+FurkiebotCMR/obj/*
+FurkieBusterCMR/obj/*
+*.suo

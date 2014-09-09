@@ -1,0 +1,263 @@
+{
+    "cmr": "2",
+    "maps": [
+        {
+            "mapid": "1538",
+            "mapper": "Oshxmir",
+            "mapname": "Common Knowledge"
+        },
+        {
+            "mapid": "1530",
+            "mapper": "Krankdud",
+            "mapname": "Leaning Tower"
+        },
+        {
+            "mapid": "1540",
+            "mapper": "yuecchi",
+            "mapname": "no ideas"
+        },
+        {
+            "mapid": "1543",
+            "mapper": "Madtato",
+            "mapname": "Outerspace Climb"
+        },
+        {
+            "mapid": "1539",
+            "mapper": "ABoss",
+            "mapname": "Radiotower"
+        },
+        {
+            "mapid": "1533",
+            "mapper": "Tropicallo",
+            "mapname": "Sealed Tunnel"
+        },
+        {
+            "mapid": "1532",
+            "mapper": "Furkiepurkie",
+            "mapname": "Whimsy Lick"
+        },
+        {
+            "mapid": "1546",
+            "mapper": "DoughNation ",
+            "mapname": "Expire"
+        }
+    ],
+    "results": [
+        {
+            "rank": 1,
+            "ircname": "Tropicallo",
+            "ignname": "Tropicallo",
+            "status": "1",
+            "time": "0:34:24",
+            "comment": "",
+            "rating": "0"
+        },
+        {
+            "rank": 2,
+            "ircname": "marfinator",
+            "ignname": "Marfinator",
+            "status": "1",
+            "time": "0:58:50",
+            "comment": "",
+            "rating": "0"
+        },
+        {
+            "rank": 3,
+            "ircname": "daveosaur",
+            "ignname": "davedavedave",
+            "status": "1",
+            "time": "1:00:35",
+            "comment": "screw you oshxmir",
+            "rating": "0"
+        },
+        {
+            "rank": 4,
+            "ircname": "Takari",
+            "ignname": "Takari",
+            "status": "1",
+            "time": "1:00:54",
+            "comment": "Trivia too long, Expire didn't work properly and Mavis' map was too hard, test your map peeps",
+            "rating": "0"
+        },
+        {
+            "rank": 5,
+            "ircname": "mavismayhem",
+            "ignname": "Yuecchi",
+            "status": "1",
+            "time": "1:01:06",
+            "comment": "fun race, I enjoyed all the maps, expire was a bit silly, but I didn't mind too much.",
+            "rating": "0"
+        },
+        {
+            "rank": 6,
+            "ircname": "Furkiepurkie",
+            "ignname": "Furkiepurkie",
+            "status": "1",
+            "time": "1:02:16",
+            "comment": "People need to test their maps before publishing :/",
+            "rating": "0"
+        },
+        {
+            "rank": 7,
+            "ircname": "steelecho",
+            "ignname": "Steelecho",
+            "status": "1",
+            "time": "1:05:04",
+            "comment": "no more gimmick maps pls. didnt like trivia, expire, mavis map was too hard for this race",
+            "rating": "0"
+        },
+        {
+            "rank": 8,
+            "ircname": "jindrael",
+            "ignname": "Jindrael",
+            "status": "1",
+            "time": "1:08:52",
+            "comment": "Trivia wasn't fun, Expire was terrible, Mavis map was too hard, everything else was good",
+            "rating": "0"
+        },
+        {
+            "rank": 9,
+            "ircname": "ABoss",
+            "ignname": "ABoss",
+            "status": "1",
+            "time": "1:13:00",
+            "comment": "freaking trivia I think I tried pretty much all combinations T_T",
+            "rating": "0"
+        },
+        {
+            "rank": 10,
+            "ircname": "noobslayer",
+            "ignname": "NoobSlayer",
+            "status": "1",
+            "time": "1:14:28",
+            "comment": "if people didnt like faery map last time why would anyone enjoy the juggling map. it's far worse and more gimmicky.",
+            "rating": "0"
+        },
+        {
+            "rank": 11,
+            "ircname": "nkiller",
+            "ignname": "Nkiller",
+            "status": "1",
+            "time": "1:14:36",
+            "comment": "people can't be trusted :\\",
+            "rating": "0"
+        },
+        {
+            "rank": 12,
+            "ircname": "weirdodunno",
+            "ignname": "Weirdo Dunno",
+            "status": "1",
+            "time": "1:16:35",
+            "comment": "",
+            "rating": "0"
+        },
+        {
+            "rank": 13,
+            "ircname": "Oshxmir",
+            "ignname": "Oshxmir",
+            "status": "1",
+            "time": "1:17:06",
+            "comment": "fuck you mavis",
+            "rating": "0"
+        },
+        {
+            "rank": 14,
+            "ircname": "tossu",
+            "ignname": "Tossu",
+            "status": "1",
+            "time": "1:17:24",
+            "comment": "Common knowledge was really boring for a race, no ideas a bit hard. Others were really cool.",
+            "rating": "0"
+        },
+        {
+            "rank": 15,
+            "ircname": "tinker",
+            "ignname": "Tinker",
+            "status": "1",
+            "time": "1:18:03",
+            "comment": "testing please, also perhaps a limit on the maps",
+            "rating": "0"
+        },
+        {
+            "rank": 16,
+            "ircname": "wssrdturtle",
+            "ignname": "wssrdturtle",
+            "status": "1",
+            "time": "1:38:56",
+            "comment": "",
+            "rating": "0"
+        },
+        {
+            "rank": 17,
+            "ircname": "Ted",
+            "ignname": "Ted",
+            "status": "1",
+            "time": "1:41:00",
+            "comment": "jvcpro, ABoss, Tropicallo, Furkiepurkie and Krankdud knows how to make proper maps for races. Everyone else needs to go think hard about what you've done..! Oh, aneeslol is ok too, unfortunate about the glitch though.",
+            "rating": "0"
+        },
+        {
+            "rank": 0,
+            "ircname": "paulendy",
+            "ignname": "Dr Paul PHD ʕ •ᴥ•ʔ",
+            "status": "1",
+            "time": "forfeit",
+            "comment": "herp depr who can make the stupidest gimmick, some were good but damn",
+            "rating": "0"
+        },
+        {
+            "rank": 0,
+            "ircname": "golvmopp",
+            "ignname": "?golvmopp?",
+            "status": "1",
+            "time": "forfeit",
+            "comment": "",
+            "rating": "0"
+        },
+        {
+            "rank": 0,
+            "ircname": "african",
+            "ignname": "Jvcpro",
+            "status": "1",
+            "time": "forfeit",
+            "comment": "",
+            "rating": "0"
+        },
+        {
+            "rank": 0,
+            "ircname": "Kuroonehalf",
+            "ignname": "Kuroonehalf",
+            "status": "1",
+            "time": "forfeit",
+            "comment": "",
+            "rating": "0"
+        },
+        {
+            "rank": 0,
+            "ircname": "Inane",
+            "ignname": "Inane",
+            "status": "4",
+            "time": "forfeit",
+            "comment": "Started looking at the replays. Expire and no ideas are dumb",
+            "rating": "0"
+        },
+        {
+            "rank": 0,
+            "ircname": "Krankdud",
+            "ignname": "Krankdud",
+            "status": "4",
+            "time": "forfeit",
+            "comment": "this isn't fun",
+            "rating": "0"
+        },
+        {
+            "rank": 0,
+            "ircname": "dongato",
+            "ignname": "Don.Gato",
+            "status": "5",
+            "time": "DQ",
+            "comment": "esi: vanished an hour and 45 minutes ago, nowhere to be found",
+            "rating": "0"
+        }
+    ]
+}

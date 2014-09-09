@@ -1,0 +1,223 @@
+{
+  "cmr": "3",
+  "maps": [
+    {
+      "mapid": "1599",
+      "mapper": "Ted",
+      "mapname": "Blinkys Basement"
+    },
+    {
+      "mapid": "1596",
+      "mapper": "Madtato",
+      "mapname": "Decisions"
+    },
+    {
+      "mapid": "1601",
+      "mapper": "AND4H",
+      "mapname": "Dustcoaster"
+    },
+    {
+      "mapid": "1597",
+      "mapper": "Steelecho",
+      "mapname": "how do i map"
+    },
+    {
+      "mapid": "1598",
+      "mapper": "yuecchi",
+      "mapname": "Linear Lab"
+    },
+    {
+      "mapid": "1592",
+      "mapper": "Syena",
+      "mapname": "Lovely Kitty"
+    },
+    {
+      "mapid": "1600",
+      "mapper": "Ravencoff",
+      "mapname": "Molehill"
+    },
+    {
+      "mapid": "1593",
+      "mapper": "Furkiepurkie",
+      "mapname": "To the skies"
+    },
+    {
+      "mapid": "1595",
+      "mapper": "Takari",
+      "mapname": "Walk in the park"
+    }
+  ],
+  "results": [
+    {
+      "rank": 1,
+      "ircname": "Tropicallo",
+      "ignname": "Tropicallo",
+      "status": "1",
+      "time": "0:14:52",
+      "comment": "",
+      "rating": "0"
+    },
+    {
+      "rank": 2,
+      "ircname": "tinker",
+      "ignname": "Tinker",
+      "status": "1",
+      "time": "0:18:54",
+      "comment": "good maps was fun",
+      "rating": "0"
+    },
+    {
+      "rank": 3,
+      "ircname": "jindrael",
+      "ignname": "Jindrael",
+      "status": "1",
+      "time": "0:20:20",
+      "comment": "good race :D",
+      "rating": "0"
+    },
+    {
+      "rank": 4,
+      "ircname": "marfinator",
+      "ignname": "Marfinator",
+      "status": "1",
+      "time": "0:20:26",
+      "comment": "",
+      "rating": "0"
+    },
+    {
+      "rank": 5,
+      "ircname": "syena",
+      "ignname": "Syena",
+      "status": "1",
+      "time": "0:20:26",
+      "comment": "",
+      "rating": "0"
+    },
+    {
+      "rank": 6,
+      "ircname": "noobslayer",
+      "ignname": "NoobSlayer",
+      "status": "1",
+      "time": "0:23:41",
+      "comment": "",
+      "rating": "0"
+    },
+    {
+      "rank": 7,
+      "ircname": "Takari",
+      "ignname": "Takari",
+      "status": "1",
+      "time": "1:05:04",
+      "comment": "Great maps, Ted's was a bit confusing that's all",
+      "rating": "0"
+    },
+    {
+      "rank": 8,
+      "ircname": "Ted",
+      "ignname": "Ted",
+      "status": "1",
+      "time": "0:23:53",
+      "comment": "<3",
+      "rating": "0"
+    },
+    {
+      "rank": 9,
+      "ircname": "mavismayhem",
+      "ignname": "Yuecchi",
+      "status": "1",
+      "time": "0:25:19",
+      "comment": "",
+      "rating": "0"
+    },
+    {
+      "rank": 10,
+      "ircname": "doughnation",
+      "ignname": "DoughNation",
+      "status": "1",
+      "time": "0:27:01",
+      "comment": "fun",
+      "rating": "0"
+    },
+    {
+      "rank": 11,
+      "ircname": "african",
+      "ignname": "Jvcpro",
+      "status": "1",
+      "time": "0:31:24",
+      "comment": "some a bit confusing but overall great maps!",
+      "rating": "0"
+    },
+    {
+      "rank": 12,
+      "ircname": "smkthanatos",
+      "ignname": "?smkthanatos?",
+      "status": "1",
+      "time": "0:32:31",
+      "comment": "",
+      "rating": "0"
+    },
+    {
+      "rank": 13,
+      "ircname": "steelecho",
+      "ignname": "Steelecho",
+      "status": "1",
+      "time": "0:32:49",
+      "comment": "goobi pls",
+      "rating": "0"
+    },
+    {
+      "rank": 14,
+      "ircname": "thebirdofprey",
+      "ignname": "TheBirdOfPrey",
+      "status": "1",
+      "time": "0:36:24",
+      "comment": "",
+      "rating": "0"
+    },
+    {
+      "rank": 15,
+      "ircname": "Kuroonehalf",
+      "ignname": "Kuroonehalf",
+      "status": "1",
+      "time": "0:43:48",
+      "comment": "",
+      "rating": "0"
+    },
+    {
+      "rank": 16,
+      "ircname": "dongato",
+      "ignname": "Don.Gato",
+      "status": "1",
+      "time": "1:19:55",
+      "comment": "I really suck at racing, but meh, had fun",
+      "rating": "0"
+    },
+    {
+      "rank": 17,
+      "ircname": "Ravencoff",
+      "ignname": "Ravencoff",
+      "status": "1",
+      "time": "1:28:47",
+      "comment": "I suck at video games.",
+      "rating": "0"
+    },
+    {
+      "rank": 0,
+      "ircname": "paulendy",
+      "ignname": "Dr Paul PHD ʕ •ᴥ•ʔ",
+      "status": "1",
+      "time": "1:49:10",
+      "comment": "maps were much better this time",
+      "rating": "0"
+    },
+    {
+      "rank": 0,
+      "ircname": "art9",
+      "ignname": "Art9",
+      "status": "4",
+      "time": "forfeit",
+      "comment": "should've stayed in the race haha",
+      "rating": "0"
+    }
+  ]
+}

@@ -1,0 +1,168 @@
+{
+  "cmr": "34",
+  "maps": [
+    {
+      "mapid": "3404",
+      "mapper": "Superkid",
+      "mapname": "Sonnentanz"
+    },
+    {
+      "mapid": "3405",
+      "mapper": "Calistus",
+      "mapname": "Bear Trap"
+    },
+    {
+      "mapid": "3403",
+      "mapper": "Azure",
+      "mapname": "Master Plan"
+    },
+    {
+      "mapid": "3408",
+      "mapper": "TheBirdOfPrey",
+      "mapname": "Sapphire Night"
+    },
+    {
+      "mapid": "3406",
+      "mapper": "TheBirdOfPrey",
+      "mapname": "Mountain Pass"
+    },
+    {
+      "mapid": "3409",
+      "mapper": "Tropicallo",
+      "mapname": "Shelter"
+    },
+    {
+      "mapid": "3407",
+      "mapper": "Tropicallo",
+      "mapname": "Amathophobia"
+    }
+  ],
+  "results": [
+    {
+      "rank": 1,
+      "name": "Tropicallo",
+      "status": "1",
+      "time": "0:06:59",
+      "comment": "sorry for dust",
+      "rating": "0"
+    },
+    {
+      "rank": 2,
+      "name": "Calistus",
+      "status": "1",
+      "time": "0:09:28",
+      "comment": "absolutely disgusting",
+      "rating": "0"
+    },
+    {
+      "rank": 3,
+      "name": "Takari",
+      "status": "1",
+      "time": "0:13:49",
+      "comment": "Bird 1/5",
+      "rating": "0"
+    },
+    {
+      "rank": 4,
+      "name": "Morelia",
+      "status": "1",
+      "time": "0:15:36",
+      "comment": "spent 5 minutes trying to figure out amathophobia. GOTY",
+      "rating": "0"
+    },
+    {
+      "rank": 5,
+      "name": "TheBirdOfPrey",
+      "status": "1",
+      "time": "0:15:59",
+      "comment": "Shelter probably my favorite, Porcupine hell awaits you",
+      "rating": "0"
+    },
+    {
+      "rank": 6,
+      "name": "invert",
+      "status": "1",
+      "time": "0:16:03",
+      "comment": "",
+      "rating": "0"
+    },
+    {
+      "rank": 7,
+      "name": "TheDarksideofSnow",
+      "status": "1",
+      "time": "0:16:22",
+      "comment": "Purcupines *shudders*",
+      "rating": "0"
+    },
+    {
+      "rank": 8,
+      "name": "EklipZ",
+      "status": "1",
+      "time": "0:22:01",
+      "comment": "WHO MADE THE GREEN MAP WITH ORANGE PRISMS I LAGGED HARD :V",
+      "rating": "0"
+    },
+    {
+      "rank": 9,
+      "name": "virgatespy",
+      "status": "1",
+      "time": "0:22:36",
+      "comment": "Mountain Pass sucks ass",
+      "rating": "0"
+    },
+    {
+      "rank": 10,
+      "name": "fireball87",
+      "status": "1",
+      "time": "0:23:44",
+      "comment": "9/10ths of that time was on that stupid porcupine map",
+      "rating": "0"
+    },
+    {
+      "rank": 11,
+      "name": "Ravencoff",
+      "status": "1",
+      "time": "0:28:31",
+      "comment": "RAAAAAAAAAAAA",
+      "rating": "0"
+    },
+    {
+      "rank": 12,
+      "name": "Azure",
+      "status": "1",
+      "time": "0:28:54",
+      "comment": "Shelter is amazing and Sonnetanz murdered me",
+      "rating": "0"
+    },
+    {
+      "rank": 13,
+      "name": "CriticalCyd",
+      "status": "1",
+      "time": "0:33:56",
+      "comment": "Remove Porcupines",
+      "rating": "0"
+    },
+    {
+      "rank": 14,
+      "name": "glass",
+      "status": "1",
+      "time": "0:58:16",
+      "comment": "zoom-out-too-lag",
+      "rating": "0"
+    },
+    {
+      "name": "Kheartz",
+      "status": "4",
+      "time": "",
+      "comment": "ayy lmao",
+      "rating": "0"
+    },
+    {
+      "name": "Kuroonehalf",
+      "status": "4",
+      "time": "",
+      "comment": "",
+      "rating": "0"
+    }
+  ]
+}

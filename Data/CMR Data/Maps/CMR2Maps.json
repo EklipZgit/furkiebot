@@ -1,0 +1,44 @@
+{
+  "maps": [
+    {
+      "mapid": "1538",
+      "mapper": "Oshxmir",
+      "mapname": "Common Knowledge"
+    },
+    {
+      "mapid": "1530",
+      "mapper": "Krankdud",
+      "mapname": "Leaning Tower"
+    },
+    {
+      "mapid": "1540",
+      "mapper": "yuecchi",
+      "mapname": "no ideas"
+    },
+    {
+      "mapid": "1543",
+      "mapper": "Madtato",
+      "mapname": "Outerspace Climb"
+    },
+    {
+      "mapid": "1539",
+      "mapper": "ABoss",
+      "mapname": "Radiotower"
+    },
+    {
+      "mapid": "1533",
+      "mapper": "Tropicallo",
+      "mapname": "Sealed Tunnel"
+    },
+    {
+      "mapid": "1532",
+      "mapper": "Furkiepurkie",
+      "mapname": "Whimsy Lick"
+    },
+    {
+      "mapid": "1546",
+      "mapper": "DoughNation ",
+      "mapname": "Expire"
+    }
+  ]
+}

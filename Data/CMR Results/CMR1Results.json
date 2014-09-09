@@ -1,0 +1,290 @@
+{
+    "cmr": "1",
+    "maps": [
+        {
+            "mapid": "1490",
+            "mapper": "TheBirdOfPrey",
+            "mapname": "Autumn Cavern"
+        },
+        {
+            "mapid": "1485",
+            "mapper": "DoughNation",
+            "mapname": "Crossfade"
+        },
+        {
+            "mapid": "1487",
+            "mapper": "Nkiller",
+            "mapname": "Ez Pz"
+        },
+        {
+            "mapid": "1491",
+            "mapper": "LordErk",
+            "mapname": "Hidden Repository"
+        },
+        {
+            "mapid": "1484",
+            "mapper": "Furkiepurkie",
+            "mapname": "I wanna be the Faery"
+        },
+        {
+            "mapid": "1489",
+            "mapper": "yuecchi",
+            "mapname": "Love Actually"
+        },
+        {
+            "mapid": "1488",
+            "mapper": "Syena",
+            "mapname": "love climb"
+        },
+        {
+            "mapid": "1486",
+            "mapper": "Ravencoff",
+            "mapname": "Target Practice"
+        }
+    ],
+    "results": [
+        {
+            "rank": 1,
+            "ircname": "Krankdud",
+            "ignname": "Krankdud",
+            "status": "1",
+            "time": "0:32:40",
+            "comment": "remind to not do this again",
+            "rating": "0"
+        },
+        {
+            "rank": 2,
+            "ircname": "Ted",
+            "ignname": "Ted",
+            "status": "1",
+            "time": "0:38:08",
+            "comment": "",
+            "rating": "0"
+        },
+        {
+            "rank": 3,
+            "ircname": "Tropicallo",
+            "ignname": "Tropicallo",
+            "status": "1",
+            "time": "0:38:11",
+            "comment": "All maps were fun. Hope this is a regular thing",
+            "rating": "0"
+        },
+        {
+            "rank": 4,
+            "ircname": "AND4H",
+            "ignname": "AND4H",
+            "status": "1",
+            "time": "0:38:33",
+            "comment": "I didn't want to be the fairy enough apparently!",
+            "rating": "0"
+        },
+        {
+            "rank": 5,
+            "ircname": "syena",
+            "ignname": "Syena",
+            "status": "1",
+            "time": "0:39:24",
+            "comment": "target practice was hard",
+            "rating": "0"
+        },
+        {
+            "rank": 6,
+            "ircname": "Furkiepurkie",
+            "ignname": "Furkiepurkie",
+            "status": "1",
+            "time": "0:40:40",
+            "comment": "Dust 'em Pix!",
+            "rating": "0"
+        },
+        {
+            "rank": 7,
+            "ircname": "daveosaur",
+            "ignname": "davedavedave",
+            "status": "1",
+            "time": "0:48:56",
+            "comment": "target practice was cool, faery was hard but fun",
+            "rating": "0"
+        },
+        {
+            "rank": 8,
+            "ircname": "jindrael",
+            "ignname": "Jindrael",
+            "status": "1",
+            "time": "0:49:26",
+            "comment": "IWBTF with Dustman, probably took me 20 minutes xD",
+            "rating": "0"
+        },
+        {
+            "rank": 9,
+            "ircname": "marfinator",
+            "ignname": "Marfinator",
+            "status": "1",
+            "time": "0:49:49",
+            "comment": "",
+            "rating": "0"
+        },
+        {
+            "rank": 10,
+            "ircname": "ABoss",
+            "ignname": "ABoss",
+            "status": "1",
+            "time": "0:54:53",
+            "comment": "I now hate Faeries",
+            "rating": "0"
+        },
+        {
+            "rank": 11,
+            "ircname": "tinker",
+            "ignname": "Tinker",
+            "status": "1",
+            "time": "0:54:53",
+            "comment": "good maps folks woo",
+            "rating": "0"
+        },
+        {
+            "rank": 12,
+            "ircname": "hexerman",
+            "ignname": "|lDgAl|HeXeRMaN",
+            "status": "1",
+            "time": "1:02:28",
+            "comment": "",
+            "rating": "0"
+        },
+        {
+            "rank": 13,
+            "ircname": "wbojangles",
+            "ignname": "WBojangles",
+            "status": "1",
+            "time": "1:07:33",
+            "comment": "Shout outs to my dash button",
+            "rating": "0"
+        },
+        {
+            "rank": 14,
+            "ircname": "mavismayhem",
+            "ignname": "Yuecchi",
+            "status": "1",
+            "time": "1:19:15",
+            "comment": "Nice maps by Syena and Nkiller, cool ideas by Dough and Ravencoff, Bird needs to lay off the porcupines, and Furkie needs to quit making maps. GG Everyone :D",
+            "rating": "0"
+        },
+        {
+            "rank": 15,
+            "ircname": "weirdodunno",
+            "ignname": "Weirdo Dunno",
+            "status": "1",
+            "time": "1:19:19",
+            "comment": "",
+            "rating": "0"
+        },
+        {
+            "rank": 16,
+            "ircname": "doughnation",
+            "ignname": "DoughNation",
+            "status": "1",
+            "time": "1:20:00",
+            "comment": "some people need to l2checkpoint",
+            "rating": "0"
+        },
+        {
+            "rank": 17,
+            "ircname": "Takari",
+            "ignname": "Takari",
+            "status": "1",
+            "time": "1:21:25",
+            "comment": "Dough is evil",
+            "rating": "0"
+        },
+        {
+            "rank": 18,
+            "ircname": "inane",
+            "ignname": "Inane",
+            "status": "1",
+            "time": "1:28:30",
+            "comment": "faery with dustgirl fuck the police",
+            "rating": "0"
+        },
+        {
+            "rank": 19,
+            "ircname": "Steelecho",
+            "ignname": "Steelecho",
+            "status": "1",
+            "time": "1:33:58",
+            "comment": "cool maps. I would have like furkie's better if i wasnt complete garbage at this game",
+            "rating": "0"
+        },
+        {
+            "rank": 20,
+            "ircname": "nkiller",
+            "ignname": "nkiller",
+            "status": "1",
+            "time": "1:34:46",
+            "comment": "Just when you think you're safe because marksel's not here.. Furkiepurkie makes a map :3",
+            "rating": "0"
+        },
+        {
+            "rank": 21,
+            "ircname": "wssrdturtle",
+            "ignname": "wssrdturtle",
+            "status": "1",
+            "time": "2:06:17",
+            "comment": "",
+            "rating": "0"
+        },
+        {
+            "rank": 0,
+            "ircname": "Oshxmir",
+            "ignname": "Oshxmir",
+            "status": "4",
+            "time": "forfeit",
+            "comment": "fuck everything forever ever forever",
+            "rating": "0"
+        },
+        {
+            "rank": 0,
+            "ircname": "TheBirdOfPrey",
+            "ignname": "TheBirdOfPrey",
+            "status": "4",
+            "time": "forfeit",
+            "comment": "",
+            "rating": "0"
+        },
+        {
+            "rank": 0,
+            "ircname": "Ravencoff",
+            "ignname": "Ravencoff",
+            "status": "4",
+            "time": "forfeit",
+            "comment": "could probably do furkie's map if I spent another couple hours... but I don't feel like it",
+            "rating": "0"
+        },
+        {
+            "rank": 0,
+            "ircname": "smkthanatos",
+            "ignname": "?smkthanatos?",
+            "status": "4",
+            "time": "forfeit",
+            "comment": "",
+            "rating": "0"
+        },
+        {
+            "rank": 0,
+            "ircname": "johnny",
+            "ignname": "JohnnyBeggod",
+            "status": "4",
+            "time": "forfeit",
+            "comment": "",
+            "rating": "0"
+        },
+        {
+            "rank": 0,
+            "ircname": "tossu",
+            "ignname": "Tossu",
+            "status": "4",
+            "time": "forfeit",
+            "comment": "",
+            "rating": "0"
+        }
+    ]
+}
