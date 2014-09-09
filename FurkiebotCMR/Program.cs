@@ -466,7 +466,7 @@ namespace FurkiebotCMR
                                             sendData("NAMES", realRacingChan);
                                             sendData("MODE", realRacingChan + " +im");
                                             racers.Clear();
-                                            using (System.IO.StreamWriter file = new System.IO.StreamWriter(@"C:\Users\Furkan Pham\Documents\FurkieBot\Data\CMR_ID.txt")) // !! FILEPATH !!
+                                            using (System.IO.StreamWriter file = new System.IO.StreamWriter(@"..\..\..\Data\CMR_ID.txt")) // !! FILEPATH !!
                                             {
                                                 int newid = Convert.ToInt32(cmrId) + 1;
                                                 file.WriteLine(newid.ToString());
@@ -959,7 +959,7 @@ namespace FurkiebotCMR
                         case ":.setcmr": //Set CMR ID for whatever reason there might be
                             #region
                             sendData("PRIVMSG", ex[2] + " Custom Map Race has been set to " + ex[4]);
-                            using (System.IO.StreamWriter file = new System.IO.StreamWriter(@"C:\Users\Furkan Pham\Documents\FurkieBot\Data\CMR_ID.txt"))
+                            using (System.IO.StreamWriter file = new System.IO.StreamWriter(@"..\..\..\Data\CMR_ID.txt"))
                             {
                                 file.WriteLine(ex[4]);
                             }
@@ -1137,7 +1137,7 @@ namespace FurkiebotCMR
                             #region
                             if (ex[1] == "PRIVMSG" && StringCompareNoCaps(ex[2], "furkiebot")) //Only private messages ofcourse
                             {
-                                using (System.IO.StreamWriter file = new System.IO.StreamWriter(@"C:\Users\Furkan Pham\Documents\FurkieBot\Data\Map_Request.txt", true))
+                                using (System.IO.StreamWriter file = new System.IO.StreamWriter(@"..\..\..\Data\Map_Request.txt", true))
                                 {
                                     file.WriteLine(nickname + " - " + ex[4]);
                                 }
@@ -1272,20 +1272,20 @@ namespace FurkiebotCMR
 
         static string GetCurrentCMRID() //Used to fetch the current CMR number
         {
-            string[] id = System.IO.File.ReadAllLines(@"C:\Users\Furkan Pham\Documents\FurkieBot\Data\CMR_ID.txt"); // !! FILEPATH !!
+            string[] id = System.IO.File.ReadAllLines(@"..\..\..\Data\CMR_ID.txt"); // !! FILEPATH !!
             return id[0];
         } /* GetCurrentCMRID() */
 
         static string GetCurrentCMRStatus() //Used to fetch current CMR status
         {
-            string[] id = System.IO.File.ReadAllLines(@"C:\Users\Furkan Pham\Documents\FurkieBot\Data\CMR_STATUS.txt"); // !! FILEPATH !!
+          string[] id = System.IO.File.ReadAllLines(@"..\..\..\Data\CMR_STATUS.txt"); // !! FILEPATH !!
             return id[0];
         } /* GetCurrentCMRStatus */
 
         static void SetCurrentCMRStatus(string s) //Used to either open or close a CMR
         {
             string text = s;
-            System.IO.File.WriteAllText(@"C:\Users\Furkan Pham\Documents\FurkieBot\Data\CMR_STATUS.txt", s); // !! FILEPATH !!
+            System.IO.File.WriteAllText(@"..\..\..\Data\CMR_STATUS.txt", s); // !! FILEPATH !!
         } /* SetCurrentCMRStatus() */
 
         static string GetCMRMaps(string cmrid, DataTable dt) //Used to get a certain line from the cmrmaps.txt file
@@ -1764,7 +1764,7 @@ namespace FurkiebotCMR
 
         static DataTable UpdateJsonUserlist()
         {
-            string filepath = @"C:\Users\Furkan Pham\Documents\FurkieBot\Data\Userlist\userlist.json"; // !! FILEPATH !!
+            string filepath = @"..\..\..\Data\Userlist\userlist.json"; // !! FILEPATH !!
             string[] jsonarray = File.ReadAllLines(filepath);
             string json = string.Join("", jsonarray);
 
@@ -1853,7 +1853,7 @@ namespace FurkiebotCMR
 
             string json = JsonConvert.SerializeObject(ds, Formatting.Indented);
 
-            File.WriteAllText(@"C:\Users\Furkan Pham\Documents\FurkieBot\Data\Userlist\userlist.json", json); // !! FILEPATH !!
+            File.WriteAllText(@"..\..\..\Data\Userlist\userlist.json", json); // !! FILEPATH !!
         }
         static void SetUserInfo(string ircuser, string dustforceuser, int rating)
         {
@@ -1884,12 +1884,12 @@ namespace FurkiebotCMR
 
             string json = JsonConvert.SerializeObject(ds, Formatting.Indented);
 
-            File.WriteAllText(@"C:\Users\Furkan Pham\Documents\FurkieBot\Data\Userlist\userlist.json", json); // !! FILEPATH !!
+            File.WriteAllText(@"..\..\..\Data\Userlist\userlist.json", json); // !! FILEPATH !!
         }
 
         static DataTable UpdateFaqList()
         {
-            string filepath = @"C:\Users\Furkan Pham\Documents\FurkieBot\Data\FAQ\faq.json"; // !! FILEPATH !!
+            string filepath = @"..\..\..\Data\FAQ\faq.json"; // !! FILEPATH !!
             string[] jsonarray = File.ReadAllLines(filepath);
             string json = string.Join("", jsonarray);
 
@@ -1998,7 +1998,7 @@ namespace FurkiebotCMR
 
         static DataTable UpdateJsonToDtMaps(string cmrid)
         {
-            string filepath = @"C:\Users\Furkan Pham\Documents\FurkieBot\Data\CMR Data\Maps\CMR" + cmrid + "Maps.json"; // !! FILEPATH !!
+            string filepath = @"..\..\..\Data\CMR Data\Maps\CMR" + cmrid + "Maps.json"; // !! FILEPATH !!
             Console.WriteLine(filepath);
 
             if (File.Exists(filepath))
@@ -2032,7 +2032,7 @@ namespace FurkiebotCMR
         {
             bool res = false;
 
-            string filepath = @"C:\Users\Furkan Pham\Documents\FurkieBot\Data\CMR Data\Maps\CMR" + cmrid + "Maps.json"; // !! FILEPATH !!
+            string filepath = @"..\..\..\Data\CMR Data\Maps\CMR" + cmrid + "Maps.json"; // !! FILEPATH !!
 
             if (File.Exists(filepath))
             {
@@ -2055,7 +2055,7 @@ namespace FurkiebotCMR
                 dt.AcceptChanges();
 
                 string json2 = JsonConvert.SerializeObject(ds, Formatting.Indented);
-                System.IO.File.WriteAllText(@"C:\Users\Furkan Pham\Documents\FurkieBot\Data\CMR Data\Maps\CMR" + cmrid + "Maps.json", json); // !! FILEPATH !!
+                System.IO.File.WriteAllText(@"..\..\..\Data\CMR Data\Maps\CMR" + cmrid + "Maps.json", json); // !! FILEPATH !!
             }
 
             return res;
@@ -2073,7 +2073,7 @@ namespace FurkiebotCMR
 
             string json = JsonConvert.SerializeObject(ds, Formatting.Indented);
 
-            System.IO.File.WriteAllText(@"C:\Users\Furkan Pham\Documents\FurkieBot\Data\CMR Data\Maps\CMR" + cmrid + "Maps.json", json); // !! FILEPATH !!
+            System.IO.File.WriteAllText(@"..\..\..\Data\CMR Data\Maps\CMR" + cmrid + "Maps.json", json); // !! FILEPATH !!
         }
 
         static void EditCMRMapId(string cmrid, int mapid, string mapper, string mapname)
@@ -2095,16 +2095,16 @@ namespace FurkiebotCMR
 
             string json = JsonConvert.SerializeObject(ds, Formatting.Indented);
 
-            System.IO.File.WriteAllText(@"C:\Users\Furkan Pham\Documents\FurkieBot\Data\CMR Data\Maps\CMR" + cmrid + "Maps.json", json); // !! FILEPATH !!
+            System.IO.File.WriteAllText(@"..\..\..\Data\CMR Data\Maps\CMR" + cmrid + "Maps.json", json); // !! FILEPATH !!
         }
 
         static string JsonToDatatableMaps2(DataTable dt, string cmrid, string irccommand, string ircchannel)
         {
             string res = "";
 
-            if (File.Exists(@"C:\Users\Furkan Pham\Documents\FurkieBot\Data\CMR Results\CMR" + cmrid + "Results.json")) //Check if CMR number exists // !! FILEPATH !!
+            if (File.Exists(@"..\..\..\Data\CMR Results\CMR" + cmrid + "Results.json")) //Check if CMR number exists // !! FILEPATH !!
             {
-                string[] path = System.IO.File.ReadAllLines(@"C:\Users\Furkan Pham\Documents\FurkieBot\Data\CMR Results\CMR" + cmrid + "Results.json"); // !! FILEPATH !!
+                string[] path = System.IO.File.ReadAllLines(@"..\..\..\Data\CMR Results\CMR" + cmrid + "Results.json"); // !! FILEPATH !!
                 string json = string.Join("", path);
 
                 JsonTextReader reader = new JsonTextReader(new StringReader(json));
@@ -2272,7 +2272,7 @@ namespace FurkiebotCMR
                 writer.WriteEndObject();
             }
 
-            System.IO.File.WriteAllText(@"C:\Users\Furkan Pham\Documents\FurkieBot\Data\CMR Results\CMR" + cmrid + @"Results.json", sb.ToString()); // !! FILEPATH !!
+            System.IO.File.WriteAllText(@"..\..\..\Data\CMR Results\CMR" + cmrid + @"Results.json", sb.ToString()); // !! FILEPATH !!
         }
 
         static void RecordResultsReddit(DataTable racers, string cmrid)
@@ -2301,7 +2301,7 @@ namespace FurkiebotCMR
                 lines[i + 2] = "|" + rank + "|" + name + "|" + time.ToString(@"%h\:mm\:ss") + "|" + comment + "|" + rating + "|";
             }
 
-            System.IO.File.WriteAllLines(@"C:\Users\Furkan Pham\Documents\FurkieBot\Data\CMR Results\Reddit" + cmrid + @".txt", lines); // !! FILEPATH !!
+            System.IO.File.WriteAllLines(@"..\..\..\Data\CMR Results\Reddit" + cmrid + @".txt", lines); // !! FILEPATH !!
         }
 
         static string ReadApiLeaderboardToJson(string mapname, int mapid, int page)
