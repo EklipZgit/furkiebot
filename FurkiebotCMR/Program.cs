@@ -1253,7 +1253,7 @@ namespace FurkiebotCMR {
 
             File.WriteAllText(@"..\..\..\Data\Userlist\userlist.json", json); // !! FILEPATH !!
 
-            Console.
+            //Console.
         }
 
 
