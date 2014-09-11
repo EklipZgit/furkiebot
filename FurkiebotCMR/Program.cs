@@ -39,7 +39,7 @@ namespace FurkiebotCMR {
     } /* IRCConfig */
 
     internal class FurkieBot : IDisposable {
-        public static const string SEP = ColourChanger(" | ", "07"); //The orange | seperator also used by GLaDOS
+        public static string SEP = ColourChanger(" | ", "07"); //The orange | seperator also used by GLaDOS
 
         private TcpClient IRCConnection = null;
         private IRCConfig config;
