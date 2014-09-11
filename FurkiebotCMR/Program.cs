@@ -1,4 +1,15 @@
-﻿using System;
+﻿/**
+ * FurkieBot
+ * Program.cs
+ * @author FurkiePurkie
+ */
+
+
+/*
+ * IRC CODES https://www.alien.net.au/irc/irc2numerics.html
+ */
+
+using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Net.Sockets;
@@ -17,6 +28,7 @@ using Newtonsoft.Json.Linq;
 
 namespace FurkiebotCMR
 {
+
     internal struct IRCConfig
     {
         public string server;
@@ -24,20 +36,37 @@ namespace FurkiebotCMR
         public string nick;
         public string name;
         public string pass;
+        public string altNick;
     } /* IRCConfig */
 
-    internal class IRCBot : IDisposable
+    internal class FurkieBot : IDisposable
     {
+        public static string SEP = ColourChanger(" | ", "07"); //The orange | seperator also used by GLaDOS
+
         private TcpClient IRCConnection = null;
         private IRCConfig config;
         private NetworkStream ns = null;
         private StreamReader sr = null;
         private StreamWriter sw = null;
 
-        public IRCBot(IRCConfig config)
+
+
+        //prints a string to console.
+        public static void p(string toPrint)
+        {
+            Console.WriteLine(toPrint);
+        }
+
+
+        /**
+         * Constructor for FurkieBot, I'm guessing.
+         */
+        public FurkieBot(IRCConfig config)
         {
             this.config = config;
         } /* IRCBot */
+
+
 
         public void Connect()
         {
@@ -67,6 +96,8 @@ namespace FurkiebotCMR
             }
         }  /* Connect() */
 
+
+
         public void sendData(string cmd, string param)
         {
             if (param == null)
@@ -86,7 +117,7 @@ namespace FurkiebotCMR
 
                         param = param.Remove(0, channel.Length);
                     }
-
+                    
                     string ss = param;
                     int size = ss.Length / 350;
                     string[] newParam = new string[size + 1];
@@ -127,6 +158,11 @@ namespace FurkiebotCMR
             }
         }  /* sendData() */
 
+
+
+        /**
+         * Main loop for the bot.
+         */
         public void IRCWork()
         {
             bool hype = true; //Just for .unhype command lol
@@ -136,11 +172,10 @@ namespace FurkiebotCMR
 
             string dummyRacingChan = "#cmr-"; //first part of racingchannel string
             string realRacingChan = ""; //real racing channel string
-            string mainchannel = "#dustforce"; //also the channel that will be joined upon start, change to #dustforcee for testing purposes
+            string mainchannel = "#dustforcee"; //also the channel that will be joined upon start, change to #dustforcee for testing purposes
             string cmrId = GetCurrentCMRID();
             string comNames = ""; // Used for NAMES commands
 
-            string sep = ColourChanger(" | ", "07"); //The orange | seperator also used by GLaDOS
 
             string cmrStatus = GetCurrentCMRStatus(); //CMR status can be closed, open, racing or finished
 
@@ -158,8 +193,8 @@ namespace FurkiebotCMR
             //DataTable of registered users
             UpdateJsonUserlist();
 
-            TimeSpan cmrtime = new TimeSpan(20, 30, 0); //At what time (local) it is possible to start a CMR, 8:30pm equals 6:30pm GMT for me
-            string cmrtimeString = @"20:30:00"; //make sure this equals the time on TimeSpan cmrtime
+            TimeSpan cmrtime = new TimeSpan(10, 30, 0); //At what time (local) it is possible to start a CMR, 8:30pm equals 6:30pm GMT for me  EDIT now 10:30 AM PST for 6:30 GMT
+            string cmrtimeString = @"10:30:00"; //make sure this equals the time on TimeSpan cmrtime
 
             string[] ex;
             string data;
@@ -261,11 +296,11 @@ namespace FurkiebotCMR
                         case ":.furkiebot": //FurkieBot Commands
                             if (StringCompareNoCaps(ex[2], mainchannel)) //FurkieBot commands for the main channel
                             {
-                                sendData("PRIVMSG", ex[2] + " Commands: .cmrmaps" + sep + ".startcmr" + sep + ".ign <ircname>" + sep + ".setign <in-game name>" + sep + ".mappack" + sep + "/msg Furkiebot sendmap <url>");
+                                sendData("PRIVMSG", ex[2] + " Commands: .cmrmaps" + SEP + ".startcmr" + SEP + ".ign <ircname>" + SEP + ".setign <in-game name>" + SEP + ".mappack" + SEP + "/msg Furkiebot sendmap <url>");
                             }
                             if (StringCompareNoCaps(ex[2], realRacingChan)) //FurkieBot commands for the race channel
                             {
-                                sendData("PRIVMSG", ex[2] + " Commands: .entrants" + sep + ".join" + sep + ".unjoin" + sep + ".ready" + sep + ".unready" + sep + ".done" + sep + ".undone" + sep + ".forfeit" + sep + ".ign <ircname>" + sep + ".setign <in-game name>");
+                                sendData("PRIVMSG", ex[2] + " Commands: .entrants" + SEP + ".join" + SEP + ".unjoin" + SEP + ".ready" + SEP + ".unready" + SEP + ".done" + SEP + ".undone" + SEP + ".forfeit" + SEP + ".ign <ircname>" + SEP + ".setign <in-game name>");
                             }
                             break;
 
@@ -335,7 +370,7 @@ namespace FurkiebotCMR
                             break;
 
                         case ":.startcmr+": // Used for testing purposes, forces the start of a race without having to worry about the date and time, make sure to use this command when mainchannel is NOT #dustforce
-                            if (StringCompareNoCaps(nickname, "furkiepurkie"))
+                            if (StringCompareNoCaps(nickname, "furkiepurkie") || StringCompareNoCaps(nickname, "eklipz"))
                             {
                                 cmrtime = DateTime.Now.TimeOfDay;
                             }
@@ -353,9 +388,7 @@ namespace FurkiebotCMR
                                         saturday = GetNextDateForDay(DateTime.Now, DayOfWeek.Saturday).Date;
                                     else
                                         saturday = DateTime.Now.Date;
-                                }
-                                else
-                                {
+                                } else {
                                     saturday = DateTime.Now.Date;
                                 }
                                 DateTime cmrday = saturday.Date + cmrtime;
@@ -368,9 +401,7 @@ namespace FurkiebotCMR
                                 if (CmrMapCount(cmrId) < 6 && cmrtime.ToString(@"%h\:mm\:ss") == "20:30:00") // If there are less than 6 maps submitted AND if command wasn't issued using .startcmr+
                                 {
                                     sendData("PRIVMSG", ex[2] + " " + "There are not enough maps to start a CMR. We need " + (6 - CmrMapCount(cmrId)).ToString() + " more maps to start a CMR.");
-                                }
-                                else
-                                {
+                                } else {
                                     TimeSpan stopTheTime = new TimeSpan(20, 29, 20);
                                     DateTime stopTheSpam = saturday.Date + stopTheTime;
                                     if (DateTime.Now < cmrday && DateTime.Now > stopTheSpam)
@@ -387,7 +418,7 @@ namespace FurkiebotCMR
                                     }
                                     if (DateTime.Now > cmrday)
                                     {
-                                        if (StringCompareNoCaps(nickname, "furkiepurkie") || StringCompareNoCaps(nickname, "furkiemobile"))
+                                        if (StringCompareNoCaps(nickname, "furkiepurkie") || StringCompareNoCaps(nickname, "furkiemobile") || StringCompareNoCaps(nickname, "eklipz"))
                                         {
                                             realRacingChan = "";
                                             dummyRacingChan += RandomCharGenerator(5, 1);
@@ -405,9 +436,7 @@ namespace FurkiebotCMR
                                         }
                                     }
                                 }
-                            }
-                            else
-                            {
+                            } else {
                                 sendData("PRIVMSG", ex[2] + " " + "Custom Map Race " + cmrId + " has already been iniatied. Join " + realRacingChan + " to participate.");
                             }
                             #endregion
@@ -1258,6 +1287,8 @@ namespace FurkiebotCMR
             }
         } /* IRCWork() */
 
+
+
         public void Dispose()
         {
             if (sr != null)
@@ -1270,11 +1301,15 @@ namespace FurkiebotCMR
                 IRCConnection.Close();
         } /* Dispose() */
 
+
+
         static string GetCurrentCMRID() //Used to fetch the current CMR number
         {
             string[] id = System.IO.File.ReadAllLines(@"..\..\..\Data\CMR_ID.txt"); // !! FILEPATH !!
             return id[0];
         } /* GetCurrentCMRID() */
+
+
 
         static string GetCurrentCMRStatus() //Used to fetch current CMR status
         {
@@ -1282,11 +1317,15 @@ namespace FurkiebotCMR
             return id[0];
         } /* GetCurrentCMRStatus */
 
+
+
         static void SetCurrentCMRStatus(string s) //Used to either open or close a CMR
         {
             string text = s;
             System.IO.File.WriteAllText(@"..\..\..\Data\CMR_STATUS.txt", s); // !! FILEPATH !!
         } /* SetCurrentCMRStatus() */
+
+
 
         static string GetCMRMaps(string cmrid, DataTable dt) //Used to get a certain line from the cmrmaps.txt file
         {
@@ -1316,6 +1355,8 @@ namespace FurkiebotCMR
             return res;
         } /* GetCMRMaps() */
 
+
+
         static long CountLinesInFile(string f) //Used to count the amount of lines in a certain file
         {
             long count = 0;
@@ -1330,11 +1371,15 @@ namespace FurkiebotCMR
             return count;
         } /* CountLinesInFile() */
 
+
+
         static long CmrMapCount(string cmrid) //Used to count the amount of maps on the current CMR
         {
             long count = UpdateJsonToDtMaps(cmrid).Rows.Count;
             return count;
         } /* CountMapsInCMR() */
+
+
 
         static string GetTime(Stopwatch s) //Fetches current time on stopwatch
         {
@@ -1345,6 +1390,8 @@ namespace FurkiebotCMR
             return elapsedTime;
         } /* GetTime() */
 
+
+
         static string GetTimeCountdown(Stopwatch s)
         {
             TimeSpan ts = s.Elapsed;
@@ -1353,12 +1400,16 @@ namespace FurkiebotCMR
             return elapsedTime;
         }
 
+
+
         static int GetTimeTSec(Stopwatch s)
         {
             TimeSpan ts = s.Elapsed;
             int elapsedTime = ts.Milliseconds / 10;
             return elapsedTime;
         } /* GetTimeTSec */
+
+
 
         static int GetTimeSec(Stopwatch s)
         {
@@ -1367,6 +1418,8 @@ namespace FurkiebotCMR
             return elapsedTime;
         } /* GetTimeSec */
 
+
+
         static int GetTimeMin(Stopwatch s)
         {
             TimeSpan ts = s.Elapsed;
@@ -1374,12 +1427,16 @@ namespace FurkiebotCMR
             return elapsedTime;
         } /* GetTimeMin */
 
+
+
         static int GetTimeHour(Stopwatch s)
         {
             TimeSpan ts = s.Elapsed;
             int elapsedTime = ts.Hours;
             return elapsedTime;
         } /* GetTimeHour */
+
+
 
         static void StartRace(DataTable racers, Stopwatch s) //Starts running timer
         {
@@ -1393,10 +1450,14 @@ namespace FurkiebotCMR
             }
         } /* StartTime()*/
 
+
+
         static void StopRace(Stopwatch s) //Starts running timer
         {
             s.Stop();
         } /* StopTime() */
+
+
 
         static string GetNameRank(DataTable racers, int rank)
         {
@@ -1410,6 +1471,8 @@ namespace FurkiebotCMR
             }
             return res;
         }
+
+
 
         static string GetTimeRank(DataTable racers, int rank)
         {
@@ -1437,10 +1500,14 @@ namespace FurkiebotCMR
             return res;
         }
 
+
+
         static int CountEntrants(DataTable racers) //Used to count the amount entrants in the current CMR
         {
             return racers.Rows.Count;
         } /* CountEntrants() */
+
+
 
         static string GetEntrants(DataTable racers, Stopwatch timer) //Used to get one single string of entrants
         {
@@ -1517,6 +1584,8 @@ namespace FurkiebotCMR
             
         } /* GetEntrants */
 
+
+
         static bool CheckEntrant(DataTable racers, string racer) //Checks if a certain user has entered the race
         {
             var foundRows = racers.Select("Name = '" + racer + "'");
@@ -1530,11 +1599,15 @@ namespace FurkiebotCMR
             }
         } /* SearchEntrant */
 
+
+
         static bool AddEntrant(DataTable racers, string racer) //Used to add a racer to entrants
         {
             racers.Rows.Add(racer, 6, 0, 0, 0, 0, "", GetUserRating(racer)); //name, status, hour, min, sec, 10th sec, comment, rating
             return true;
         } /* AddEntrant */
+
+
 
         static void DQEntrant(DataTable racers, string racerreason, string mod)
         {
@@ -1550,6 +1623,8 @@ namespace FurkiebotCMR
             SetStatus(racers, racer, 5);
             AddComment(racers, racer, reason);
         }
+
+
 
         static int GetStatus(DataTable racers, string racer) //
         {
@@ -1567,6 +1642,8 @@ namespace FurkiebotCMR
             }
             return status;
         }
+
+
 
         static bool ComfirmMassStatus(DataTable racers, int status) //Checks if the whole list of racers share the same status
         {
@@ -1586,6 +1663,8 @@ namespace FurkiebotCMR
             return get;
         }
 
+
+
         static bool ComfirmDoubleMassStatus(DataTable racers, int s1, int s2) //Checks if the whole list of racers share the same status
         {
             bool get = true;
@@ -1604,6 +1683,8 @@ namespace FurkiebotCMR
             return get;
         }
 
+
+
         static bool ComfirmTripleMassStatus(DataTable racers, int s1, int s2, int s3) //Checks if the whole list of racers share the same status
         {
             bool get = true;
@@ -1621,6 +1702,8 @@ namespace FurkiebotCMR
             }
             return get;
         }
+
+
 
         static bool SetStatus(DataTable racers, string racer, int newStatus) //Sets status of a racer
         {
@@ -1642,6 +1725,8 @@ namespace FurkiebotCMR
             }
         } /* SetReady */
 
+
+
         static int CountStatus(DataTable racers, int status)
         {
             int count = 0;
@@ -1654,6 +1739,8 @@ namespace FurkiebotCMR
             }
             return count;
         }
+
+
 
         static bool SetTime(DataTable racers, string racer, Stopwatch timer) //Sets time on a racer that .done
         {
@@ -1678,6 +1765,8 @@ namespace FurkiebotCMR
             }
         } /* SetTime */
 
+
+
         static void RemoveEntrant(DataTable racers, string racer) //Get that fool outta there
         {
             for (int i = 0; i < CountEntrants(racers); i++)
@@ -1691,6 +1780,8 @@ namespace FurkiebotCMR
             racers.AcceptChanges();
         } /* RemoveEntrant */
         
+
+
         static string GetRanking(DataTable racers, string racer) //Used to get proper ranks like 1st, 2nd, 3rd etc.
         {
             int r = 0;
@@ -1743,6 +1834,8 @@ namespace FurkiebotCMR
             }
         }
         
+
+
         static void AddComment(DataTable racers, string racer, string comment)
         {
             foreach (DataRow dr in racers.Rows)
@@ -1754,6 +1847,8 @@ namespace FurkiebotCMR
             }
         }
 
+
+
         static string[] StringSplitter(string s, string v) //Seperate a string in an array of strings
         {
             string[] separators = { @v };
@@ -1761,6 +1856,8 @@ namespace FurkiebotCMR
             string[] words = value.Split(separators, StringSplitOptions.RemoveEmptyEntries);
             return words;
         } /* StringSplitter() */
+
+
 
         static DataTable UpdateJsonUserlist()
         {
@@ -1774,6 +1871,8 @@ namespace FurkiebotCMR
 
             return dt;
         }
+
+
 
         static string[] GetUserInfo(string ircuser) //[0] = ircname; [1] = dfname; [2] = rating
         {
@@ -1804,6 +1903,9 @@ namespace FurkiebotCMR
             }
             return res;
         }
+
+
+
         static string GetUserIrc(string dustforceuser) 
         {
             string res = "";
@@ -1821,8 +1923,16 @@ namespace FurkiebotCMR
             }
             return res;
         }
+
+
+
         static string GetUserIgn(string ircuser) { return GetUserInfo(ircuser.TrimEnd('_'))[1]; }
+
+
+
         static int GetUserRating(string ircuser) { return Convert.ToInt32(GetUserInfo(ircuser)[2]); }
+
+
 
         static void SetUserInfo(string ircuser, string dustforceuser)
         {
@@ -1855,6 +1965,9 @@ namespace FurkiebotCMR
 
             File.WriteAllText(@"..\..\..\Data\Userlist\userlist.json", json); // !! FILEPATH !!
         }
+
+
+
         static void SetUserInfo(string ircuser, string dustforceuser, int rating)
         {
             DataTable dt = UpdateJsonUserlist();
@@ -1887,6 +2000,8 @@ namespace FurkiebotCMR
             File.WriteAllText(@"..\..\..\Data\Userlist\userlist.json", json); // !! FILEPATH !!
         }
 
+
+
         static DataTable UpdateFaqList()
         {
             string filepath = @"..\..\..\Data\FAQ\faq.json"; // !! FILEPATH !!
@@ -1900,12 +2015,16 @@ namespace FurkiebotCMR
             return dt;
         }
 
+
+
         static string BoldText(string s)
         {
             string text = s;
             text = (char)2 + s + (char)2;
             return text;
         }
+
+
 
         static string ColourChanger(string s, string colour) //Used to colourcode text in irc
         {
@@ -1932,6 +2051,8 @@ namespace FurkiebotCMR
             return text;
         } /* ColourChanger */
 
+
+
         static int CountCertainCharacters(string s, char character)
         {
             int count = 0;
@@ -1939,6 +2060,8 @@ namespace FurkiebotCMR
                 if (c == character) count++;
             return count;
         }
+
+
 
         static string RandomCharGenerator(int length, int type) //type 1 = chars and digits, type 2 = digits, type 3 = dice
         {
@@ -1962,10 +2085,14 @@ namespace FurkiebotCMR
             return res;
         } /* RandomChannelGenerator */
 
+
+
         static bool StringCompareNoCaps(string s1, string s2)
         {
             return string.Equals(s1, s2, StringComparison.CurrentCultureIgnoreCase);
         }
+
+
 
         static string GetCurrentDateTime(int id) //1 = Day; 2 = 24time; 3 = 12time
         {
@@ -1987,6 +2114,8 @@ namespace FurkiebotCMR
             return res;
         }
 
+
+
         static DateTime NextDay(DateTime from, DayOfWeek dayOfWeek)
         {
             int start = (int)from.DayOfWeek;
@@ -1995,6 +2124,8 @@ namespace FurkiebotCMR
                 target += 7;
             return from.AddDays(target - start);
         }
+
+
 
         static DataTable UpdateJsonToDtMaps(string cmrid)
         {
@@ -2016,9 +2147,7 @@ namespace FurkiebotCMR
                 }
 
                 return dt;
-            }
-            else
-            {
+            } else {
                 DataTable dt = new DataTable();
                 dt.Columns.Add("mapid", typeof(int));
                 dt.Columns.Add("mapper", typeof(string));
@@ -2027,6 +2156,8 @@ namespace FurkiebotCMR
                 return dt;
             }
         }
+
+
 
         static bool DeleteCmrMap(string cmrid, string mapname)
         {
@@ -2061,6 +2192,8 @@ namespace FurkiebotCMR
             return res;
         }
 
+
+
         static void AddCMRMap(string cmrid, int mapid, string mapper, string mapname)
         {
             DataTable dtCopy = UpdateJsonToDtMaps(cmrid).Copy();
@@ -2075,6 +2208,8 @@ namespace FurkiebotCMR
 
             System.IO.File.WriteAllText(@"..\..\..\Data\CMR Data\Maps\CMR" + cmrid + "Maps.json", json); // !! FILEPATH !!
         }
+
+
 
         static void EditCMRMapId(string cmrid, int mapid, string mapper, string mapname)
         {
@@ -2097,6 +2232,8 @@ namespace FurkiebotCMR
 
             System.IO.File.WriteAllText(@"..\..\..\Data\CMR Data\Maps\CMR" + cmrid + "Maps.json", json); // !! FILEPATH !!
         }
+
+
 
         static string JsonToDatatableMaps2(DataTable dt, string cmrid, string irccommand, string ircchannel)
         {
@@ -2180,6 +2317,8 @@ namespace FurkiebotCMR
             }
             return res;
         }
+
+
 
         static void RecordResultsJson(DataTable racers, DataTable maps, string cmrid)
         {
@@ -2275,6 +2414,8 @@ namespace FurkiebotCMR
             System.IO.File.WriteAllText(@"..\..\..\Data\CMR Results\CMR" + cmrid + @"Results.json", sb.ToString()); // !! FILEPATH !!
         }
 
+
+
         static void RecordResultsReddit(DataTable racers, string cmrid)
         {
             DataView dv = racers.DefaultView;
@@ -2304,6 +2445,8 @@ namespace FurkiebotCMR
             System.IO.File.WriteAllLines(@"..\..\..\Data\CMR Results\Reddit" + cmrid + @".txt", lines); // !! FILEPATH !!
         }
 
+
+
         static string ReadApiLeaderboardToJson(string mapname, int mapid, int page)
         {
             using (var w = new WebClient())
@@ -2322,6 +2465,8 @@ namespace FurkiebotCMR
             }
         }
 
+
+
         static DataTable ReadApiLeaderboardToDt(string json)
         {
             DataSet ds = JsonConvert.DeserializeObject<DataSet>(json);
@@ -2330,6 +2475,8 @@ namespace FurkiebotCMR
 
             return dt;
         }
+
+
 
         static string CheckSSTest(string user)
         {
@@ -2372,6 +2519,8 @@ namespace FurkiebotCMR
             return res;
         }
 
+
+
         static bool CheckSS(string racer, string cmrid)
         {
             DataTable maps;
@@ -2392,6 +2541,8 @@ namespace FurkiebotCMR
             return res;
         }
 
+
+
         static int DaysToAdd(DayOfWeek current, DayOfWeek desired)
         {
             int c = (int)current;
@@ -2400,10 +2551,15 @@ namespace FurkiebotCMR
 
             return (n > 7) ? n % 7 : n;
         }
+
+
+
         static DateTime GetNextDateForDay(DateTime startDate, DayOfWeek desiredDay)
         {
             return startDate.AddDays(DaysToAdd(startDate.DayOfWeek, desiredDay));
         }
+
+
 
         static void Simulation()
         {
@@ -2488,11 +2644,12 @@ namespace FurkiebotCMR
         {
             IRCConfig conf = new IRCConfig();
             conf.name = "FurkieBot";
-            conf.nick = "FurkieBot";
+            conf.nick = "FurkieBot_";
+            conf.altNick = "FurkieBot_";
             conf.port = 6667;
             conf.server = "irc2.speedrunslive.com";
             conf.pass = "ilovecalistuslol";
-            using (var bot = new IRCBot(conf))
+            using (var bot = new FurkieBot(conf))
             {
                 bot.Connect();
                 bot.IRCWork();
