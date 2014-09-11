@@ -50,6 +50,14 @@ namespace FurkiebotCMR {
         private DataTable users;
         private DataTable userlist;
 
+        private string dummyRacingChan; //first part of racingchannel string
+        private string realRacingChan; //real racing channel string
+        private string mainchannel; //also the channel that will be joined upon start, change to #dustforcee for testing purposes
+        private string cmrId;
+        private string comNames; // Used for NAMES commands
+
+        private string cmrStatus;
+
 
 
         //prints a string to console.
@@ -82,6 +90,16 @@ namespace FurkiebotCMR {
             string json = string.Join("", jsonarray);
 
             userlist = JsonConvert.DeserializeObject<DataSet>(json).Tables["userlist"]; // initially loads the userlist from JSON
+
+            dummyRacingChan = "#cmr-"; //first part of racingchannel string
+            realRacingChan = ""; //real racing channel string
+            mainchannel = "#dustforcee"; //also the channel that will be joined upon start, change to #dustforcee for testing purposes
+            cmrId = GetCurrentCMRID();
+            comNames = ""; // Used for NAMES commands
+
+
+            cmrStatus = GetCurrentCMRStatus(); //CMR status can be closed, open, racing or finished
+
 
         } /* IRCBot */
 
@@ -169,17 +187,6 @@ namespace FurkiebotCMR {
 
             Stopwatch stahpwatch = new Stopwatch(); //Timer used for races
             Stopwatch countdown = new Stopwatch(); //Timer used to countdown a race
-
-            string dummyRacingChan = "#cmr-"; //first part of racingchannel string
-            string realRacingChan = ""; //real racing channel string
-            string mainchannel = "#dustforcee"; //also the channel that will be joined upon start, change to #dustforcee for testing purposes
-            string cmrId = GetCurrentCMRID();
-            string comNames = ""; // Used for NAMES commands
-
-
-            string cmrStatus = GetCurrentCMRStatus(); //CMR status can be closed, open, racing or finished
-
-
 
 
 
@@ -806,13 +813,13 @@ namespace FurkiebotCMR {
                             break;
 
                         case ":.updatebot": //doesn't actually update anything, just shuts down Furkiebot with a fancy update message, I always whisper this because it would look stupid to type a command like this in channel lol
-                            if (StringCompareNoCaps(nickname, "furkiepurkie")) {
+                            if (StringCompareNoCaps(nickname, "furkiepurkie") || StringCompareNoCaps(nickname, "eklipz")) {
                                 sendData("QUIT", " Updating FurkieBot (◡‿◡✿)");
                             }
                             break;
 
                         case ".slap": //Im sorry
-                            sendData("NOTICE", nickname + " Go slap yourself.");
+                            Slap(nickname, ex);
                             break;
                     }
                 }
@@ -1145,13 +1152,52 @@ namespace FurkiebotCMR {
 
                         #region .slap
                         case ":.slap": //A stupid command nobody asked for
-                            sendData("NOTICE", nickname + " If you want to slap someone, do it yourself.");
+                            Slap(nickname, ex);
                             break;
                         #endregion
                     }
                 }
             }
-        } /* IRCWork() */
+        }
+
+
+
+        /*
+         * Slaps based on things.
+         */
+        private void Slap(string nickname, string[] ex) {
+            Random r = new Random();
+            int choice = r.Next(6);
+
+            switch (choice) {
+                case 0:
+                    sendData("PRIVMSG", mainchannel + " :" + (char)1 + @"ACTION slaps " + ex[4] + " with " + nickname + "'s favorite game console." + (char)1);
+                    break;
+                case 1:
+                    if (StringCompareNoCaps(nickname, "furkiepurkie") || StringCompareNoCaps(nickname, "eklipz")) {
+                        goto case 4;
+                    } else {
+                        sendData("PRIVMSG", mainchannel + " :" + (char)1 + " Only cool people are allowed to .slap people. Go slap yourself, " + nickname + ".");
+                    }
+                    break;
+                case 2:
+                    sendData("PRIVMSG", mainchannel + " :" + (char)1 + @"ACTION slaps " + ex[4] + " around, just a little." + (char)1);
+                    break;
+                case 3:
+                    sendData("PRIVMSG", mainchannel + " :" + (char)1 + @"ACTION slaps " + ex[4] + " with vigor." + (char)1);
+                    break;
+                case 4:
+                    if (StringCompareNoCaps(nickname, "furkiepurkie") || StringCompareNoCaps(nickname, "eklipz")) {
+                        sendData("PRIVMSG", mainchannel + " :" + (char)1 + @"ACTION slaps " + ex[4] + " with his cold, metal bot-hand" + (char)1);      
+                    } else {
+                        sendData("PRIVMSG", mainchannel + " :Only cool people are allowed to .slap people. Go slap yourself, " + nickname + ".");
+                    }
+                    break;
+                case 5:
+                    sendData("PRIVMSG", mainchannel + " :" + (char)1 + @"ACTION slaps " + nickname + ". BE NICE." + (char)1);
+                    break;
+            }
+        } /* Slap */
 
 
 
@@ -1637,8 +1683,7 @@ namespace FurkiebotCMR {
 
 
 
-        static bool ComfirmTripleMassStatus(DataTable racers, int s1, int s2, int s3) //Checks if the whole list of racers share the same status
-        {
+        static bool ComfirmTripleMassStatus(DataTable racers, int s1, int s2, int s3) { //Checks if the whole list of racers share the same status. 
             bool get = true;
             if (CountEntrants(racers) > 0) {
                 for (int i = 0; i < CountEntrants(racers); i++) {
