@@ -1062,46 +1062,6 @@ namespace FurkiebotCMR {
                             #endregion
                             break;
 
-                        /*
-                         * Yeah, discontinued. You may want to pick it up again, idk
-                    case ":.faq":
-                        string[] faqarr = GetFaq(faq, ex[4]);
-                        sendData("PRIVMSG", ex[2] + " " + faqarr[1]);
-                        break;
-
-                    case ":.addfaq":
-                        #region
-                        if (StringCompareNoCaps(ex[2], "furkiebot"))
-                        {
-                            if (ex[4].Contains(";"))
-                            {
-                                string[] addfaqarr = StringSplitter(ex[4], ";");
-                                string keyword = addfaqarr[0].Trim();
-                                string description = addfaqarr[1].Trim();
-
-                                if (GetFaq(faq, keyword)[0] != keyword)
-                                {
-                                    AddFaq(faq, keyword, description);
-                                    sendData("NOTICE", username.ToString() + " " + ColourChanger(keyword, "03") + " > " + ColourChanger(description, "03") + " added to FAQ list.");
-                                    sendData("PRIVMSG", ex[2] + " FAQ added.");
-                                }
-                                else
-                                {
-                                    sendData("PRIVMSG", ex[2] + " " + keyword + " already exists.");
-                                }
-                            }
-                            else
-                            {
-                                sendData("PRIVMSG", ex[2] + " Command: .addfaq " + ColourChanger("keyword", "03") + BoldText(ColourChanger(";", "04")) + ColourChanger("description", "03"));
-                            }
-                        }
-                        else
-                        {
-                            sendData("PRIVMSG", ex[2] + " Message me to add a command.");
-                        }
-                        #endregion
-                        break;
-                         */
 
                         case ":.maps":
                             goto case ":.cmrmaps";
@@ -1169,34 +1129,39 @@ namespace FurkiebotCMR {
             Random r = new Random();
             int choice = r.Next(6);
 
-            switch (choice) {
-                case 0:
-                    sendData("PRIVMSG", mainchannel + " :" + (char)1 + @"ACTION slaps " + ex[4] + " with " + nickname + "'s favorite game console." + (char)1);
-                    break;
-                case 1:
-                    if (StringCompareNoCaps(nickname, "furkiepurkie") || StringCompareNoCaps(nickname, "eklipz")) {
-                        goto case 4;
-                    } else {
-                        sendData("PRIVMSG", mainchannel + " :" + (char)1 + " Only cool people are allowed to .slap people. Go slap yourself, " + nickname + ".");
-                    }
-                    break;
-                case 2:
-                    sendData("PRIVMSG", mainchannel + " :" + (char)1 + @"ACTION slaps " + ex[4] + " around, just a little." + (char)1);
-                    break;
-                case 3:
-                    sendData("PRIVMSG", mainchannel + " :" + (char)1 + @"ACTION slaps " + ex[4] + " with vigor." + (char)1);
-                    break;
-                case 4:
-                    if (StringCompareNoCaps(nickname, "furkiepurkie") || StringCompareNoCaps(nickname, "eklipz")) {
-                        sendData("PRIVMSG", mainchannel + " :" + (char)1 + @"ACTION slaps " + ex[4] + " with his cold, metal bot-hand" + (char)1);      
-                    } else {
-                        sendData("PRIVMSG", mainchannel + " :Only cool people are allowed to .slap people. Go slap yourself, " + nickname + ".");
-                    }
-                    break;
-                case 5:
-                    sendData("PRIVMSG", mainchannel + " :" + (char)1 + @"ACTION slaps " + nickname + ". BE NICE." + (char)1);
-                    break;
+            if (ex[4] == "me") {
+                sendData("PRIVMSG", mainchannel + " :" + (char)1 + @"ACTION uses " + nickname + "'s own hands to slap himself. \"STOP HITTING YOURSELF, STOP HITTING YOURSELF!" + (char)1);
+            } else {
+                switch (choice) {
+                    case 0:
+                        sendData("PRIVMSG", mainchannel + " :" + (char)1 + @"ACTION slaps " + ex[4] + " with " + nickname + "'s favorite game console." + (char)1);
+                        break;
+                    case 1:
+                        if (StringCompareNoCaps(nickname, "furkiepurkie") || StringCompareNoCaps(nickname, "eklipz")) {
+                            goto case 4;
+                        } else {
+                            sendData("PRIVMSG", mainchannel + " :Only cool people are allowed to .slap people. Go slap yourself, " + nickname + ".");
+                        }
+                        break;
+                    case 2:
+                        sendData("PRIVMSG", mainchannel + " :" + (char)1 + @"ACTION slaps " + ex[4] + " around, just a little." + (char)1);
+                        break;
+                    case 3:
+                        sendData("PRIVMSG", mainchannel + " :" + (char)1 + @"ACTION slaps " + ex[4] + " with vigor." + (char)1);
+                        break;
+                    case 4:
+                        if (StringCompareNoCaps(nickname, "furkiepurkie") || StringCompareNoCaps(nickname, "eklipz")) {
+                            sendData("PRIVMSG", mainchannel + " :" + (char)1 + @"ACTION slaps " + ex[4] + " with his cold, metal bot-hand" + (char)1);
+                        } else {
+                            sendData("PRIVMSG", mainchannel + " :Only cool people are allowed to .slap people. Go slap yourself, " + nickname + ".");
+                        }
+                        break;
+                    case 5:
+                        sendData("PRIVMSG", mainchannel + " :" + (char)1 + @"ACTION slaps " + nickname + ". BE NICE." + (char)1);
+                        break;
+                }
             }
+
         } /* Slap */
 
 
@@ -2408,7 +2373,7 @@ namespace FurkiebotCMR {
         private static void Main(string[] args) {
             IRCConfig conf = new IRCConfig();
             conf.name = "FurkieBot";
-            conf.nick = "FurkieBot_";
+            conf.nick = "FurkieBot";
             conf.altNick = "FurkieBot_";
             conf.port = 6667;
             conf.server = "irc2.speedrunslive.com";
