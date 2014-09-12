@@ -44,6 +44,7 @@ namespace FurkiebotCMR {
         private TcpClient IRCConnection = null;
         private IRCConfig config;
         private NetworkStream ns = null;
+        private BufferedStream bs = null;
         private StreamReader sr = null;
         private StreamWriter sw = null;
         private DataTable racers;
@@ -115,7 +116,8 @@ namespace FurkiebotCMR {
 
             try {
                 ns = IRCConnection.GetStream();
-                sr = new StreamReader(ns);
+                bs = new BufferedStream(ns);
+                sr = new StreamReader(bs);
                 sw = new StreamWriter(ns);
                 sendData("USER", config.nick + " 0 * :" + config.name);
                 sendData("NICK", config.nick);
@@ -198,8 +200,15 @@ namespace FurkiebotCMR {
             bool shouldRun = true; // FurkieBot will shutdown if this turns false
 
             while (shouldRun) {
+                Console.WriteLine(" ");
+                Console.WriteLine(" ");
+                Stopwatch parseTimer = new Stopwatch();
+                parseTimer.Start();
+                //Console.WriteLine("Before sr.ReadLine() " + parseTimer.Elapsed);
                 data = sr.ReadLine();
+                //Console.WriteLine("After sr.ReadLine() " + parseTimer.Elapsed);
                 Console.WriteLine(data);
+
                 char[] charSeparator = new char[] { ' ' };
                 ex = data.Split(charSeparator, 5);
 
@@ -302,6 +311,7 @@ namespace FurkiebotCMR {
 
 
 
+                //Console.WriteLine("End event switch " + parseTimer.Elapsed);
 
 
 
@@ -860,6 +870,7 @@ namespace FurkiebotCMR {
                         //    break;
                     }
                 }
+                //Console.WriteLine("End no-params command switch " + parseTimer.Elapsed);
 
                 if (ex.Length > 4) //Commands with parameters
                 {
@@ -1154,7 +1165,10 @@ namespace FurkiebotCMR {
                         #endregion
                     }
                 }
+                parseTimer.Stop();
+                //Console.WriteLine("End Last Switch " + parseTimer.Elapsed);
             }
+            
         }
 
 
