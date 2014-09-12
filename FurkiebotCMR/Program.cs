@@ -222,10 +222,19 @@ namespace FurkiebotCMR {
                 //.furkiebot #cmr-xxxxx
                 #endregion
 
+
+
+
+
+
                 if (ex[0] == "PING") //Pinging server in order to stay connected
                 {
                     sendData("PONG", ex[1]);
                 }
+
+
+
+
 
                 switch (ex[1]) //Events
                 {
@@ -287,6 +296,21 @@ namespace FurkiebotCMR {
                     //    break;
                 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
                 if (ex.Length == 4) //Commands without parameters
                 {
                     string command = ex[3]; //grab the command sent
@@ -302,6 +326,15 @@ namespace FurkiebotCMR {
                                 sendData("PRIVMSG", ex[2] + " Commands: .entrants" + SEP + ".join" + SEP + ".unjoin" + SEP + ".ready" + SEP + ".unready" + SEP + ".done" + SEP + ".undone" + SEP + ".forfeit" + SEP + ".ign <ircname>" + SEP + ".setign <in-game name>");
                             }
                             break;
+
+                        case ":.help":
+                            goto case ":.furkiebot";
+
+                        case ":.commands":
+                            goto case ":.furkiebot";
+
+                        case ":.commandlist":
+                            goto case ":.furkiebot";
 
                         case ":.cmr": //General CMR FAQ
                             #region
@@ -485,7 +518,7 @@ namespace FurkiebotCMR {
                             goto case ":.cmrmaps";
 
                         case ":.cmrmaps":
-                            if (false) {
+                            if (true) {
                                 DataTable dt = UpdateJsonToDtMaps(cmrId);
                                 string maps = GetCMRMaps(cmrId, dt);
                                 if (StringCompareNoCaps(ex[2], mainchannel)) {
