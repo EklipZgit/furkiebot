@@ -855,9 +855,9 @@ namespace FurkiebotCMR {
                             }
                             break;
 
-                        case ":.slap": //Im sorry
-                            Slap(nickname, ex);
-                            break;
+                        //case ":.slap": //Im sorry
+                        //    Slap(nickname, ex);
+                        //    break;
                     }
                 }
 
