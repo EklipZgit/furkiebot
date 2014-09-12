@@ -240,6 +240,10 @@ namespace FurkiebotCMR {
                 {
                     case "001": //Autojoin channel when first response from server
                         sendData("JOIN", mainchannel);
+                        sendData("PRIVMSG", "NickServ" + " ghost " + config.nick + " " + config.pass);
+                        break;
+                    case "433": //Changes nickname to altNick when nickname is already taken
+                        sendData("NICK", config.altNick);
                         break;
                     case "353": //NAMES command answer from server
                         if (comNames == "CANCEL") //Kick all irc users from channel
@@ -851,7 +855,7 @@ namespace FurkiebotCMR {
                             }
                             break;
 
-                        case ".slap": //Im sorry
+                        case ":.slap": //Im sorry
                             Slap(nickname, ex);
                             break;
                     }
