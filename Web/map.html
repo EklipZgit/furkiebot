@@ -3,7 +3,7 @@
 <style>
 label {
     display: inline-block;
-    width: 70;
+    width: 100;
 }
 input {
     width: 300;
@@ -11,25 +11,50 @@ input {
 </style>
 </head>
 <body>
-Upload a map!
+<a href="index.html"> <b> Home</b></a><br><br>
+<b>Upload a map!</b>
 <p>
-<div style="width: 380">
+<div style="width: 410">
 <form action="upload_file.php" method="post"
 enctype="multipart/form-data">
-<label for="file2">Filename:</label>
-<input type="file" name="file" id="file2"><br>
+<label for="file2">Map File:</label>
+<input type="file" name="file" id="file"><br>
+
+<label for="mapname">Map Name:</label>
+<input type="text" name="mapname" id="mapname"><br>
 
 <label for="user">Username:</label>
-<input type="text" name="Username" id="user"><br>
+<input type="text" name="user" id="user"><br>
 
-<label for="pw">Password:</label>
-<input type="password" name="Password" id="pw"><br>
+<!--<label for="pw">Password:</label>
+<input type="password" name="pw" id="pw"><br> -->
 <center>
 <input type="submit" name="submit" value="Submit" id="submitbutton">
 </center>
 </form>
 </div>
 </p>
+
+
+<br>
+Make sure you submit with the proper map name and username.<br>
+If you need to re-submit your map, MAKE SURE to use the same map name and username that you did the first time you uploaded it.<br><br>
+
+
+
+<b>Temporary rules for maps:</b><br>
+A map must have basic playability (camera, ensure it is SSable, visible color scheme, etc).<br>
+Maps may not be harder than Gold Key levels.<br>
+Maps may not contain blind drops where you fall into a place that requires precise input.<br>
+&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp(As a rule of thumb, if you die more than once there because you werent prepared, its not ok).<br>
+The goal flag should be properly linked to the end enemies. <br>
+&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbspThe enemies linked to the goal flag should be relatively obvious so that racers do not accidentally end the map early.<br>
+Maps may not use a zoom level over 1400, due to lag experienced by many players. <br> 
+&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbspWhether you lag or not, the camera must be less zoomed out than Abyss. Also, no over-use of props.
+
+<br><br>
+MAPS MAY NOT BE DENIED BASED ON "ENJOYABILITY" OF THE MAP OR ANY OTHER SUBJECTIVE FACTORS.<br>
+PROVIDED IT MEETS THE ABOVE REQUIREMENTS, A MAP IS ALLOWED.<br>
 </body>
 </html>
 

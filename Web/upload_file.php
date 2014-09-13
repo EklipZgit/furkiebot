@@ -1,20 +1,19 @@
 <?php
 $temp = explode(".", $_FILES["file"]["name"]);
-
+echo "Thanks " . $_POST["user"] . "!<br>";
 
 if ($_FILES["file"]["error"] > 0) {
-  echo "Return Code: " . $_FILES["file"]["error"] . "<br>";
+  echo "ERROR UPLOADING. Return Code: " . $_FILES["file"]["error"] . "<br>";
+  echo "screenshot this to EklipZ in #DFcmr";
 } else {
-  echo "Upload: " . $_FILES["file"]["name"] . "<br>";
-  echo "Type: " . $_FILES["file"]["type"] . "<br>";
-  echo "Size: " . ($_FILES["file"]["size"] / 1024) . " kB<br>";
-  echo "Temp file: " . $_FILES["file"]["tmp_name"] . "<br>";
-  if (file_exists("data/" . $_FILES["file"]["name"])) {
-    echo $_FILES["file"]["name"] . " already exists. ";
+  if (file_exists("../pending/" . $_POST["user"] . "-" . $_POST["mapname"])) {
+    move_uploaded_file($_FILES["file"]["tmp_name"],
+    "../pending/" . $_POST["user"] . "-" . $_POST["mapname"]);
+  echo "Replaced: " . $_POST["user"] . "-" . $_POST["mapname"] . " successfully.<br>";
   } else {
     move_uploaded_file($_FILES["file"]["tmp_name"],
-    "data/" . $_FILES["file"]["name"]);
-    echo "Stored in: " . "data/" . $_FILES["file"]["name"];
+    "../pending/" . $_POST["user"] . "-" . $_POST["mapname"]);
+  echo "Uploaded: " . $_POST["user"] . "-" . $_POST["mapname"] . " successfully.<br>";
   }
 }
 
