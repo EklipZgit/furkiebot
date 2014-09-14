@@ -18,6 +18,7 @@ using System.Diagnostics;
 using System.Text.RegularExpressions;
 using System.Data;
 using System.Data.SqlClient;
+using System.Security.Permissions;
 //using System.Data.OleDb;
 //using DocumentFormat.OpenXml;
 using ClosedXML.Excel;
@@ -40,6 +41,8 @@ namespace FurkiebotCMR {
 
     internal class FurkieBot : IDisposable {
         public static string SEP = ColourChanger(" | ", "07"); //The orange | seperator also used by GLaDOS
+        public const string MAPS_PATH = @"C:\CMRmaps";
+         
 
         private TcpClient IRCConnection = null;
         private IRCConfig config;
@@ -47,13 +50,22 @@ namespace FurkiebotCMR {
         private BufferedStream bs = null;
         private StreamReader sr = null;
         private StreamWriter sw = null;
+
+        private FileSystemWatcher pendingWatcher;
+        private FileSystemWatcher acceptedWatcher;
+
+
         private DataTable racers;
         private DataTable users;
         private DataTable userlist;
+        private HashSet<string> acceptedMaps;
+        private HashSet<string> pendingMaps;
+
 
         private string dummyRacingChan; //first part of racingchannel string
         private string realRacingChan; //real racing channel string
         private string mainchannel; //also the channel that will be joined upon start, change to #dustforcee for testing purposes
+        private string cmrchannel; //also the channel that will be joined upon start, change to #dustforcee for testing purposes
         private string cmrId;
         private string comNames; // Used for NAMES commands
 
@@ -67,11 +79,140 @@ namespace FurkiebotCMR {
         }
 
 
+        // Define the filesystem event handlers. 
+        private void CreatedPending(object source, FileSystemEventArgs e) {
+            // Specify what is done when a file is changed, created, or deleted.
+            //Console.WriteLine("File: " + e.FullPath + " " + e.ChangeType);
+            Console.WriteLine("\nCreatedPending: " + e.FullPath + " " + e.ChangeType + "\n");
+            string fileName = Path.GetFileName(e.FullPath);
+            pendingMaps.Add(fileName);
+            string toSay =  " :New map submitted for testing: \"";
+
+            string[] split = fileName.Split('-');
+            for (int i = 1; i < split.Length; i++) {
+                toSay += split[i];
+            }
+            toSay += "\" by " + split[0];
+
+            sendData("PRIVMSG", mainchannel + toSay);
+            sendData("PRIVMSG", cmrchannel + toSay);
+        }
+
+
+        // Define the filesystem event handlers. 
+        private void DeletedPending(object source, FileSystemEventArgs e) {
+            // Specify what is done when a file is changed, created, or deleted.
+            //Console.WriteLine("File: " + e.FullPath + " " + e.ChangeType);
+            Console.WriteLine("\nDeletedPending: " + e.FullPath + " " + e.ChangeType + "\n");
+            string fileName = Path.GetFileName(e.FullPath);
+            pendingMaps.Remove(fileName);
+        }
+
+        private void CreatedAccepted(object source, FileSystemEventArgs e) {
+            // Specify what is done when a file is renamed.
+            //Console.WriteLine("File: {0} renamed to {1}", e.OldFullPath, e.FullPath);
+            Console.WriteLine("\nCreatedAccepted: " + e.FullPath + " " + e.ChangeType + "\n");
+            string fileName = Path.GetFileName(e.FullPath);
+            acceptedMaps.Add(fileName);
+            pendingMaps.Remove(fileName);
+
+            string toSay = " :Map accepted: \"";
+
+            string[] split = fileName.Split('-');
+            for (int i = 1; i < split.Length; i++) {
+                toSay += split[i];
+            }
+            toSay += "\" by " + split[0];
+
+            sendData("PRIVMSG", mainchannel + toSay);
+            sendData("PRIVMSG", cmrchannel + toSay);
+        }
+
+
+        // Define the filesystem event handlers. 
+        private void DeletedAccepted(object source, FileSystemEventArgs e) {
+            // Specify what is done when a file is changed, created, or deleted.
+            //Console.WriteLine("File: " + e.FullPath + " " + e.ChangeType);
+            Console.WriteLine("\nDeletedAccepted: " + e.FullPath + " " + e.ChangeType + "\n");
+            string fileName = Path.GetFileName(e.FullPath);
+            acceptedMaps.Remove(fileName);
+
+            string toSay = " :Map un accepted: \"";
+
+            string[] split = fileName.Split('-');
+            for (int i = 1; i < split.Length; i++) {
+                toSay += split[i];
+            }
+            toSay += "\" by " + split[0];
+
+            sendData("PRIVMSG", mainchannel + toSay);
+            sendData("PRIVMSG", cmrchannel + toSay);
+        }
+
+        //private static void OnRenamed(object source, RenamedEventArgs e) {
+        //    // Specify what is done when a file is renamed.
+        //    //Console.WriteLine("File: {0} renamed to {1}", e.OldFullPath, e.FullPath);
+        //    Console.WriteLine("\n\n\nFile: {0} renamed to {1}\n\n\n", e.OldFullPath, e.FullPath);
+        //}
+
+
+
+        private void OutputMapStatus(string chan) {
+            OutputPending(chan);
+            OutputAccepted(chan);
+        }
+
+
+
+        private void OutputPending(string chan) {            
+            string toSay = " :" + pendingMaps.Count + " Pending testing ";
+
+            foreach (string s in pendingMaps) {
+                toSay += SEP + "\"";
+                string[] split = s.Split('-');
+                for (int i = 1; i < split.Length; i++) {
+                    toSay += split[i];
+                }
+                toSay += "\" by " + split[0] ;
+            }
+
+            if (chan == null || chan == "" || chan == " ") {
+                sendData("PRIVMSG", mainchannel + toSay);
+                sendData("PRIVMSG", cmrchannel + toSay);
+            } else {
+                sendData("PRIVMSG", chan + toSay);
+            }
+        }
+
+
+
+        private void OutputAccepted(string chan) {
+            string toSay = " :" + acceptedMaps.Count + " Accepted ";
+            foreach (string s in acceptedMaps) {
+                toSay += SEP + "\"";
+                string[] split = s.Split('-');
+                for (int i = 1; i < split.Length; i++) {
+                    toSay += split[i];
+                }
+                toSay += "\" by " + split[0];
+            }
+           
+            if (chan == null || chan == "" || chan == " ") {
+                sendData("PRIVMSG", mainchannel + toSay);
+                sendData("PRIVMSG", cmrchannel + toSay);
+            } else {
+                sendData("PRIVMSG", chan + toSay);
+            }
+        }
+
+
+
         /**
          * Constructor for FurkieBot, I'm guessing.
          */
         public FurkieBot(IRCConfig config) {
-            this.config = config;
+            this.config = config;   // Create a new FileSystemWatcher and set its properties.
+
 
 
             //DataTable of Racers for the current CMR
@@ -94,13 +235,53 @@ namespace FurkiebotCMR {
 
             dummyRacingChan = "#cmr-"; //first part of racingchannel string
             realRacingChan = ""; //real racing channel string
-            mainchannel = "#DFcmr"; //also the channel that will be joined upon start, change to #dustforcee for testing purposes
+            mainchannel = "#dustforcee"; //also the channel that will be joined upon start, change to #dustforcee for testing purposes
+            cmrchannel = "#DFcmr";
             cmrId = GetCurrentCMRID();
             comNames = ""; // Used for NAMES commands
 
 
             cmrStatus = GetCurrentCMRStatus(); //CMR status can be closed, open, racing or finished
 
+            pendingMaps = new HashSet<String>(Directory.GetFiles("C:\\CMRmaps\\" + cmrId + "\\pending", "*").Select(path => Path.GetFileName(path)).ToArray());
+            acceptedMaps = new HashSet<String>(Directory.GetFiles("C:\\CMRmaps\\" + cmrId + "\\accepted", "*").Select(path => Path.GetFileName(path)).ToArray());
+
+
+
+
+
+
+
+            /**
+             * Set up the event handlers for watching the CMR map filesystem. Solution for now. 
+             */
+            pendingWatcher = new FileSystemWatcher();
+            acceptedWatcher = new FileSystemWatcher();
+            pendingWatcher.Path = MAPS_PATH + "\\" + cmrId + "\\pending";
+            acceptedWatcher.Path = MAPS_PATH + "\\" + cmrId + "\\accepted";
+            /* Watch for changes in LastWrite times, and
+               the renaming of files or directories. */
+            pendingWatcher.NotifyFilter = NotifyFilters.LastWrite
+               | NotifyFilters.FileName | NotifyFilters.DirectoryName;
+            acceptedWatcher.NotifyFilter = NotifyFilters.LastWrite
+               | NotifyFilters.FileName | NotifyFilters.DirectoryName;
+            // Only watch text files.
+            //fileWatcher.Filter = "*.txt";
+
+            // Add event handlers.
+            //pendingWatcher.Changed += new FileSystemEventHandler(OnChanged);
+            pendingWatcher.Created += new FileSystemEventHandler(CreatedPending);
+            pendingWatcher.Deleted += new FileSystemEventHandler(DeletedPending);
+            //pendingWatcher.Renamed += new RenamedEventHandler(OnRenamed);
+
+            //acceptedWatcher.Changed += new FileSystemEventHandler(OnChanged);
+            acceptedWatcher.Created += new FileSystemEventHandler(CreatedAccepted);
+            acceptedWatcher.Deleted += new FileSystemEventHandler(DeletedAccepted);
+            //acceptedWatcher.Renamed += new RenamedEventHandler(OnRenamed);
+
+            // Begin watching.
+            pendingWatcher.EnableRaisingEvents = true;
+            acceptedWatcher.EnableRaisingEvents = true;
 
         } /* IRCBot */
 
@@ -250,6 +431,9 @@ namespace FurkiebotCMR {
                     case "001": //Autojoin channel when first response from server
                         sendData("JOIN", mainchannel);
                         sendData("PRIVMSG", "NickServ" + " ghost " + config.nick + " " + config.pass);
+                        sendData("JOIN", cmrchannel);
+                        
+                        OutputMapStatus(null);
                         break;
                     case "433": //Changes nickname to altNick when nickname is already taken
                         sendData("NICK", config.altNick);
@@ -536,21 +720,7 @@ namespace FurkiebotCMR {
                             goto case ":.cmrmaps";
 
                         case ":.cmrmaps":
-                            if (true) {
-                                DataTable dt = UpdateJsonToDtMaps(cmrId);
-                                string maps = GetCMRMaps(cmrId, dt);
-                                if (StringCompareNoCaps(ex[2], mainchannel)) {
-                                    if (Convert.ToInt32(dt.Rows[0]["mapid"]) != -1) {
-                                        sendData("PRIVMSG", ex[2] + " " + "Maps approved for CMR " + cmrId + " (" + dt.Rows.Count + "/6): " + maps);
-                                    } else {
-                                        sendData("PRIVMSG", ex[2] + " " + "No maps submitted yet.");
-                                    }
-                                }
-                                if (StringCompareNoCaps(ex[2], realRacingChan)) {
-                                    sendData("PRIVMSG", ex[2] + " " + "CMR " + cmrId + " Map list (" + dt.Rows.Count + "/6): " + maps);
-                                    sendData("PRIVMSG", ex[2] + " " + @"Maps can be downloaded at http://" + @"atlas.dustforce.com/tag/custom-map-race-" + cmrId);
-                                }
-                            }
+                            OutputMapStatus(null);
                             break;
                             #endregion
 
@@ -863,11 +1033,18 @@ namespace FurkiebotCMR {
                             }
                             break;
 
+                        case ":.ping":
+                            sendData("PRIVMSG", ex[2] + " PONG");
+                            break;
+                        case ":.pong":
+                            sendData("PRIVMSG", ex[2] + " PING");
+                            break;
                         case ":.updatebot": //doesn't actually update anything, just shuts down Furkiebot with a fancy update message, I always whisper this because it would look stupid to type a command like this in channel lol
                             if (StringCompareNoCaps(nickname, "furkiepurkie") || StringCompareNoCaps(nickname, "eklipz")) {
                                 sendData("QUIT", " Updating FurkieBot (◡‿◡✿)");
                             }
                             break;
+
 
                         //case ":.slap": //Im sorry
                         //    Slap(nickname, ex);
@@ -875,6 +1052,11 @@ namespace FurkiebotCMR {
                     }
                 }
                 //Console.WriteLine("End no-params command switch " + parseTimer.Elapsed);
+
+
+
+
+
 
                 if (ex.Length > 4) //Commands with parameters
                 {
