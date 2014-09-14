@@ -433,7 +433,7 @@ namespace FurkiebotCMR {
                         sendData("PRIVMSG", "NickServ" + " ghost " + config.nick + " " + config.pass);
                         sendData("JOIN", cmrchannel);
                         
-                        OutputMapStatus(null);
+                        //OutputMapStatus(null);
                         break;
                     case "433": //Changes nickname to altNick when nickname is already taken
                         sendData("NICK", config.altNick);
@@ -720,7 +720,15 @@ namespace FurkiebotCMR {
                             goto case ":.cmrmaps";
 
                         case ":.cmrmaps":
-                            OutputMapStatus(null);
+                            OutputMapStatus(ex[2]);
+                            break;
+
+                        case ":.pending":
+                            OutputPending(ex[2]);
+                            break;
+
+                        case ":.accepted":
+                            OutputAccepted(ex[2]);
                             break;
                             #endregion
 
@@ -1032,13 +1040,14 @@ namespace FurkiebotCMR {
                                 sendData("JOIN", "#dustforce");
                             }
                             break;
-
+                        #region PING
                         case ":.ping":
                             sendData("PRIVMSG", ex[2] + " PONG");
                             break;
                         case ":.pong":
                             sendData("PRIVMSG", ex[2] + " PING");
                             break;
+                        #endregion
                         case ":.updatebot": //doesn't actually update anything, just shuts down Furkiebot with a fancy update message, I always whisper this because it would look stupid to type a command like this in channel lol
                             if (StringCompareNoCaps(nickname, "furkiepurkie") || StringCompareNoCaps(nickname, "eklipz")) {
                                 sendData("QUIT", " Updating FurkieBot (◡‿◡✿)");
