@@ -1,10 +1,5 @@
 {
-  "Table1": [
-    {
-      "mapid": -1,
-      "mapper": "-1",
-      "mapname": "-1"
-    },
+  "maps": [
     {
       "mapid": 0,
       "mapper": "0",
