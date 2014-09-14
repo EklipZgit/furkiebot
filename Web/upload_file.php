@@ -12,7 +12,7 @@ if ($_FILES["file"]["error"] > 0) {
   echo "Replaced: " . $_POST["user"] . "-" . $_POST["mapname"] . " successfully.<br>";
   } else {
     move_uploaded_file($_FILES["file"]["tmp_name"],
-    "../pending/" . $_POST["user"] . "-" . $_POST["mapname"]);
+    "C:/CMRmaps/36/pending/" . $_POST["user"] . "-" . $_POST["mapname"]);
   echo "Uploaded: " . $_POST["user"] . "-" . $_POST["mapname"] . " successfully.<br>";
   }
 }
