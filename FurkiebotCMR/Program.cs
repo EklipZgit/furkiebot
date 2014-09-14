@@ -333,11 +333,12 @@ namespace FurkiebotCMR {
                         case ":.furkiebot": //FurkieBot Commands
                             if (StringCompareNoCaps(ex[2], mainchannel)) //FurkieBot commands for the main channel
                             {
-                                sendData("PRIVMSG", ex[2] + " Commands: .cmrmaps" + SEP + ".startcmr" + SEP + ".ign <ircname>" + SEP + ".setign <in-game name>" + SEP + ".mappack" + SEP + "/msg Furkiebot sendmap <url>");
+                                sendData("PRIVMSG", ex[2] + " Commands: .cmrmaps" + SEP + ".startcmr" + SEP + ".ign <ircname>" + SEP + ".setign <in-game name>" + SEP + ".mappack" + SEP + "Command list @ https://github.com/EklipZgit/furkiebot/wiki");
                             }
                             if (StringCompareNoCaps(ex[2], realRacingChan)) //FurkieBot commands for the race channel
                             {
-                                sendData("PRIVMSG", ex[2] + " Commands: .entrants" + SEP + ".join" + SEP + ".unjoin" + SEP + ".ready" + SEP + ".unready" + SEP + ".done" + SEP + ".undone" + SEP + ".forfeit" + SEP + ".ign <ircname>" + SEP + ".setign <in-game name>");
+                                sendData("PRIVMSG", ex[2] + " Command list @ https://github.com/EklipZgit/furkiebot/wiki");
+                                //sendData("PRIVMSG", ex[2] + " Commands: .entrants" + SEP + ".join" + SEP + ".unjoin" + SEP + ".ready" + SEP + ".unready" + SEP + ".done" + SEP + ".undone" + SEP + ".forfeit" + SEP + ".ign <ircname>" + SEP + ".setign <in-game name>");
                             }
                             break;
 
