@@ -6,9 +6,10 @@ if ($_FILES["file"]["error"] > 0) {
   echo "ERROR UPLOADING. Return Code: " . $_FILES["file"]["error"] . "<br>";
   echo "screenshot this to EklipZ in #DFcmr";
 } else {
-  if (file_exists("../pending/" . $_POST["user"] . "-" . $_POST["mapname"])) {
+  if (file_exists("C:/CMRmaps/36/pending/" . $_POST["user"] . "-" . $_POST["mapname"])) {
+	unlink("C:/CMRmaps/36/pending/" . $_POST["user"] . "-" . $_POST["mapname"]);
     move_uploaded_file($_FILES["file"]["tmp_name"],
-    "../pending/" . $_POST["user"] . "-" . $_POST["mapname"]);
+    "C:/CMRmaps/36/pending/" . $_POST["user"] . "-" . $_POST["mapname"]);
   echo "Replaced: " . $_POST["user"] . "-" . $_POST["mapname"] . " successfully.<br>";
   } else {
     move_uploaded_file($_FILES["file"]["tmp_name"],

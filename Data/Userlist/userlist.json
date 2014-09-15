@@ -22,7 +22,7 @@
     },
     {
       "ircname": "eklipz",
-      "dustforcename": "EklipZwontKbd",
+      "dustforcename": "EklipZwontKeyboard",
       "rating": 0
     },
     {
@@ -173,6 +173,16 @@
     {
       "ircname": "wbojangles",
       "dustforcename": "WBojangles",
+      "rating": 0
+    },
+    {
+      "ircname": "archmage",
+      "dustforcename": "Archmage's Hitboxes Are Bugged",
+      "rating": 0
+    },
+    {
+      "ircname": "fireball",
+      "dustforcename": "fireball",
       "rating": 0
     }
   ]
