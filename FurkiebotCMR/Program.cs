@@ -39,6 +39,17 @@ namespace FurkiebotCMR {
         public string altNick;
     } /* IRCConfig */
 
+
+    internal struct PlayerInfo {
+        public string ircname;
+        public string dustforcename;
+        public string streamurl;
+        public bool tester;
+        public bool trusted;
+        public bool admin;
+        public int rating;
+    }
+
     internal class FurkieBot : IDisposable {
         public static string SEP = ColourChanger(" | ", "07"); //The orange | seperator also used by GLaDOS
         public const string MAPS_PATH = @"C:\CMRmaps";
@@ -58,9 +69,10 @@ namespace FurkiebotCMR {
 
         private DataTable racers;
         private DataTable users;
-        private DataTable userlist;
         private HashSet<string> acceptedMaps;
         private HashSet<string> pendingMaps;
+        private Dictionary<string, PlayerInfo> userlist;
+        private Dictionary<string, PlayerInfo> dustforcelist;
 
 
         private string dummyRacingChan; //first part of racingchannel string
@@ -228,15 +240,11 @@ namespace FurkiebotCMR {
             racers.Columns.Add("Rating", typeof(int)); //Currently not being used, may or may not be used in the future, bird knows what's up
 
 
-            string filepath = @"..\..\..\Data\Userlist\userlist.json"; // !! FILEPATH !!
-            string[] jsonarray = File.ReadAllLines(filepath);
-            string json = string.Join("", jsonarray);
-
-            userlist = JsonConvert.DeserializeObject<DataSet>(json).Tables["userlist"]; // initially loads the userlist from JSON
+            loadUserlist();
 
             dummyRacingChan = "#cmr-"; //first part of racingchannel string
             realRacingChan = ""; //real racing channel string
-            mainchannel = "#dustforce"; //also the channel that will be joined upon start, change to #dustforcee for testing purposes
+            mainchannel = "#dustforcee"; //also the channel that will be joined upon start, change to #dustforcee for testing purposes
             cmrchannel = "#DFcmr";
             cmrId = GetCurrentCMRID();
             comNames = ""; // Used for NAMES commands
@@ -284,6 +292,21 @@ namespace FurkiebotCMR {
             pendingWatcher.EnableRaisingEvents = true;
             acceptedWatcher.EnableRaisingEvents = true;
 
+        }
+
+
+
+
+        private void loadUserlist() {
+            string filepath = @"..\..\..\Data\Userlist\userlistmap.json"; // !! FILEPATH !!
+            string[] jsonarray = File.ReadAllLines(filepath);
+            string json = string.Join("", jsonarray);
+            userlist = JsonConvert.DeserializeObject<Dictionary<string, PlayerInfo>>(json); // initially loads the userlist from JSON
+            dustforcelist = new Dictionary<string, PlayerInfo>();
+            foreach (KeyValuePair<string, PlayerInfo> entry in userlist) {
+                dustforcelist.Add(entry.Value.dustforcename, entry.Value);
+                Console.WriteLine("name " + entry.Value.ircname + " dustforcename " + entry.Value.dustforcename + " tester " + entry.Value.tester + " trusted " + entry.Value.trusted + " admin " + entry.Value.admin);
+            }
         } /* IRCBot */
 
 
@@ -1027,8 +1050,8 @@ namespace FurkiebotCMR {
                         case ":.ign":
                             #region
                             string ign_ex4 = ex[4].TrimEnd(' ', '_');
-                            if (StringCompareNoCaps(ign_ex4, getUserInfo(ign_ex4)[0])) {
-                                sendData("PRIVMSG", ex[2] + " " + "" + ColourChanger(ex[4].Trim(), "03") + " > " + ColourChanger(getUserInfo(ign_ex4)[1], "03") + "");
+                            if (StringCompareNoCaps(ign_ex4, getUserInfo(ign_ex4).ircname)) {
+                                sendData("PRIVMSG", ex[2] + " " + "" + ColourChanger(ex[4].Trim(), "03") + " > " + ColourChanger(getUserInfo(ign_ex4).dustforcename, "03") + "");
                             } else {
                                 sendData("PRIVMSG", ex[2] + " " + " No in-game name registered for " + ex[4].Trim() + "");
                             }
@@ -1424,28 +1447,25 @@ namespace FurkiebotCMR {
 
 
 
-        string[] getUserInfo(string ircuser) {//[0] = ircname; [1] = dfname; [2] = rating
-            string[] res = { "", "", "" };
-
-            bool userExist = false;
-
-            for (int i = 0; i < userlist.Rows.Count; i++) {
-                string ircname = userlist.Rows[i]["ircname"].ToString();
-                string dustforcename = userlist.Rows[i]["dustforcename"].ToString();
-                string rating = userlist.Rows[i]["rating"].ToString();
-                if (ircuser.ToLower().TrimEnd('_') == ircname) {
-                    res[0] = ircname;
-                    res[1] = dustforcename;
-                    res[2] = rating;
-                    userExist = true;
-                    i = userlist.Rows.Count;
-                }
+        PlayerInfo getUserInfo(string ircuser) {//[0] = ircname; [1] = dfname; [2] = rating
+             //for (int i = 0; i < userlist.Rows.Count; i++) {
+            //    string ircname = userlist.Rows[i]["ircname"].ToString();
+            //    string dustforcename = userlist.Rows[i]["dustforcename"].ToString();
+            //    string rating = userlist.Rows[i]["rating"].ToString();
+            //    if (ircuser.ToLower().TrimEnd('_') == ircname) {
+            //        res[0] = ircname;
+            //        res[1] = dustforcename;
+            //        res[2] = rating;
+            //        userExist = true;
+            //        i = userlist.Rows.Count;
+            //    }
+            //}
+            PlayerInfo res = new PlayerInfo();
+            if (userlist.ContainsKey(ircuser.ToLower())) {
+                userlist.TryGetValue(ircuser.ToLower(), out res);
+                return res;
             }
-            if (!userExist) {
-                res[0] = "+";
-                res[1] = "+";
-                res[2] = "+";
-            }
+
             return res;
         }
 
@@ -1455,88 +1475,96 @@ namespace FurkiebotCMR {
 
 
         string getUserIrc(string dustforceuser) {           // 
-            string res = "";
-
-            for (int i = 0; i < userlist.Rows.Count; i++) {
-                string ircname = userlist.Rows[i]["ircname"].ToString();
-                string dustforcename = userlist.Rows[i]["dustforcename"].ToString();
-                if (dustforceuser == dustforcename) {
-                    res = dustforcename;
-                    i = userlist.Rows.Count;
-                }
+            PlayerInfo res = new PlayerInfo();
+            if (dustforcelist.ContainsKey(dustforceuser.ToLower())) {
+                dustforcelist.TryGetValue(dustforceuser.ToLower(), out res);
+                return res.ircname;
+            } else {
+                return null;
             }
-            return res;
         }
 
 
 
-        string getUserIgn(string ircuser) { return getUserInfo(ircuser.TrimEnd('_'))[1]; }  // ???
+        string getUserIgn(string ircuser) { return getUserInfo(ircuser.ToLower().TrimEnd('_')).ircname; }
 
 
 
-        int getUserRating(string ircuser) { return Convert.ToInt32(getUserInfo(ircuser)[2]); }  // ???
+        int getUserRating(string ircuser) { return getUserInfo(ircuser.ToLower()).rating; }
+
+
+        /**
+         * writes out the users file.
+         */
+        void WriteUsers() {
+            //DataTable userlistCopy = userlist.Copy();
+            //DataSet ds = new DataSet("ds");
+            //ds.Namespace = "NetFrameWork";
+            //ds.Tables.Add(userlistCopy);
+
+            //ds.AcceptChanges();
+            //string json = JsonConvert.SerializeObject(ds, Formatting.Indented);
+
+            string json = JsonConvert.SerializeObject(userlist, Formatting.Indented);
+
+            File.WriteAllText(@"..\..\..\Data\Userlist\userlistmap.json", json); // !! FILEPATH !!
+        }
 
 
 
 
         void setUserIGN(string ircuser, string dustforceuser) {
-            //Console.WriteLine("Starting to set user ign at " + 
-            Stopwatch timer = new Stopwatch();
-            timer.Start();
-            bool userExist = false;
+            if (!dustforcelist.ContainsKey(dustforceuser.ToLower())) {
+                PlayerInfo temp = new PlayerInfo();
+                userlist.TryGetValue(ircuser.ToLower(), out temp);
+                string oldname = temp.dustforcename;
+                Console.WriteLine("name " + temp.ircname + " dustforcename " + temp.dustforcename + " tester " + temp.tester + " trusted " + temp.trusted + " admin " + temp.admin);
 
-            for (int i = 0; i < userlist.Rows.Count; i++) {       // search for existing irc user and update the IGN
-                if (ircuser.ToLower().TrimEnd('_') == userlist.Rows[i]["ircname"].ToString()) {
-                    userlist.Rows[i]["dustforcename"] = dustforceuser;
-                    userExist = true;
-                    i = userlist.Rows.Count;
+                //delete old dustforceuser entry
+                if (dustforcelist.ContainsKey(oldname.ToLower())) {
+                    dustforcelist.Remove(oldname.ToLower());
                 }
+                if (userlist.ContainsKey(ircuser.ToLower())) {
+                    userlist.Remove(ircuser.ToLower());
+                }
+                temp.dustforcename = dustforceuser.ToLower();
+                userlist.Add(ircuser.ToLower(), temp);
+                dustforcelist.Add(dustforceuser.ToLower(), temp);
+
+
+                WriteUsers();
+            } else {
+                sendData("NOTICE", ircuser + " :Someone already has that IGN (" + dustforceuser + ") registered. You may have registered it to another irc name?");
             }
-            if (!userExist) {
-                userlist.Rows.Add(ircuser.ToLower(), dustforceuser, 0);
-            }
-
-            DataTable userlistCopy = userlist.Copy();
-            DataSet ds = new DataSet("ds");
-            ds.Namespace = "NetFrameWork";
-            ds.Tables.Add(userlistCopy);
-
-            ds.AcceptChanges();
-
-            string json = JsonConvert.SerializeObject(ds, Formatting.Indented);
-
-            File.WriteAllText(@"..\..\..\Data\Userlist\userlist.json", json); // !! FILEPATH !!
-
-            //Console.
         }
 
 
 
-        void setUserInfo(string ircuser, string dustforceuser, int rating) {
-            bool userExist = false;
+        //void setUserInfo(string ircuser, string dustforceuser, int rating) {
+        //    bool userExist = false;
 
-            for (int i = 0; i < userlist.Rows.Count; i++) {
-                if (ircuser.ToLower().TrimEnd('_') == userlist.Rows[i]["ircname"].ToString()) {
-                    userlist.Rows[i]["dustforcename"] = dustforceuser;
-                    userExist = true;
-                    i = userlist.Rows.Count;
-                }
-            }
-            if (!userExist) {
-                userlist.Rows.Add(ircuser.ToLower().TrimEnd('_'), dustforceuser, rating);
-            }
+        //    for (int i = 0; i < userlist.Rows.Count; i++) {
+        //        if (ircuser.ToLower().TrimEnd('_') == userlist.Rows[i]["ircname"].ToString()) {
+        //            userlist.Rows[i]["dustforcename"] = dustforceuser;
+        //            userExist = true;
+        //            i = userlist.Rows.Count;
+        //        }
+        //    }
+        //    if (!userExist) {
+        //        userlist.Rows.Add(ircuser.ToLower().TrimEnd('_'), dustforceuser, rating);
+        //    }
 
-            DataTable dtCopy = userlist.Copy();
-            DataSet ds = new DataSet("ds");
-            ds.Namespace = "NetFrameWork";
-            ds.Tables.Add(dtCopy);
+        //    DataTable dtCopy = userlist.Copy();
+        //    DataSet ds = new DataSet("ds");
+        //    ds.Namespace = "NetFrameWork";
+        //    ds.Tables.Add(dtCopy);
 
-            ds.AcceptChanges();
+        //    ds.AcceptChanges();
 
-            string json = JsonConvert.SerializeObject(ds, Formatting.Indented);
+        //    string json = JsonConvert.SerializeObject(ds, Formatting.Indented);
 
-            File.WriteAllText(@"..\..\..\Data\Userlist\userlist.json", json); // !! FILEPATH !!
-        }
+        //    File.WriteAllText(@"..\..\..\Data\Userlist\userlist.json", json); // !! FILEPATH !!
+        //}
 
 
 
@@ -2616,7 +2644,7 @@ namespace FurkiebotCMR {
         private static void Main(string[] args) {
             IRCConfig conf = new IRCConfig();
             conf.name = "FurkieBot";
-            conf.nick = "FurkieBot";
+            conf.nick = "FurkieBot_";
             conf.altNick = "FurkieBot_";
             conf.port = 6667;
             conf.server = "irc2.speedrunslive.com";
