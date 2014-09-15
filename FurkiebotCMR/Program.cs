@@ -63,16 +63,16 @@ namespace FurkiebotCMR {
         private StreamReader sr = null;
         private StreamWriter sw = null;
 
-        private FileSystemWatcher pendingWatcher;
-        private FileSystemWatcher acceptedWatcher;
+        private FileSystemWatcher pendingWatcher;   //watches the pending maps folder.
+        private FileSystemWatcher acceptedWatcher;  //watches the accepted maps folder.
 
 
         private DataTable racers;
         private DataTable users;
         private HashSet<string> acceptedMaps;
         private HashSet<string> pendingMaps;
-        private Dictionary<string, PlayerInfo> userlist;
-        private Dictionary<string, PlayerInfo> dustforcelist;
+        private Dictionary<string, PlayerInfo> userlist; //ircnames -> userinfo. used for quick lookup and serializing to userlistmap.json upon modification
+        private Dictionary<string, PlayerInfo> dustforcelist;// dustforcenames -> userinfo. used only for quick lookup, and duplicate dustforcename checking.
 
 
         private string dummyRacingChan; //first part of racingchannel string
@@ -92,132 +92,7 @@ namespace FurkiebotCMR {
         }
 
 
-        // Define the filesystem event handlers. 
-        private void CreatedPending(object source, FileSystemEventArgs e) {
-            // Specify what is done when a file is changed, created, or deleted.
-            //Console.WriteLine("File: " + e.FullPath + " " + e.ChangeType);
-            Console.WriteLine("\nCreatedPending: " + e.FullPath + " " + e.ChangeType + "\n");
-            string fileName = Path.GetFileName(e.FullPath);
-            pendingMaps.Add(fileName);
-            string toSay =  " :New map submitted for testing: \"";
-
-            string[] split = fileName.Split('-');
-            for (int i = 1; i < split.Length; i++) {
-                toSay += split[i];
-            }
-            toSay += "\" by " + split[0];
-
-            sendData("PRIVMSG", mainchannel + toSay);
-            sendData("PRIVMSG", cmrchannel + toSay);
-        }
-
-
-        // Define the filesystem event handlers. 
-        private void DeletedPending(object source, FileSystemEventArgs e) {
-            // Specify what is done when a file is changed, created, or deleted.
-            //Console.WriteLine("File: " + e.FullPath + " " + e.ChangeType);
-            Console.WriteLine("\nDeletedPending: " + e.FullPath + " " + e.ChangeType + "\n");
-            string fileName = Path.GetFileName(e.FullPath);
-            pendingMaps.Remove(fileName);
-        }
-
-        private void CreatedAccepted(object source, FileSystemEventArgs e) {
-            // Specify what is done when a file is renamed.
-            //Console.WriteLine("File: {0} renamed to {1}", e.OldFullPath, e.FullPath);
-            Console.WriteLine("\nCreatedAccepted: " + e.FullPath + " " + e.ChangeType + "\n");
-            string fileName = Path.GetFileName(e.FullPath);
-            acceptedMaps.Add(fileName);
-            pendingMaps.Remove(fileName);
-
-            string toSay = " :Map accepted: \"";
-
-            string[] split = fileName.Split('-');
-            for (int i = 1; i < split.Length; i++) {
-                toSay += split[i];
-            }
-            toSay += "\" by " + split[0];
-
-            sendData("PRIVMSG", mainchannel + toSay);
-            sendData("PRIVMSG", cmrchannel + toSay);
-        }
-
-
-        // Define the filesystem event handlers. 
-        private void DeletedAccepted(object source, FileSystemEventArgs e) {
-            // Specify what is done when a file is changed, created, or deleted.
-            //Console.WriteLine("File: " + e.FullPath + " " + e.ChangeType);
-            Console.WriteLine("\nDeletedAccepted: " + e.FullPath + " " + e.ChangeType + "\n");
-            string fileName = Path.GetFileName(e.FullPath);
-            acceptedMaps.Remove(fileName);
-
-            string toSay = " :Map un accepted: \"";
-
-            string[] split = fileName.Split('-');
-            for (int i = 1; i < split.Length; i++) {
-                toSay += split[i];
-            }
-            toSay += "\" by " + split[0];
-
-            sendData("PRIVMSG", mainchannel + toSay);
-            sendData("PRIVMSG", cmrchannel + toSay);
-        }
-
-        //private static void OnRenamed(object source, RenamedEventArgs e) {
-        //    // Specify what is done when a file is renamed.
-        //    //Console.WriteLine("File: {0} renamed to {1}", e.OldFullPath, e.FullPath);
-        //    Console.WriteLine("\n\n\nFile: {0} renamed to {1}\n\n\n", e.OldFullPath, e.FullPath);
-        //}
-
-
-
-        private void OutputMapStatus(string chan) {
-            OutputPending(chan);
-            OutputAccepted(chan);
-        }
-
-
-
-        private void OutputPending(string chan) {            
-            string toSay = " :" + pendingMaps.Count + " Pending testing ";
-
-            foreach (string s in pendingMaps) {
-                toSay += SEP + "\"";
-                string[] split = s.Split('-');
-                for (int i = 1; i < split.Length; i++) {
-                    toSay += split[i];
-                }
-                toSay += "\" by " + split[0] ;
-            }
-
-            if (chan == null || chan == "" || chan == " ") {
-                sendData("PRIVMSG", mainchannel + toSay);
-                sendData("PRIVMSG", cmrchannel + toSay);
-            } else {
-                sendData("PRIVMSG", chan + toSay);
-            }
-        }
-
-
-
-        private void OutputAccepted(string chan) {
-            string toSay = " :" + acceptedMaps.Count + " Accepted ";
-            foreach (string s in acceptedMaps) {
-                toSay += SEP + "\"";
-                string[] split = s.Split('-');
-                for (int i = 1; i < split.Length; i++) {
-                    toSay += split[i];
-                }
-                toSay += "\" by " + split[0];
-            }
-           
-            if (chan == null || chan == "" || chan == " ") {
-                sendData("PRIVMSG", mainchannel + toSay);
-                sendData("PRIVMSG", cmrchannel + toSay);
-            } else {
-                sendData("PRIVMSG", chan + toSay);
-            }
-        }
-
+        
 
 
         /**
@@ -256,12 +131,7 @@ namespace FurkiebotCMR {
             acceptedMaps = new HashSet<String>(Directory.GetFiles("C:\\CMRmaps\\" + cmrId + "\\accepted", "*").Select(path => Path.GetFileName(path)).ToArray());
 
 
-
-
-
-
-
-            /**
+            /*
              * Set up the event handlers for watching the CMR map filesystem. Solution for now. 
              */
             pendingWatcher = new FileSystemWatcher();
@@ -292,6 +162,142 @@ namespace FurkiebotCMR {
             pendingWatcher.EnableRaisingEvents = true;
             acceptedWatcher.EnableRaisingEvents = true;
 
+        }
+
+
+
+
+        // Define the filesystem event handlers. 
+        private void CreatedPending(object source, FileSystemEventArgs e) {
+            // Specify what is done when a file is changed, created, or deleted.
+            //Console.WriteLine("File: " + e.FullPath + " " + e.ChangeType);
+            Console.WriteLine("\nCreatedPending: " + e.FullPath + " " + e.ChangeType + "\n");
+            string fileName = Path.GetFileName(e.FullPath);
+            pendingMaps.Add(fileName);
+            string toSay = " :New map submitted for testing: \"";
+
+            string[] split = fileName.Split('-');
+            for (int i = 1; i < split.Length; i++) {
+                toSay += split[i];
+            }
+            toSay += "\" by " + split[0];
+
+            sendData("PRIVMSG", mainchannel + toSay);
+            sendData("PRIVMSG", cmrchannel + toSay);
+        }
+
+
+
+        // Define the filesystem event handlers. 
+        private void DeletedPending(object source, FileSystemEventArgs e) {
+            // Specify what is done when a file is changed, created, or deleted.
+            //Console.WriteLine("File: " + e.FullPath + " " + e.ChangeType);
+            Console.WriteLine("\nDeletedPending: " + e.FullPath + " " + e.ChangeType + "\n");
+            string fileName = Path.GetFileName(e.FullPath);
+            pendingMaps.Remove(fileName);
+        }
+
+
+
+        private void CreatedAccepted(object source, FileSystemEventArgs e) {
+            // Specify what is done when a file is renamed.
+            //Console.WriteLine("File: {0} renamed to {1}", e.OldFullPath, e.FullPath);
+            Console.WriteLine("\nCreatedAccepted: " + e.FullPath + " " + e.ChangeType + "\n");
+            string fileName = Path.GetFileName(e.FullPath);
+            acceptedMaps.Add(fileName);
+            pendingMaps.Remove(fileName);
+
+            string toSay = " :Map accepted: \"";
+
+            string[] split = fileName.Split('-');
+            for (int i = 1; i < split.Length; i++) {
+                toSay += split[i];
+            }
+            toSay += "\" by " + split[0];
+
+            sendData("PRIVMSG", mainchannel + toSay);
+            sendData("PRIVMSG", cmrchannel + toSay);
+        }
+
+
+
+
+        // Define the filesystem event handlers. 
+        private void DeletedAccepted(object source, FileSystemEventArgs e) {
+            // Specify what is done when a file is changed, created, or deleted.
+            //Console.WriteLine("File: " + e.FullPath + " " + e.ChangeType);
+            Console.WriteLine("\nDeletedAccepted: " + e.FullPath + " " + e.ChangeType + "\n");
+            string fileName = Path.GetFileName(e.FullPath);
+            acceptedMaps.Remove(fileName);
+
+            string toSay = " :Map un accepted: \"";
+
+            string[] split = fileName.Split('-');
+            for (int i = 1; i < split.Length; i++) {
+                toSay += split[i];
+            }
+            toSay += "\" by " + split[0];
+
+            sendData("PRIVMSG", mainchannel + toSay);
+            sendData("PRIVMSG", cmrchannel + toSay);
+        }
+
+        //private static void OnRenamed(object source, RenamedEventArgs e) {
+        //    // Specify what is done when a file is renamed.
+        //    //Console.WriteLine("File: {0} renamed to {1}", e.OldFullPath, e.FullPath);
+        //    Console.WriteLine("\n\n\nFile: {0} renamed to {1}\n\n\n", e.OldFullPath, e.FullPath);
+        //}
+
+
+
+
+        private void OutputMapStatus(string chan) {
+            OutputPending(chan);
+            OutputAccepted(chan);
+        }
+
+
+
+        
+        private void OutputPending(string chan) {
+            string toSay = " :" + pendingMaps.Count + " Pending testing ";
+
+            foreach (string s in pendingMaps) {
+                toSay += SEP + "\"";
+                string[] split = s.Split('-');
+                for (int i = 1; i < split.Length; i++) {
+                    toSay += split[i];
+                }
+                toSay += "\" by " + split[0];
+            }
+
+            if (chan == null || chan == "" || chan == " ") {
+                sendData("PRIVMSG", mainchannel + toSay);
+                sendData("PRIVMSG", cmrchannel + toSay);
+            } else {
+                sendData("PRIVMSG", chan + toSay);
+            }
+        }
+
+
+
+        private void OutputAccepted(string chan) {
+            string toSay = " :" + acceptedMaps.Count + " Accepted ";
+            foreach (string s in acceptedMaps) {
+                toSay += SEP + "\"";
+                string[] split = s.Split('-');
+                for (int i = 1; i < split.Length; i++) {
+                    toSay += split[i];
+                }
+                toSay += "\" by " + split[0];
+            }
+
+            if (chan == null || chan == "" || chan == " ") {
+                sendData("PRIVMSG", mainchannel + toSay);
+                sendData("PRIVMSG", cmrchannel + toSay);
+            } else {
+                sendData("PRIVMSG", chan + toSay);
+            }
         }
 
 
@@ -1330,8 +1336,9 @@ namespace FurkiebotCMR {
                 parseTimer.Stop();
                 //Console.WriteLine("End Last Switch " + parseTimer.Elapsed);
             }
-            
         }
+
+
 
         private void OutputCMRinfo(string chan, TimeSpan cmrtime, string cmrtimeString, string nickname) {
             //Veryfying whether it is Saturday and if the time matches with CMR time
