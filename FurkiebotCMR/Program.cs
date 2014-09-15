@@ -386,17 +386,12 @@ namespace FurkiebotCMR {
                 Console.WriteLine(" ");
                 Stopwatch parseTimer = new Stopwatch();
                 parseTimer.Start();
-                //Console.WriteLine("Before sr.ReadLine() " + parseTimer.Elapsed);
                 data = sr.ReadLine();
-                //Console.WriteLine("After sr.ReadLine() " + parseTimer.Elapsed);
                 Console.WriteLine(data);
 
                 char[] charSeparator = new char[] { ' ' };
                 ex = data.Split(charSeparator, 5);
 
-                //for (int i = 0; i < ex.Length; i++) {
-                //    Console.WriteLine(i + " " + ex[i]);
-                //}
 
                 //Just some Regex bullshit to get username from full name/hostname shit
                 string inputt = ex[0];
