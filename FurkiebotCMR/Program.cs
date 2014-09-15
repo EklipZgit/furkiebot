@@ -42,6 +42,7 @@ namespace FurkiebotCMR {
     internal class FurkieBot : IDisposable {
         public static string SEP = ColourChanger(" | ", "07"); //The orange | seperator also used by GLaDOS
         public const string MAPS_PATH = @"C:\CMRmaps";
+        public const int MIN_MAPS = 6;
          
 
         private TcpClient IRCConnection = null;
@@ -235,7 +236,7 @@ namespace FurkiebotCMR {
 
             dummyRacingChan = "#cmr-"; //first part of racingchannel string
             realRacingChan = ""; //real racing channel string
-            mainchannel = "#dustforcee"; //also the channel that will be joined upon start, change to #dustforcee for testing purposes
+            mainchannel = "#dustforce"; //also the channel that will be joined upon start, change to #dustforcee for testing purposes
             cmrchannel = "#DFcmr";
             cmrId = GetCurrentCMRID();
             comNames = ""; // Used for NAMES commands
@@ -515,17 +516,15 @@ namespace FurkiebotCMR {
 
                     switch (command) {
                         case ":.furkiebot": //FurkieBot Commands
-                            if (StringCompareNoCaps(ex[2], mainchannel)) //FurkieBot commands for the main channel
+                            if (!StringCompareNoCaps(ex[2], realRacingChan)) //FurkieBot commands for the main channel
                             {
 
-                                sendData("PRIVMSG", ex[2] + " Commands: .cmrmaps" + SEP + ".startcmr" + SEP + ".ign <ircname>" + SEP + ".setign <in-game name>" + SEP + ".mappack");
-                                sendData("PRIVMSG", ex[2] + @" http://eklipz.us.to/cmr" + SEP + "Command list @ https://github.com/EklipZgit/furkiebot/wiki");
+                                sendData("PRIVMSG", ex[2] + " Commands: .cmr" + SEP + ".maps" + SEP + ".startcmr" + SEP + ".ign <ircname>" + SEP + ".setign <in-game name>" + SEP + ".mappack" + SEP + ".pending" + SEP + ".accepted");
+                                sendData("PRIVMSG", ex[2] + @" CMR info: http://eklipz.us.to/cmr" + SEP + @"Command list: https://github.com/EklipZgit/furkiebot/wiki" + SEP + "FurkieBot announce channel: #DFcmr");
 
-                            }
-                            if (StringCompareNoCaps(ex[2], realRacingChan)) //FurkieBot commands for the race channel
-                            {
-                                sendData("PRIVMSG", ex[2] + " Command list @ https://github.com/EklipZgit/furkiebot/wiki");
-                                //sendData("PRIVMSG", ex[2] + " Commands: .entrants" + SEP + ".join" + SEP + ".unjoin" + SEP + ".ready" + SEP + ".unready" + SEP + ".done" + SEP + ".undone" + SEP + ".forfeit" + SEP + ".ign <ircname>" + SEP + ".setign <in-game name>");
+                            } else {            // FurkieBot commands for race channel
+                                sendData("PRIVMSG", ex[2] + @" Command list: https://github.com/EklipZgit/furkiebot/wiki");
+                                //sendData("PRIVMSG", ex[2] + " Commands: .entrants" + SEP + ".join" + SEP + ".unjoin" + SEP + ".ready" + SEP + ".unready" + SEP + ".done" + SEP + ".undone" + SEP + ".forfeit" + SEP + ".ign <ircname>" + SEP + ".setign <in-game name>");                    
                             }
                             break;
 
@@ -541,57 +540,7 @@ namespace FurkiebotCMR {
                         case ":.cmr": //General CMR FAQ
                             #region
                             //goto case ":.cmrmaps";
-                            if (StringCompareNoCaps(ex[2], mainchannel)) {
-                                //Veryfying whether it is Saturday and if the time matches with CMR time
-                                DateTime saturday;
-                                if (DateTime.Now.DayOfWeek != DayOfWeek.Saturday) {
-                                    if (cmrtime.ToString(@"%h\:mm\:ss") == cmrtimeString)
-                                        saturday = GetNextDateForDay(DateTime.Now, DayOfWeek.Saturday).Date;
-                                    else
-                                        saturday = DateTime.Now.Date;
-                                } else {
-                                    saturday = DateTime.Now.Date;
-                                }
-                                DateTime cmrday = saturday.Date + cmrtime;
-                                TimeSpan duration = DateTime.Now.Date + cmrtime - DateTime.Now;
-                                string nextCmrD = duration.Days.ToString();
-                                string nextCmrH = duration.Hours.ToString();
-                                string nextCmrM = duration.Minutes.ToString();
-                                string nextCmrS = duration.Seconds.ToString();
-
-                                if (CmrMapCount(cmrId) < 6) //If there are less than 6 maps submitted
-                                {
-                                    sendData("PRIVMSG", ex[2] + " " + " Upcoming race is Custom Map Race " + cmrId + ".");
-                                } else {
-                                    Console.WriteLine(DateTime.Now.TimeOfDay + "\t" + DateTime.Now.Date.ToString("dddd"));
-                                    if (DateTime.Now.TimeOfDay < cmrtime && DateTime.Now.Date.ToString("dddd") == "Saturday") //If it isnt CMR time yet
-                                    {
-                                        sendData("PRIVMSG", ex[2] + " " + "We have enough maps to start Custom Map Race " + cmrId + ", race can be initiated in "
-                                            + ColourChanger(nextCmrD + " days, "
-                                            + nextCmrH + " hours, "
-                                            + nextCmrM + " minutes and "
-                                            + nextCmrS + " seconds", "03") + ".");
-                                    } else //If starting a race is possible
-                                    {
-                                        string extraS = "";
-                                        if (CountEntrants(racers) > 1) {
-                                            extraS = "s";
-                                        }
-                                        if (cmrStatus == "closed") //CMR race not opened yet
-                                        {
-                                            sendData("PRIVMSG", ex[2] + " " + " Custom Map Race " + cmrId + " is available.");
-                                        }
-                                        if (cmrStatus == "open") //CMR race opened
-                                        {
-                                            sendData("PRIVMSG", ex[2] + " Entry currently " + ColourChanger("OPEN", "03") + " for Custom Map Race " + cmrId + ". Join the CMR at " + ColourChanger(realRacingChan, "04") + ". " + CountEntrants(racers) + " entrants" + extraS);
-                                        }
-                                        if (cmrStatus == "racing") //CMR race ongoing
-                                        {
-                                            sendData("NOTICE", nickname + " Custom Map Race " + cmrId + " is currently " + ColourChanger("In Progress", "12") + " at " + ColourChanger(realRacingChan, "04") + ". " + CountEntrants(racers) + " entrant" + extraS);
-                                        }
-                                    }
-                                }
-                            }
+                            OutputCMRinfo(ex[2], cmrtime, cmrtimeString, nickname);
                             break;
                             #endregion
 
@@ -1366,6 +1315,57 @@ namespace FurkiebotCMR {
             
         }
 
+        private void OutputCMRinfo(string chan, TimeSpan cmrtime, string cmrtimeString, string nickname) {
+            //Veryfying whether it is Saturday and if the time matches with CMR time
+            DateTime saturday;
+            if (DateTime.Now.DayOfWeek != DayOfWeek.Saturday) {
+                if (cmrtime.ToString(@"%h\:mm\:ss") == cmrtimeString)
+                    saturday = GetNextDateForDay(DateTime.Now, DayOfWeek.Saturday).Date;
+                else
+                    saturday = DateTime.Now.Date;
+            } else {
+                saturday = DateTime.Now.Date;
+            }
+            DateTime cmrday = saturday.Date + cmrtime;
+            TimeSpan duration = DateTime.Now.Date + cmrtime - DateTime.Now;
+            string nextCmrD = duration.Days.ToString();
+            string nextCmrH = duration.Hours.ToString();
+            string nextCmrM = duration.Minutes.ToString();
+            string nextCmrS = duration.Seconds.ToString();
+
+            if (CmrMapCount(cmrId) < MIN_MAPS) { //If there are less than 6 maps submitted
+                sendData("PRIVMSG", chan + " :" + " Upcoming race is Custom Map Race " + cmrId + ". There are only " + acceptedMaps.Count + " maps currently accepted, and we need at least " + MIN_MAPS + ".");
+                sendData("PRIVMSG", chan + " :" + " It will happen on Saturday, " + saturday.Month + " " + saturday.Day.ToString() + @" at 6:30 pm GMT (conversion to your time here: http://www.timebie.com/std/gmt.php?q=18.5");
+            } else {
+                Console.WriteLine(DateTime.Now.TimeOfDay + "\t" + DateTime.Now.Date.ToString("dddd"));
+                if (DateTime.Now.TimeOfDay < cmrtime && DateTime.Now.Date.ToString("dddd") == "Saturday") { //If it isnt CMR time yet
+                    sendData("PRIVMSG", chan + " :" + "We have enough maps to start Custom Map Race " + cmrId + ", race can be initiated in "
+                        + ColourChanger(nextCmrD + " days, "
+                        + nextCmrH + " hours, "
+                        + nextCmrM + " minutes and "
+                        + nextCmrS + " seconds", "03") + ".");
+                } else //If starting a race is possible
+                                {
+                    string extraS = "";
+                    if (CountEntrants(racers) > 1) {
+                        extraS = "s";
+                    }
+                    if (cmrStatus == "closed") //CMR race not opened yet
+                                    {
+                        sendData("PRIVMSG", chan + " :" + " Custom Map Race " + cmrId + " is available.");
+                    }
+                    if (cmrStatus == "open") //CMR race opened
+                                    {
+                        sendData("PRIVMSG", chan + " :Entry currently " + ColourChanger("OPEN", "03") + " for Custom Map Race " + cmrId + ". Join the CMR at " + ColourChanger(realRacingChan, "04") + ". " + CountEntrants(racers) + " entrants" + extraS);
+                    }
+                    if (cmrStatus == "racing") //CMR race ongoing
+                                    {
+                        sendData("NOTICE", nickname + " :Custom Map Race " + cmrId + " is currently " + ColourChanger("In Progress", "12") + " at " + ColourChanger(realRacingChan, "04") + ". " + CountEntrants(racers) + " entrant" + extraS);
+                    }
+                }
+            }
+        }
+
 
 
         /*
@@ -1377,6 +1377,8 @@ namespace FurkiebotCMR {
 
             if (ex[4] == "me") {
                 sendData("PRIVMSG", mainchannel + " :" + (char)1 + @"ACTION uses " + nickname + "'s own hands to slap himself. \"STOP HITTING YOURSELF, STOP HITTING YOURSELF!" + (char)1);
+            } else if (ex[4] == "FurkieBot" || ex[4] == "FurkieBot_") {
+                sendData("PRIVMSG", mainchannel + " :" + (char)1 + @"ACTION slaps " + nickname + ". Don't be like that!" + (char)1);
             } else {
                 switch (choice) {
                     case 0:
