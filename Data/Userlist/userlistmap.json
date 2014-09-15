@@ -1,0 +1,308 @@
+{
+  "furkiepurkie": {
+    "ircname": "furkiepurkie",
+    "dustforcename": "Furkiepurkie",
+    "streamurl": "",
+    "tester": true,
+    "trusted": true,
+    "admin": true,
+    "rating": 0
+  },
+  "invert": {
+    "ircname": "invert",
+    "dustforcename": "invert",
+    "streamurl": "",
+    "tester": false,
+    "trusted": false,
+    "admin": false,
+    "rating": 0
+  },
+  "thebirdofprey": {
+    "ircname": "thebirdofprey",
+    "dustforcename": "TheBirdOfPrey",
+    "streamurl": "",
+    "tester": true,
+    "trusted": true,
+    "admin": false,
+    "rating": 0
+  },
+  "y2kkmac": {
+    "ircname": "y2kkmac",
+    "dustforcename": "y2kkmac",
+    "streamurl": "",
+    "tester": false,
+    "trusted": false,
+    "admin": false,
+    "rating": 0
+  },
+  "eklipz": {
+    "ircname": "eklipz",
+    "dustforcename": "eklipzwontkeyboard",
+    "streamurl": "",
+    "tester": true,
+    "trusted": true,
+    "admin": true,
+    "rating": 0
+  },
+  "fireball": {
+    "ircname": "fireball",
+    "dustforcename": "fireball",
+    "streamurl": "",
+    "tester": false,
+    "trusted": false,
+    "admin": false,
+    "rating": 0
+  },
+  "glass": {
+    "ircname": "glass",
+    "dustforcename": "glass",
+    "streamurl": "",
+    "tester": false,
+    "trusted": false,
+    "admin": false,
+    "rating": 0
+  },
+  "g3ntlem3n": {
+    "ircname": "g3ntlem3n",
+    "dustforcename": "Knuttsach Jones",
+    "streamurl": "",
+    "tester": false,
+    "trusted": false,
+    "admin": false,
+    "rating": 0
+  },
+  "tropicallo": {
+    "ircname": "tropicallo",
+    "dustforcename": "Tropicallo",
+    "streamurl": "",
+    "tester": false,
+    "trusted": false,
+    "admin": false,
+    "rating": 0
+  },
+  "badger": {
+    "ircname": "badger",
+    "dustforcename": "Badger",
+    "streamurl": "",
+    "tester": false,
+    "trusted": false,
+    "admin": false,
+    "rating": 0
+  },
+  "itay7": {
+    "ircname": "itay7",
+    "dustforcename": "Marksel",
+    "streamurl": "",
+    "tester": false,
+    "trusted": false,
+    "admin": false,
+    "rating": 0
+  },
+  "doicm": {
+    "ircname": "doicm",
+    "dustforcename": "doicm",
+    "streamurl": "",
+    "tester": false,
+    "trusted": false,
+    "admin": false,
+    "rating": 0
+  },
+  "virgatespy": {
+    "ircname": "virgatespy",
+    "dustforcename": "VirgateSpy",
+    "streamurl": "",
+    "tester": false,
+    "trusted": false,
+    "admin": false,
+    "rating": 0
+  },
+  "takari": {
+    "ircname": "takari",
+    "dustforcename": "Takari",
+    "streamurl": "",
+    "tester": false,
+    "trusted": false,
+    "admin": false,
+    "rating": 0
+  },
+  "kuroonehalf": {
+    "ircname": "kuroonehalf",
+    "dustforcename": "Kuroonehalf",
+    "streamurl": "",
+    "tester": false,
+    "trusted": false,
+    "admin": false,
+    "rating": 0
+  },
+  "g3ntlemen": {
+    "ircname": "g3ntlemen",
+    "dustforcename": "Frederick Dinkledink",
+    "streamurl": "",
+    "tester": false,
+    "trusted": false,
+    "admin": false,
+    "rating": 0
+  },
+  "african": {
+    "ircname": "african",
+    "dustforcename": "Madtato2.0",
+    "streamurl": "",
+    "tester": false,
+    "trusted": false,
+    "admin": false,
+    "rating": 0
+  },
+  "sivade": {
+    "ircname": "sivade",
+    "dustforcename": "Sivade",
+    "streamurl": "",
+    "tester": false,
+    "trusted": false,
+    "admin": false,
+    "rating": 0
+  },
+  "shurykan": {
+    "ircname": "shurykan",
+    "dustforcename": "ShurykaN",
+    "streamurl": "",
+    "tester": false,
+    "trusted": false,
+    "admin": false,
+    "rating": 0
+  },
+  "noobslayer": {
+    "ircname": "noobslayer",
+    "dustforcename": "NoobSlayer",
+    "streamurl": "",
+    "tester": false,
+    "trusted": false,
+    "admin": false,
+    "rating": 0
+  },
+  "aboss": {
+    "ircname": "aboss",
+    "dustforcename": "ABoss",
+    "streamurl": "",
+    "tester": false,
+    "trusted": false,
+    "admin": false,
+    "rating": 0
+  },
+  "sprog": {
+    "ircname": "sprog",
+    "dustforcename": "sprog",
+    "streamurl": "",
+    "tester": false,
+    "trusted": false,
+    "admin": false,
+    "rating": 0
+  },
+  "calistus": {
+    "ircname": "calistus",
+    "dustforcename": "Calistus",
+    "streamurl": "",
+    "tester": false,
+    "trusted": false,
+    "admin": false,
+    "rating": 0
+  },
+  "criticalcyd": {
+    "ircname": "criticalcyd",
+    "dustforcename": "Cyd",
+    "streamurl": "",
+    "tester": false,
+    "trusted": false,
+    "admin": false,
+    "rating": 0
+  },
+  "snow": {
+    "ircname": "snow",
+    "dustforcename": "Snow",
+    "streamurl": "",
+    "tester": false,
+    "trusted": false,
+    "admin": false,
+    "rating": 0
+  },
+  "azure": {
+    "ircname": "azure",
+    "dustforcename": "Azure",
+    "streamurl": "",
+    "tester": false,
+    "trusted": false,
+    "admin": false,
+    "rating": 0
+  },
+  "ravencoff": {
+    "ircname": "ravencoff",
+    "dustforcename": "Ravencoff",
+    "streamurl": "",
+    "tester": false,
+    "trusted": false,
+    "admin": false,
+    "rating": 0
+  },
+  "morelia": {
+    "ircname": "morelia",
+    "dustforcename": "Morelia",
+    "streamurl": "",
+    "tester": false,
+    "trusted": false,
+    "admin": false,
+    "rating": 0
+  },
+  "kheartz": {
+    "ircname": "kheartz",
+    "dustforcename": "kheartz",
+    "streamurl": "",
+    "tester": false,
+    "trusted": false,
+    "admin": false,
+    "rating": 0
+  },
+  "kromb": {
+    "ircname": "kromb",
+    "dustforcename": "Kent1",
+    "streamurl": "",
+    "tester": false,
+    "trusted": false,
+    "admin": false,
+    "rating": 0
+  },
+  "dice": {
+    "ircname": "dice",
+    "dustforcename": "Dice",
+    "streamurl": "",
+    "tester": false,
+    "trusted": false,
+    "admin": false,
+    "rating": 0
+  },
+  "tinker": {
+    "ircname": "tinker",
+    "dustforcename": "Tinker",
+    "streamurl": "",
+    "tester": false,
+    "trusted": false,
+    "admin": false,
+    "rating": 0
+  },
+  "lightning55": {
+    "ircname": "lightning55",
+    "dustforcename": "Lightning",
+    "streamurl": "",
+    "tester": false,
+    "trusted": false,
+    "admin": false,
+    "rating": 0
+  },
+  "wbojangles": {
+    "ircname": "wbojangles",
+    "dustforcename": "WBojangles",
+    "streamurl": "",
+    "tester": false,
+    "trusted": false,
+    "admin": false,
+    "rating": 0
+  }
+}

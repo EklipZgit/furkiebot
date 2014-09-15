@@ -39,6 +39,17 @@ namespace FurkiebotCMR {
         public string altNick;
     } /* IRCConfig */
 
+
+    internal struct PlayerInfo {
+        public string ircname;
+        public string dustforcename;
+        public string streamurl;
+        public bool tester;
+        public bool trusted;
+        public bool admin;
+        public int rating;
+    }
+
     internal class FurkieBot : IDisposable {
         public static string SEP = ColourChanger(" | ", "07"); //The orange | seperator also used by GLaDOS
         public const string MAPS_PATH = @"C:\CMRmaps";
@@ -52,15 +63,16 @@ namespace FurkiebotCMR {
         private StreamReader sr = null;
         private StreamWriter sw = null;
 
-        private FileSystemWatcher pendingWatcher;
-        private FileSystemWatcher acceptedWatcher;
+        private FileSystemWatcher pendingWatcher;   //watches the pending maps folder.
+        private FileSystemWatcher acceptedWatcher;  //watches the accepted maps folder.
 
 
         private DataTable racers;
         private DataTable users;
-        private DataTable userlist;
         private HashSet<string> acceptedMaps;
         private HashSet<string> pendingMaps;
+        private Dictionary<string, PlayerInfo> userlist; //ircnames -> userinfo. used for quick lookup and serializing to userlistmap.json upon modification
+        private Dictionary<string, PlayerInfo> dustforcelist;// dustforcenames -> userinfo. used only for quick lookup, and duplicate dustforcename checking.
 
 
         private string dummyRacingChan; //first part of racingchannel string
@@ -80,132 +92,7 @@ namespace FurkiebotCMR {
         }
 
 
-        // Define the filesystem event handlers. 
-        private void CreatedPending(object source, FileSystemEventArgs e) {
-            // Specify what is done when a file is changed, created, or deleted.
-            //Console.WriteLine("File: " + e.FullPath + " " + e.ChangeType);
-            Console.WriteLine("\nCreatedPending: " + e.FullPath + " " + e.ChangeType + "\n");
-            string fileName = Path.GetFileName(e.FullPath);
-            pendingMaps.Add(fileName);
-            string toSay =  " :New map submitted for testing: \"";
-
-            string[] split = fileName.Split('-');
-            for (int i = 1; i < split.Length; i++) {
-                toSay += split[i];
-            }
-            toSay += "\" by " + split[0];
-
-            sendData("PRIVMSG", mainchannel + toSay);
-            sendData("PRIVMSG", cmrchannel + toSay);
-        }
-
-
-        // Define the filesystem event handlers. 
-        private void DeletedPending(object source, FileSystemEventArgs e) {
-            // Specify what is done when a file is changed, created, or deleted.
-            //Console.WriteLine("File: " + e.FullPath + " " + e.ChangeType);
-            Console.WriteLine("\nDeletedPending: " + e.FullPath + " " + e.ChangeType + "\n");
-            string fileName = Path.GetFileName(e.FullPath);
-            pendingMaps.Remove(fileName);
-        }
-
-        private void CreatedAccepted(object source, FileSystemEventArgs e) {
-            // Specify what is done when a file is renamed.
-            //Console.WriteLine("File: {0} renamed to {1}", e.OldFullPath, e.FullPath);
-            Console.WriteLine("\nCreatedAccepted: " + e.FullPath + " " + e.ChangeType + "\n");
-            string fileName = Path.GetFileName(e.FullPath);
-            acceptedMaps.Add(fileName);
-            pendingMaps.Remove(fileName);
-
-            string toSay = " :Map accepted: \"";
-
-            string[] split = fileName.Split('-');
-            for (int i = 1; i < split.Length; i++) {
-                toSay += split[i];
-            }
-            toSay += "\" by " + split[0];
-
-            sendData("PRIVMSG", mainchannel + toSay);
-            sendData("PRIVMSG", cmrchannel + toSay);
-        }
-
-
-        // Define the filesystem event handlers. 
-        private void DeletedAccepted(object source, FileSystemEventArgs e) {
-            // Specify what is done when a file is changed, created, or deleted.
-            //Console.WriteLine("File: " + e.FullPath + " " + e.ChangeType);
-            Console.WriteLine("\nDeletedAccepted: " + e.FullPath + " " + e.ChangeType + "\n");
-            string fileName = Path.GetFileName(e.FullPath);
-            acceptedMaps.Remove(fileName);
-
-            string toSay = " :Map un accepted: \"";
-
-            string[] split = fileName.Split('-');
-            for (int i = 1; i < split.Length; i++) {
-                toSay += split[i];
-            }
-            toSay += "\" by " + split[0];
-
-            sendData("PRIVMSG", mainchannel + toSay);
-            sendData("PRIVMSG", cmrchannel + toSay);
-        }
-
-        //private static void OnRenamed(object source, RenamedEventArgs e) {
-        //    // Specify what is done when a file is renamed.
-        //    //Console.WriteLine("File: {0} renamed to {1}", e.OldFullPath, e.FullPath);
-        //    Console.WriteLine("\n\n\nFile: {0} renamed to {1}\n\n\n", e.OldFullPath, e.FullPath);
-        //}
-
-
-
-        private void OutputMapStatus(string chan) {
-            OutputPending(chan);
-            OutputAccepted(chan);
-        }
-
-
-
-        private void OutputPending(string chan) {            
-            string toSay = " :" + pendingMaps.Count + " Pending testing ";
-
-            foreach (string s in pendingMaps) {
-                toSay += SEP + "\"";
-                string[] split = s.Split('-');
-                for (int i = 1; i < split.Length; i++) {
-                    toSay += split[i];
-                }
-                toSay += "\" by " + split[0] ;
-            }
-
-            if (chan == null || chan == "" || chan == " ") {
-                sendData("PRIVMSG", mainchannel + toSay);
-                sendData("PRIVMSG", cmrchannel + toSay);
-            } else {
-                sendData("PRIVMSG", chan + toSay);
-            }
-        }
-
-
-
-        private void OutputAccepted(string chan) {
-            string toSay = " :" + acceptedMaps.Count + " Accepted ";
-            foreach (string s in acceptedMaps) {
-                toSay += SEP + "\"";
-                string[] split = s.Split('-');
-                for (int i = 1; i < split.Length; i++) {
-                    toSay += split[i];
-                }
-                toSay += "\" by " + split[0];
-            }
-           
-            if (chan == null || chan == "" || chan == " ") {
-                sendData("PRIVMSG", mainchannel + toSay);
-                sendData("PRIVMSG", cmrchannel + toSay);
-            } else {
-                sendData("PRIVMSG", chan + toSay);
-            }
-        }
-
+        
 
 
         /**
@@ -228,15 +115,11 @@ namespace FurkiebotCMR {
             racers.Columns.Add("Rating", typeof(int)); //Currently not being used, may or may not be used in the future, bird knows what's up
 
 
-            string filepath = @"..\..\..\Data\Userlist\userlist.json"; // !! FILEPATH !!
-            string[] jsonarray = File.ReadAllLines(filepath);
-            string json = string.Join("", jsonarray);
-
-            userlist = JsonConvert.DeserializeObject<DataSet>(json).Tables["userlist"]; // initially loads the userlist from JSON
+            loadUserlist();
 
             dummyRacingChan = "#cmr-"; //first part of racingchannel string
             realRacingChan = ""; //real racing channel string
-            mainchannel = "#dustforce"; //also the channel that will be joined upon start, change to #dustforcee for testing purposes
+            mainchannel = "#dustforcee"; //also the channel that will be joined upon start, change to #dustforcee for testing purposes
             cmrchannel = "#DFcmr";
             cmrId = GetCurrentCMRID();
             comNames = ""; // Used for NAMES commands
@@ -248,12 +131,7 @@ namespace FurkiebotCMR {
             acceptedMaps = new HashSet<String>(Directory.GetFiles("C:\\CMRmaps\\" + cmrId + "\\accepted", "*").Select(path => Path.GetFileName(path)).ToArray());
 
 
-
-
-
-
-
-            /**
+            /*
              * Set up the event handlers for watching the CMR map filesystem. Solution for now. 
              */
             pendingWatcher = new FileSystemWatcher();
@@ -284,6 +162,157 @@ namespace FurkiebotCMR {
             pendingWatcher.EnableRaisingEvents = true;
             acceptedWatcher.EnableRaisingEvents = true;
 
+        }
+
+
+
+
+        // Define the filesystem event handlers. 
+        private void CreatedPending(object source, FileSystemEventArgs e) {
+            // Specify what is done when a file is changed, created, or deleted.
+            //Console.WriteLine("File: " + e.FullPath + " " + e.ChangeType);
+            Console.WriteLine("\nCreatedPending: " + e.FullPath + " " + e.ChangeType + "\n");
+            string fileName = Path.GetFileName(e.FullPath);
+            pendingMaps.Add(fileName);
+            string toSay = " :New map submitted for testing: \"";
+
+            string[] split = fileName.Split('-');
+            for (int i = 1; i < split.Length; i++) {
+                toSay += split[i];
+            }
+            toSay += "\" by " + split[0];
+
+            sendData("PRIVMSG", mainchannel + toSay);
+            sendData("PRIVMSG", cmrchannel + toSay);
+        }
+
+
+
+        // Define the filesystem event handlers. 
+        private void DeletedPending(object source, FileSystemEventArgs e) {
+            // Specify what is done when a file is changed, created, or deleted.
+            //Console.WriteLine("File: " + e.FullPath + " " + e.ChangeType);
+            Console.WriteLine("\nDeletedPending: " + e.FullPath + " " + e.ChangeType + "\n");
+            string fileName = Path.GetFileName(e.FullPath);
+            pendingMaps.Remove(fileName);
+        }
+
+
+
+        private void CreatedAccepted(object source, FileSystemEventArgs e) {
+            // Specify what is done when a file is renamed.
+            //Console.WriteLine("File: {0} renamed to {1}", e.OldFullPath, e.FullPath);
+            Console.WriteLine("\nCreatedAccepted: " + e.FullPath + " " + e.ChangeType + "\n");
+            string fileName = Path.GetFileName(e.FullPath);
+            acceptedMaps.Add(fileName);
+            pendingMaps.Remove(fileName);
+
+            string toSay = " :Map accepted: \"";
+
+            string[] split = fileName.Split('-');
+            for (int i = 1; i < split.Length; i++) {
+                toSay += split[i];
+            }
+            toSay += "\" by " + split[0];
+
+            sendData("PRIVMSG", mainchannel + toSay);
+            sendData("PRIVMSG", cmrchannel + toSay);
+        }
+
+
+
+
+        // Define the filesystem event handlers. 
+        private void DeletedAccepted(object source, FileSystemEventArgs e) {
+            // Specify what is done when a file is changed, created, or deleted.
+            //Console.WriteLine("File: " + e.FullPath + " " + e.ChangeType);
+            Console.WriteLine("\nDeletedAccepted: " + e.FullPath + " " + e.ChangeType + "\n");
+            string fileName = Path.GetFileName(e.FullPath);
+            acceptedMaps.Remove(fileName);
+
+            string toSay = " :Map un accepted: \"";
+
+            string[] split = fileName.Split('-');
+            for (int i = 1; i < split.Length; i++) {
+                toSay += split[i];
+            }
+            toSay += "\" by " + split[0];
+
+            sendData("PRIVMSG", mainchannel + toSay);
+            sendData("PRIVMSG", cmrchannel + toSay);
+        }
+
+        //private static void OnRenamed(object source, RenamedEventArgs e) {
+        //    // Specify what is done when a file is renamed.
+        //    //Console.WriteLine("File: {0} renamed to {1}", e.OldFullPath, e.FullPath);
+        //    Console.WriteLine("\n\n\nFile: {0} renamed to {1}\n\n\n", e.OldFullPath, e.FullPath);
+        //}
+
+
+
+
+        private void OutputMapStatus(string chan) {
+            OutputPending(chan);
+            OutputAccepted(chan);
+        }
+
+
+
+        
+        private void OutputPending(string chan) {
+            string toSay = " :" + pendingMaps.Count + " Pending testing ";
+
+            foreach (string s in pendingMaps) {
+                toSay += SEP + "\"";
+                string[] split = s.Split('-');
+                for (int i = 1; i < split.Length; i++) {
+                    toSay += split[i];
+                }
+                toSay += "\" by " + split[0];
+            }
+
+            if (chan == null || chan == "" || chan == " ") {
+                sendData("PRIVMSG", mainchannel + toSay);
+                sendData("PRIVMSG", cmrchannel + toSay);
+            } else {
+                sendData("PRIVMSG", chan + toSay);
+            }
+        }
+
+
+
+        private void OutputAccepted(string chan) {
+            string toSay = " :" + acceptedMaps.Count + " Accepted ";
+            foreach (string s in acceptedMaps) {
+                toSay += SEP + "\"";
+                string[] split = s.Split('-');
+                for (int i = 1; i < split.Length; i++) {
+                    toSay += split[i];
+                }
+                toSay += "\" by " + split[0];
+            }
+
+            if (chan == null || chan == "" || chan == " ") {
+                sendData("PRIVMSG", mainchannel + toSay);
+                sendData("PRIVMSG", cmrchannel + toSay);
+            } else {
+                sendData("PRIVMSG", chan + toSay);
+            }
+        }
+
+
+
+
+        private void loadUserlist() {
+            string filepath = @"..\..\..\Data\Userlist\userlistmap.json"; // !! FILEPATH !!
+            string[] jsonarray = File.ReadAllLines(filepath);
+            string json = string.Join("", jsonarray);
+            userlist = JsonConvert.DeserializeObject<Dictionary<string, PlayerInfo>>(json); // initially loads the userlist from JSON
+            dustforcelist = new Dictionary<string, PlayerInfo>();
+            foreach (KeyValuePair<string, PlayerInfo> entry in userlist) {
+                dustforcelist.Add(entry.Value.dustforcename, entry.Value);
+                Console.WriteLine("name " + entry.Value.ircname + " dustforcename " + entry.Value.dustforcename + " tester " + entry.Value.tester + " trusted " + entry.Value.trusted + " admin " + entry.Value.admin);
+            }
         } /* IRCBot */
 
 
@@ -1027,8 +1056,8 @@ namespace FurkiebotCMR {
                         case ":.ign":
                             #region
                             string ign_ex4 = ex[4].TrimEnd(' ', '_');
-                            if (StringCompareNoCaps(ign_ex4, getUserInfo(ign_ex4)[0])) {
-                                sendData("PRIVMSG", ex[2] + " " + "" + ColourChanger(ex[4].Trim(), "03") + " > " + ColourChanger(getUserInfo(ign_ex4)[1], "03") + "");
+                            if (StringCompareNoCaps(ign_ex4, getUserInfo(ign_ex4).ircname)) {
+                                sendData("PRIVMSG", ex[2] + " " + "" + ColourChanger(ex[4].Trim(), "03") + " > " + ColourChanger(getUserInfo(ign_ex4).dustforcename, "03") + "");
                             } else {
                                 sendData("PRIVMSG", ex[2] + " " + " No in-game name registered for " + ex[4].Trim() + "");
                             }
@@ -1307,8 +1336,9 @@ namespace FurkiebotCMR {
                 parseTimer.Stop();
                 //Console.WriteLine("End Last Switch " + parseTimer.Elapsed);
             }
-            
         }
+
+
 
         private void OutputCMRinfo(string chan, TimeSpan cmrtime, string cmrtimeString, string nickname) {
             //Veryfying whether it is Saturday and if the time matches with CMR time
@@ -1424,28 +1454,25 @@ namespace FurkiebotCMR {
 
 
 
-        string[] getUserInfo(string ircuser) {//[0] = ircname; [1] = dfname; [2] = rating
-            string[] res = { "", "", "" };
-
-            bool userExist = false;
-
-            for (int i = 0; i < userlist.Rows.Count; i++) {
-                string ircname = userlist.Rows[i]["ircname"].ToString();
-                string dustforcename = userlist.Rows[i]["dustforcename"].ToString();
-                string rating = userlist.Rows[i]["rating"].ToString();
-                if (ircuser.ToLower().TrimEnd('_') == ircname) {
-                    res[0] = ircname;
-                    res[1] = dustforcename;
-                    res[2] = rating;
-                    userExist = true;
-                    i = userlist.Rows.Count;
-                }
+        PlayerInfo getUserInfo(string ircuser) {//[0] = ircname; [1] = dfname; [2] = rating
+             //for (int i = 0; i < userlist.Rows.Count; i++) {
+            //    string ircname = userlist.Rows[i]["ircname"].ToString();
+            //    string dustforcename = userlist.Rows[i]["dustforcename"].ToString();
+            //    string rating = userlist.Rows[i]["rating"].ToString();
+            //    if (ircuser.ToLower().TrimEnd('_') == ircname) {
+            //        res[0] = ircname;
+            //        res[1] = dustforcename;
+            //        res[2] = rating;
+            //        userExist = true;
+            //        i = userlist.Rows.Count;
+            //    }
+            //}
+            PlayerInfo res = new PlayerInfo();
+            if (userlist.ContainsKey(ircuser.ToLower())) {
+                userlist.TryGetValue(ircuser.ToLower(), out res);
+                return res;
             }
-            if (!userExist) {
-                res[0] = "+";
-                res[1] = "+";
-                res[2] = "+";
-            }
+
             return res;
         }
 
@@ -1455,88 +1482,96 @@ namespace FurkiebotCMR {
 
 
         string getUserIrc(string dustforceuser) {           // 
-            string res = "";
-
-            for (int i = 0; i < userlist.Rows.Count; i++) {
-                string ircname = userlist.Rows[i]["ircname"].ToString();
-                string dustforcename = userlist.Rows[i]["dustforcename"].ToString();
-                if (dustforceuser == dustforcename) {
-                    res = dustforcename;
-                    i = userlist.Rows.Count;
-                }
+            PlayerInfo res = new PlayerInfo();
+            if (dustforcelist.ContainsKey(dustforceuser.ToLower())) {
+                dustforcelist.TryGetValue(dustforceuser.ToLower(), out res);
+                return res.ircname;
+            } else {
+                return null;
             }
-            return res;
         }
 
 
 
-        string getUserIgn(string ircuser) { return getUserInfo(ircuser.TrimEnd('_'))[1]; }  // ???
+        string getUserIgn(string ircuser) { return getUserInfo(ircuser.ToLower().TrimEnd('_')).ircname; }
 
 
 
-        int getUserRating(string ircuser) { return Convert.ToInt32(getUserInfo(ircuser)[2]); }  // ???
+        int getUserRating(string ircuser) { return getUserInfo(ircuser.ToLower()).rating; }
+
+
+        /**
+         * writes out the users file.
+         */
+        void WriteUsers() {
+            //DataTable userlistCopy = userlist.Copy();
+            //DataSet ds = new DataSet("ds");
+            //ds.Namespace = "NetFrameWork";
+            //ds.Tables.Add(userlistCopy);
+
+            //ds.AcceptChanges();
+            //string json = JsonConvert.SerializeObject(ds, Formatting.Indented);
+
+            string json = JsonConvert.SerializeObject(userlist, Formatting.Indented);
+
+            File.WriteAllText(@"..\..\..\Data\Userlist\userlistmap.json", json); // !! FILEPATH !!
+        }
 
 
 
 
         void setUserIGN(string ircuser, string dustforceuser) {
-            //Console.WriteLine("Starting to set user ign at " + 
-            Stopwatch timer = new Stopwatch();
-            timer.Start();
-            bool userExist = false;
+            if (!dustforcelist.ContainsKey(dustforceuser.ToLower())) {
+                PlayerInfo temp = new PlayerInfo();
+                userlist.TryGetValue(ircuser.ToLower(), out temp);
+                string oldname = temp.dustforcename;
+                Console.WriteLine("name " + temp.ircname + " dustforcename " + temp.dustforcename + " tester " + temp.tester + " trusted " + temp.trusted + " admin " + temp.admin);
 
-            for (int i = 0; i < userlist.Rows.Count; i++) {       // search for existing irc user and update the IGN
-                if (ircuser.ToLower().TrimEnd('_') == userlist.Rows[i]["ircname"].ToString()) {
-                    userlist.Rows[i]["dustforcename"] = dustforceuser;
-                    userExist = true;
-                    i = userlist.Rows.Count;
+                //delete old dustforceuser entry
+                if (dustforcelist.ContainsKey(oldname.ToLower())) {
+                    dustforcelist.Remove(oldname.ToLower());
                 }
+                if (userlist.ContainsKey(ircuser.ToLower())) {
+                    userlist.Remove(ircuser.ToLower());
+                }
+                temp.dustforcename = dustforceuser.ToLower();
+                userlist.Add(ircuser.ToLower(), temp);
+                dustforcelist.Add(dustforceuser.ToLower(), temp);
+
+
+                WriteUsers();
+            } else {
+                sendData("NOTICE", ircuser + " :Someone already has that IGN (" + dustforceuser + ") registered. You may have registered it to another irc name?");
             }
-            if (!userExist) {
-                userlist.Rows.Add(ircuser.ToLower(), dustforceuser, 0);
-            }
-
-            DataTable userlistCopy = userlist.Copy();
-            DataSet ds = new DataSet("ds");
-            ds.Namespace = "NetFrameWork";
-            ds.Tables.Add(userlistCopy);
-
-            ds.AcceptChanges();
-
-            string json = JsonConvert.SerializeObject(ds, Formatting.Indented);
-
-            File.WriteAllText(@"..\..\..\Data\Userlist\userlist.json", json); // !! FILEPATH !!
-
-            //Console.
         }
 
 
 
-        void setUserInfo(string ircuser, string dustforceuser, int rating) {
-            bool userExist = false;
+        //void setUserInfo(string ircuser, string dustforceuser, int rating) {
+        //    bool userExist = false;
 
-            for (int i = 0; i < userlist.Rows.Count; i++) {
-                if (ircuser.ToLower().TrimEnd('_') == userlist.Rows[i]["ircname"].ToString()) {
-                    userlist.Rows[i]["dustforcename"] = dustforceuser;
-                    userExist = true;
-                    i = userlist.Rows.Count;
-                }
-            }
-            if (!userExist) {
-                userlist.Rows.Add(ircuser.ToLower().TrimEnd('_'), dustforceuser, rating);
-            }
+        //    for (int i = 0; i < userlist.Rows.Count; i++) {
+        //        if (ircuser.ToLower().TrimEnd('_') == userlist.Rows[i]["ircname"].ToString()) {
+        //            userlist.Rows[i]["dustforcename"] = dustforceuser;
+        //            userExist = true;
+        //            i = userlist.Rows.Count;
+        //        }
+        //    }
+        //    if (!userExist) {
+        //        userlist.Rows.Add(ircuser.ToLower().TrimEnd('_'), dustforceuser, rating);
+        //    }
 
-            DataTable dtCopy = userlist.Copy();
-            DataSet ds = new DataSet("ds");
-            ds.Namespace = "NetFrameWork";
-            ds.Tables.Add(dtCopy);
+        //    DataTable dtCopy = userlist.Copy();
+        //    DataSet ds = new DataSet("ds");
+        //    ds.Namespace = "NetFrameWork";
+        //    ds.Tables.Add(dtCopy);
 
-            ds.AcceptChanges();
+        //    ds.AcceptChanges();
 
-            string json = JsonConvert.SerializeObject(ds, Formatting.Indented);
+        //    string json = JsonConvert.SerializeObject(ds, Formatting.Indented);
 
-            File.WriteAllText(@"..\..\..\Data\Userlist\userlist.json", json); // !! FILEPATH !!
-        }
+        //    File.WriteAllText(@"..\..\..\Data\Userlist\userlist.json", json); // !! FILEPATH !!
+        //}
 
 
 
@@ -2616,7 +2651,7 @@ namespace FurkiebotCMR {
         private static void Main(string[] args) {
             IRCConfig conf = new IRCConfig();
             conf.name = "FurkieBot";
-            conf.nick = "FurkieBot";
+            conf.nick = "FurkieBot_";
             conf.altNick = "FurkieBot_";
             conf.port = 6667;
             conf.server = "irc2.speedrunslive.com";
