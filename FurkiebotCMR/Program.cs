@@ -48,6 +48,9 @@ namespace FurkiebotCMR {
         public bool trusted;
         public bool admin;
         public int rating;
+        public int randmaprating;
+        public string password;
+        public string salt;
     }
 
     internal class FurkieBot : IDisposable {

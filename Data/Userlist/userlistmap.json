@@ -6,7 +6,10 @@
     "tester": true,
     "trusted": true,
     "admin": true,
-    "rating": 0
+    "rating": 0,
+	"randmaprating": 0,
+	"password": "",
+	"salt": ""
   },
   "invert": {
     "ircname": "invert",
@@ -15,7 +18,10 @@
     "tester": false,
     "trusted": false,
     "admin": false,
-    "rating": 0
+    "rating": 0,
+	"randmaprating": 0,
+	"password": "",
+	"salt": ""
   },
   "thebirdofprey": {
     "ircname": "thebirdofprey",
@@ -24,7 +30,10 @@
     "tester": true,
     "trusted": true,
     "admin": false,
-    "rating": 0
+    "rating": 0,
+	"randmaprating": 0,
+	"password": "",
+	"salt": ""
   },
   "y2kkmac": {
     "ircname": "y2kkmac",
@@ -33,7 +42,10 @@
     "tester": false,
     "trusted": false,
     "admin": false,
-    "rating": 0
+    "rating": 0,
+	"randmaprating": 0,
+	"password": "",
+	"salt": ""
   },
   "eklipz": {
     "ircname": "eklipz",
@@ -42,7 +54,10 @@
     "tester": true,
     "trusted": true,
     "admin": true,
-    "rating": 0
+    "rating": 0,
+	"randmaprating": 0,
+	"password": "",
+	"salt": ""
   },
   "fireball": {
     "ircname": "fireball",
@@ -51,7 +66,10 @@
     "tester": false,
     "trusted": false,
     "admin": false,
-    "rating": 0
+    "rating": 0,
+	"randmaprating": 0,
+	"password": "",
+	"salt": ""
   },
   "glass": {
     "ircname": "glass",
@@ -60,7 +78,10 @@
     "tester": false,
     "trusted": false,
     "admin": false,
-    "rating": 0
+    "rating": 0,
+	"randmaprating": 0,
+	"password": "",
+	"salt": ""
   },
   "g3ntlem3n": {
     "ircname": "g3ntlem3n",
@@ -69,7 +90,10 @@
     "tester": false,
     "trusted": false,
     "admin": false,
-    "rating": 0
+    "rating": 0,
+	"randmaprating": 0,
+	"password": "",
+	"salt": ""
   },
   "tropicallo": {
     "ircname": "tropicallo",
@@ -78,7 +102,10 @@
     "tester": false,
     "trusted": false,
     "admin": false,
-    "rating": 0
+    "rating": 0,
+	"randmaprating": 0,
+	"password": "",
+	"salt": ""
   },
   "badger": {
     "ircname": "badger",
@@ -87,7 +114,10 @@
     "tester": false,
     "trusted": false,
     "admin": false,
-    "rating": 0
+    "rating": 0,
+	"randmaprating": 0,
+	"password": "",
+	"salt": ""
   },
   "itay7": {
     "ircname": "itay7",
@@ -96,7 +126,10 @@
     "tester": false,
     "trusted": false,
     "admin": false,
-    "rating": 0
+    "rating": 0,
+	"randmaprating": 0,
+	"password": "",
+	"salt": ""
   },
   "doicm": {
     "ircname": "doicm",
@@ -105,7 +138,10 @@
     "tester": false,
     "trusted": false,
     "admin": false,
-    "rating": 0
+    "rating": 0,
+	"randmaprating": 0,
+	"password": "",
+	"salt": ""
   },
   "virgatespy": {
     "ircname": "virgatespy",
@@ -114,7 +150,10 @@
     "tester": false,
     "trusted": false,
     "admin": false,
-    "rating": 0
+    "rating": 0,
+	"randmaprating": 0,
+	"password": "",
+	"salt": ""
   },
   "takari": {
     "ircname": "takari",
@@ -123,7 +162,10 @@
     "tester": false,
     "trusted": false,
     "admin": false,
-    "rating": 0
+    "rating": 0,
+	"randmaprating": 0,
+	"password": "",
+	"salt": ""
   },
   "kuroonehalf": {
     "ircname": "kuroonehalf",
@@ -132,7 +174,10 @@
     "tester": false,
     "trusted": false,
     "admin": false,
-    "rating": 0
+    "rating": 0,
+	"randmaprating": 0,
+	"password": "",
+	"salt": ""
   },
   "g3ntlemen": {
     "ircname": "g3ntlemen",
@@ -141,7 +186,10 @@
     "tester": false,
     "trusted": false,
     "admin": false,
-    "rating": 0
+    "rating": 0,
+	"randmaprating": 0,
+	"password": "",
+	"salt": ""
   },
   "african": {
     "ircname": "african",
@@ -150,7 +198,10 @@
     "tester": false,
     "trusted": false,
     "admin": false,
-    "rating": 0
+    "rating": 0,
+	"randmaprating": 0,
+	"password": "",
+	"salt": ""
   },
   "sivade": {
     "ircname": "sivade",
@@ -159,7 +210,10 @@
     "tester": false,
     "trusted": false,
     "admin": false,
-    "rating": 0
+    "rating": 0,
+	"randmaprating": 0,
+	"password": "",
+	"salt": ""
   },
   "shurykan": {
     "ircname": "shurykan",
@@ -168,7 +222,10 @@
     "tester": false,
     "trusted": false,
     "admin": false,
-    "rating": 0
+    "rating": 0,
+	"randmaprating": 0,
+	"password": "",
+	"salt": ""
   },
   "noobslayer": {
     "ircname": "noobslayer",
@@ -177,7 +234,10 @@
     "tester": false,
     "trusted": false,
     "admin": false,
-    "rating": 0
+    "rating": 0,
+	"randmaprating": 0,
+	"password": "",
+	"salt": ""
   },
   "aboss": {
     "ircname": "aboss",
@@ -186,7 +246,10 @@
     "tester": false,
     "trusted": false,
     "admin": false,
-    "rating": 0
+    "rating": 0,
+	"randmaprating": 0,
+	"password": "",
+	"salt": ""
   },
   "sprog": {
     "ircname": "sprog",
@@ -195,7 +258,10 @@
     "tester": false,
     "trusted": false,
     "admin": false,
-    "rating": 0
+    "rating": 0,
+	"randmaprating": 0,
+	"password": "",
+	"salt": ""
   },
   "calistus": {
     "ircname": "calistus",
@@ -204,7 +270,10 @@
     "tester": false,
     "trusted": false,
     "admin": false,
-    "rating": 0
+    "rating": 0,
+	"randmaprating": 0,
+	"password": "",
+	"salt": ""
   },
   "criticalcyd": {
     "ircname": "criticalcyd",
@@ -213,7 +282,10 @@
     "tester": false,
     "trusted": false,
     "admin": false,
-    "rating": 0
+    "rating": 0,
+	"randmaprating": 0,
+	"password": "",
+	"salt": ""
   },
   "snow": {
     "ircname": "snow",
@@ -222,7 +294,10 @@
     "tester": false,
     "trusted": false,
     "admin": false,
-    "rating": 0
+    "rating": 0,
+	"randmaprating": 0,
+	"password": "",
+	"salt": ""
   },
   "azure": {
     "ircname": "azure",
@@ -231,7 +306,10 @@
     "tester": false,
     "trusted": false,
     "admin": false,
-    "rating": 0
+    "rating": 0,
+	"randmaprating": 0,
+	"password": "",
+	"salt": ""
   },
   "ravencoff": {
     "ircname": "ravencoff",
@@ -240,7 +318,10 @@
     "tester": false,
     "trusted": false,
     "admin": false,
-    "rating": 0
+    "rating": 0,
+	"randmaprating": 0,
+	"password": "",
+	"salt": ""
   },
   "morelia": {
     "ircname": "morelia",
@@ -249,7 +330,10 @@
     "tester": false,
     "trusted": false,
     "admin": false,
-    "rating": 0
+    "rating": 0,
+	"randmaprating": 0,
+	"password": "",
+	"salt": ""
   },
   "kheartz": {
     "ircname": "kheartz",
@@ -258,7 +342,10 @@
     "tester": false,
     "trusted": false,
     "admin": false,
-    "rating": 0
+    "rating": 0,
+	"randmaprating": 0,
+	"password": "",
+	"salt": ""
   },
   "kromb": {
     "ircname": "kromb",
@@ -267,7 +354,10 @@
     "tester": false,
     "trusted": false,
     "admin": false,
-    "rating": 0
+    "rating": 0,
+	"randmaprating": 0,
+	"password": "",
+	"salt": ""
   },
   "dice": {
     "ircname": "dice",
@@ -276,7 +366,10 @@
     "tester": false,
     "trusted": false,
     "admin": false,
-    "rating": 0
+    "rating": 0,
+	"randmaprating": 0,
+	"password": "",
+	"salt": ""
   },
   "tinker": {
     "ircname": "tinker",
@@ -285,7 +378,10 @@
     "tester": false,
     "trusted": false,
     "admin": false,
-    "rating": 0
+    "rating": 0,
+	"randmaprating": 0,
+	"password": "",
+	"salt": ""
   },
   "lightning55": {
     "ircname": "lightning55",
@@ -294,7 +390,10 @@
     "tester": false,
     "trusted": false,
     "admin": false,
-    "rating": 0
+    "rating": 0,
+	"randmaprating": 0,
+	"password": "",
+	"salt": ""
   },
   "wbojangles": {
     "ircname": "wbojangles",
@@ -303,6 +402,9 @@
     "tester": false,
     "trusted": false,
     "admin": false,
-    "rating": 0
+    "rating": 0,
+	"randmaprating": 0,
+	"password": "",
+	"salt": ""
   }
 }
