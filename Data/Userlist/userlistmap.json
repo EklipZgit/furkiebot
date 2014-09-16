@@ -7,9 +7,9 @@
     "trusted": true,
     "admin": true,
     "rating": 0,
-	"randmaprating": 0,
-	"password": "",
-	"salt": ""
+    "randmaprating": 0,
+    "password": "",
+    "salt": ""
   },
   "invert": {
     "ircname": "invert",
@@ -19,9 +19,9 @@
     "trusted": false,
     "admin": false,
     "rating": 0,
-	"randmaprating": 0,
-	"password": "",
-	"salt": ""
+    "randmaprating": 0,
+    "password": "",
+    "salt": ""
   },
   "thebirdofprey": {
     "ircname": "thebirdofprey",
@@ -31,9 +31,9 @@
     "trusted": true,
     "admin": false,
     "rating": 0,
-	"randmaprating": 0,
-	"password": "",
-	"salt": ""
+    "randmaprating": 0,
+    "password": "",
+    "salt": ""
   },
   "y2kkmac": {
     "ircname": "y2kkmac",
@@ -43,9 +43,9 @@
     "trusted": false,
     "admin": false,
     "rating": 0,
-	"randmaprating": 0,
-	"password": "",
-	"salt": ""
+    "randmaprating": 0,
+    "password": "",
+    "salt": ""
   },
   "eklipz": {
     "ircname": "eklipz",
@@ -55,9 +55,9 @@
     "trusted": true,
     "admin": true,
     "rating": 0,
-	"randmaprating": 0,
-	"password": "",
-	"salt": ""
+    "randmaprating": 0,
+    "password": "xiCOfX6AboRR5MNi2IqbNX/mIT6fAnoemIVXEDCawr8=",
+    "salt": "OaTq"
   },
   "fireball": {
     "ircname": "fireball",
@@ -67,9 +67,9 @@
     "trusted": false,
     "admin": false,
     "rating": 0,
-	"randmaprating": 0,
-	"password": "",
-	"salt": ""
+    "randmaprating": 0,
+    "password": "",
+    "salt": ""
   },
   "glass": {
     "ircname": "glass",
@@ -79,9 +79,9 @@
     "trusted": false,
     "admin": false,
     "rating": 0,
-	"randmaprating": 0,
-	"password": "",
-	"salt": ""
+    "randmaprating": 0,
+    "password": "",
+    "salt": ""
   },
   "g3ntlem3n": {
     "ircname": "g3ntlem3n",
@@ -91,9 +91,9 @@
     "trusted": false,
     "admin": false,
     "rating": 0,
-	"randmaprating": 0,
-	"password": "",
-	"salt": ""
+    "randmaprating": 0,
+    "password": "",
+    "salt": ""
   },
   "tropicallo": {
     "ircname": "tropicallo",
@@ -103,9 +103,9 @@
     "trusted": false,
     "admin": false,
     "rating": 0,
-	"randmaprating": 0,
-	"password": "",
-	"salt": ""
+    "randmaprating": 0,
+    "password": "",
+    "salt": ""
   },
   "badger": {
     "ircname": "badger",
@@ -115,9 +115,9 @@
     "trusted": false,
     "admin": false,
     "rating": 0,
-	"randmaprating": 0,
-	"password": "",
-	"salt": ""
+    "randmaprating": 0,
+    "password": "",
+    "salt": ""
   },
   "itay7": {
     "ircname": "itay7",
@@ -127,9 +127,9 @@
     "trusted": false,
     "admin": false,
     "rating": 0,
-	"randmaprating": 0,
-	"password": "",
-	"salt": ""
+    "randmaprating": 0,
+    "password": "",
+    "salt": ""
   },
   "doicm": {
     "ircname": "doicm",
@@ -139,9 +139,9 @@
     "trusted": false,
     "admin": false,
     "rating": 0,
-	"randmaprating": 0,
-	"password": "",
-	"salt": ""
+    "randmaprating": 0,
+    "password": "",
+    "salt": ""
   },
   "virgatespy": {
     "ircname": "virgatespy",
@@ -151,9 +151,9 @@
     "trusted": false,
     "admin": false,
     "rating": 0,
-	"randmaprating": 0,
-	"password": "",
-	"salt": ""
+    "randmaprating": 0,
+    "password": "",
+    "salt": ""
   },
   "takari": {
     "ircname": "takari",
@@ -163,9 +163,9 @@
     "trusted": false,
     "admin": false,
     "rating": 0,
-	"randmaprating": 0,
-	"password": "",
-	"salt": ""
+    "randmaprating": 0,
+    "password": "",
+    "salt": ""
   },
   "kuroonehalf": {
     "ircname": "kuroonehalf",
@@ -175,9 +175,9 @@
     "trusted": false,
     "admin": false,
     "rating": 0,
-	"randmaprating": 0,
-	"password": "",
-	"salt": ""
+    "randmaprating": 0,
+    "password": "",
+    "salt": ""
   },
   "g3ntlemen": {
     "ircname": "g3ntlemen",
@@ -187,9 +187,9 @@
     "trusted": false,
     "admin": false,
     "rating": 0,
-	"randmaprating": 0,
-	"password": "",
-	"salt": ""
+    "randmaprating": 0,
+    "password": "",
+    "salt": ""
   },
   "african": {
     "ircname": "african",
@@ -199,9 +199,9 @@
     "trusted": false,
     "admin": false,
     "rating": 0,
-	"randmaprating": 0,
-	"password": "",
-	"salt": ""
+    "randmaprating": 0,
+    "password": "",
+    "salt": ""
   },
   "sivade": {
     "ircname": "sivade",
@@ -211,9 +211,9 @@
     "trusted": false,
     "admin": false,
     "rating": 0,
-	"randmaprating": 0,
-	"password": "",
-	"salt": ""
+    "randmaprating": 0,
+    "password": "",
+    "salt": ""
   },
   "shurykan": {
     "ircname": "shurykan",
@@ -223,9 +223,9 @@
     "trusted": false,
     "admin": false,
     "rating": 0,
-	"randmaprating": 0,
-	"password": "",
-	"salt": ""
+    "randmaprating": 0,
+    "password": "",
+    "salt": ""
   },
   "noobslayer": {
     "ircname": "noobslayer",
@@ -235,9 +235,9 @@
     "trusted": false,
     "admin": false,
     "rating": 0,
-	"randmaprating": 0,
-	"password": "",
-	"salt": ""
+    "randmaprating": 0,
+    "password": "",
+    "salt": ""
   },
   "aboss": {
     "ircname": "aboss",
@@ -247,9 +247,9 @@
     "trusted": false,
     "admin": false,
     "rating": 0,
-	"randmaprating": 0,
-	"password": "",
-	"salt": ""
+    "randmaprating": 0,
+    "password": "",
+    "salt": ""
   },
   "sprog": {
     "ircname": "sprog",
@@ -259,9 +259,9 @@
     "trusted": false,
     "admin": false,
     "rating": 0,
-	"randmaprating": 0,
-	"password": "",
-	"salt": ""
+    "randmaprating": 0,
+    "password": "",
+    "salt": ""
   },
   "calistus": {
     "ircname": "calistus",
@@ -271,9 +271,9 @@
     "trusted": false,
     "admin": false,
     "rating": 0,
-	"randmaprating": 0,
-	"password": "",
-	"salt": ""
+    "randmaprating": 0,
+    "password": "",
+    "salt": ""
   },
   "criticalcyd": {
     "ircname": "criticalcyd",
@@ -283,9 +283,9 @@
     "trusted": false,
     "admin": false,
     "rating": 0,
-	"randmaprating": 0,
-	"password": "",
-	"salt": ""
+    "randmaprating": 0,
+    "password": "",
+    "salt": ""
   },
   "snow": {
     "ircname": "snow",
@@ -295,9 +295,9 @@
     "trusted": false,
     "admin": false,
     "rating": 0,
-	"randmaprating": 0,
-	"password": "",
-	"salt": ""
+    "randmaprating": 0,
+    "password": "",
+    "salt": ""
   },
   "azure": {
     "ircname": "azure",
@@ -307,9 +307,9 @@
     "trusted": false,
     "admin": false,
     "rating": 0,
-	"randmaprating": 0,
-	"password": "",
-	"salt": ""
+    "randmaprating": 0,
+    "password": "",
+    "salt": ""
   },
   "ravencoff": {
     "ircname": "ravencoff",
@@ -319,9 +319,9 @@
     "trusted": false,
     "admin": false,
     "rating": 0,
-	"randmaprating": 0,
-	"password": "",
-	"salt": ""
+    "randmaprating": 0,
+    "password": "",
+    "salt": ""
   },
   "morelia": {
     "ircname": "morelia",
@@ -331,9 +331,9 @@
     "trusted": false,
     "admin": false,
     "rating": 0,
-	"randmaprating": 0,
-	"password": "",
-	"salt": ""
+    "randmaprating": 0,
+    "password": "",
+    "salt": ""
   },
   "kheartz": {
     "ircname": "kheartz",
@@ -343,9 +343,9 @@
     "trusted": false,
     "admin": false,
     "rating": 0,
-	"randmaprating": 0,
-	"password": "",
-	"salt": ""
+    "randmaprating": 0,
+    "password": "",
+    "salt": ""
   },
   "kromb": {
     "ircname": "kromb",
@@ -355,9 +355,9 @@
     "trusted": false,
     "admin": false,
     "rating": 0,
-	"randmaprating": 0,
-	"password": "",
-	"salt": ""
+    "randmaprating": 0,
+    "password": "",
+    "salt": ""
   },
   "dice": {
     "ircname": "dice",
@@ -367,9 +367,9 @@
     "trusted": false,
     "admin": false,
     "rating": 0,
-	"randmaprating": 0,
-	"password": "",
-	"salt": ""
+    "randmaprating": 0,
+    "password": "",
+    "salt": ""
   },
   "tinker": {
     "ircname": "tinker",
@@ -379,9 +379,9 @@
     "trusted": false,
     "admin": false,
     "rating": 0,
-	"randmaprating": 0,
-	"password": "",
-	"salt": ""
+    "randmaprating": 0,
+    "password": "",
+    "salt": ""
   },
   "lightning55": {
     "ircname": "lightning55",
@@ -391,9 +391,9 @@
     "trusted": false,
     "admin": false,
     "rating": 0,
-	"randmaprating": 0,
-	"password": "",
-	"salt": ""
+    "randmaprating": 0,
+    "password": "",
+    "salt": ""
   },
   "wbojangles": {
     "ircname": "wbojangles",
@@ -403,8 +403,8 @@
     "trusted": false,
     "admin": false,
     "rating": 0,
-	"randmaprating": 0,
-	"password": "",
-	"salt": ""
+    "randmaprating": 0,
+    "password": "",
+    "salt": ""
   }
 }

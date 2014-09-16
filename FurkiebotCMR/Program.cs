@@ -451,6 +451,48 @@ namespace FurkiebotCMR {
 
 
         /**
+         * Checks if a user is idented and a tester.
+         */
+        private bool IsTester(string nick, bool print) {
+            if (IsIdentified(nick)) {
+                if (IsRegistered(nick)) {
+                    return userlist[nick].tester;
+                } else {
+                    if (print)
+                        NoticeNotRegistered(nick);
+                    return false;
+                }
+            } else if (IsRegistered(nick)) {
+                if (print)
+                    NoticeNotRegistered(nick);
+                return false;
+            } else {
+                if (print)
+                    NoticeNotIdentified(nick);
+                return false;
+            }
+        }
+
+
+
+        /**
+         * Checks if a user is idented and a tester.
+         */
+        private bool IsTrusted(string nick, bool print) {
+            if (IsIdentified(nick)) {
+                if (IsRegistered(nick)) {
+                    return userlist[nick].trusted;
+                } else {
+                    return false;
+                }
+            } else {
+                return false;
+            }
+        }
+
+
+
+        /**
          * Checks to see if a user is identified.
          */
         private bool IsIdentified(string nick) {
@@ -500,13 +542,65 @@ namespace FurkiebotCMR {
 
 
         /**
-         * Notifies a user that their command was ignored because furkiebot was already processing a complex command.
+         * Attempts to set the Users password to the given password. 
+         * If no user exists by this nickname, create a new user.
          */
-        private void notifyRetry(string nickname) {
-            sendData("NOTICE", nickname + " :Sorry, FurkieBot was processing something complex. Try that command again!");
+        private void AttemptRegistration(string nickname, string password) {
+            if (IsIdentified(nickname)) {
+                string[] hashes = GeneratePasswordHashes(password.Trim());
+                if (userlist.ContainsKey(nickname)) {
+                    PlayerInfo info = userlist[nickname];
+                    info.salt = hashes[0];
+                    info.password = hashes[1];
+                    //userlist.Remove(nickname);
+                    //userlist.Add(nickname, info);
+                    userlist[nickname] = info;
+                    WriteUsers();
+                } else {
+                    PlayerInfo info = new PlayerInfo();
+                    info.salt = hashes[0];
+                    info.password = hashes[1];
+                    info.ircname = nickname;
+                    info.dustforcename = "";
+                    info.admin = false;
+                    info.tester = false;
+                    info.trusted = false;
+                    userlist[nickname] = info;
+                    WriteUsers();
+                }
+                
+            } else {
+                NoticeNotIdentified(nickname);
+            }
         }
 
 
+
+        /**
+         * Notifies a user that they need to Identify with nickserv.
+         */
+        private void NoticeNotIdentified(string nick) {
+            sendData("NOTICE", nick + " :Sorry, you need to first be using a Nickname registered on SRL. ");
+            sendData("NOTICE", nick + " :\"/msg NickServ HELP REGISTER\".");
+        }
+
+
+
+        /**
+         * Notifies a user that they need to register with FurkieBot.
+         */
+        private void NoticeNotRegistered(string nick) {
+            sendData("NOTICE", nick + " :Sorry, you need to register with FurkieBot first! \".help register\"");
+        }
+
+
+
+        /**
+         * Notifies a user that their command was ignored because furkiebot was already processing a complex command.
+         */
+        private void NoticeRetry(string nickname) {
+            sendData("NOTICE", nickname + " :Sorry, FurkieBot was processing something complex. Try that command again!");
+        }
 
 
 
@@ -1178,8 +1272,7 @@ namespace FurkiebotCMR {
                         switch (ex[4].Trim().ToLower()) {
                             case "register":
                                 if (!IsIdentified(nickname)) {
-                                    sendData("NOTICE", nickname + " :You need to first be using a nick registered on SRL to register with furkiebot. ");
-                                    sendData("NOTICE", nickname + " :\"/msg NickServ HELP REGISTER\"");
+                                    NoticeNotIdentified(nickname);
                                 }
                                 sendData("NOTICE", nickname + " :To register with FurkieBot the password does not need to be the same as your SRL password. This is the username and password that you will use in IRC and on the CMR website.");
                                 sendData("NOTICE", nickname + " :\"/msg FurkieBot REGISTER password\".");
@@ -1211,11 +1304,15 @@ namespace FurkiebotCMR {
 
                     case ":.setign":
                         #region
-                        string trimmedEx4 = ex[4].Trim();
-                        string ircname = nickname;
+                        if (IsIdentified(nickname)) {
+                            string trimmedEx4 = ex[4].Trim();
+                            string ircname = nickname;
 
-                        setUserIGN(ircname, trimmedEx4);
-                        sendData("PRIVMSG", ex[2] + " New IGN registered: " + ColourChanger(ircname, "03") + " > " + ColourChanger(trimmedEx4, "03") + "");
+                            setUserIGN(ircname, trimmedEx4);
+                            sendData("PRIVMSG", ex[2] + " New IGN registered: " + ColourChanger(ircname, "03") + " > " + ColourChanger(trimmedEx4, "03") + "");
+                        } else {
+                            NoticeNotIdentified(nickname);
+                        }
                         #endregion
                         break;
 
@@ -1474,10 +1571,17 @@ namespace FurkiebotCMR {
                         Slap(nickname, ex);
                         break;
                     #endregion
+
+
+                    case ":register":
+                        AttemptRegistration(nickname, ex[4]);
+                        break;
+                    
                 }
             }
             return shouldRun;
         }
+
 
 
 
@@ -1666,38 +1770,12 @@ namespace FurkiebotCMR {
 
 
                 WriteUsers();
+
             } else {
                 sendData("NOTICE", ircuser + " :Someone already has that IGN (" + dustforceuser + ") registered. You may have registered it to another irc name?");
             }
         }
 
-
-
-        //void setUserInfo(string ircuser, string dustforceuser, int rating) {
-        //    bool userExist = false;
-
-        //    for (int i = 0; i < userlist.Rows.Count; i++) {
-        //        if (ircuser.ToLower().TrimEnd('_') == userlist.Rows[i]["ircname"].ToString()) {
-        //            userlist.Rows[i]["dustforcename"] = dustforceuser;
-        //            userExist = true;
-        //            i = userlist.Rows.Count;
-        //        }
-        //    }
-        //    if (!userExist) {
-        //        userlist.Rows.Add(ircuser.ToLower().TrimEnd('_'), dustforceuser, rating);
-        //    }
-
-        //    DataTable dtCopy = userlist.Copy();
-        //    DataSet ds = new DataSet("ds");
-        //    ds.Namespace = "NetFrameWork";
-        //    ds.Tables.Add(dtCopy);
-
-        //    ds.AcceptChanges();
-
-        //    string json = JsonConvert.SerializeObject(ds, Formatting.Indented);
-
-        //    File.WriteAllText(@"..\..\..\Data\Userlist\userlist.json", json); // !! FILEPATH !!
-        //}
 
 
 
@@ -2768,6 +2846,140 @@ namespace FurkiebotCMR {
             }
 
         }
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        public static string[] GeneratePasswordHashes(string pwTextString) {
+            // If salt is not specified, generate it on the fly.
+            // Define min and max salt sizes.
+            int minSaltSize = 4;
+            int maxSaltSize = 8;
+
+            // Generate a random number for the size of the salt.
+            Random random = new Random();
+            int saltSize = random.Next(minSaltSize, maxSaltSize);
+
+            // Allocate a byte array, which will hold the salt.
+            byte[] saltBytes = new byte[saltSize];
+
+            // Initialize a random number generator.
+            RNGCryptoServiceProvider rng = new RNGCryptoServiceProvider();
+
+            // Fill the salt with cryptographically strong byte values.
+            rng.GetNonZeroBytes(saltBytes);
+
+
+            // Because we support multiple hashing algorithms, we must define
+            // hash object as a common (abstract) base class. We will specify the
+            // actual hashing algorithm class later during object creation.
+            HashAlgorithm hash = new SHA256Managed();
+
+            
+            byte[] saltHashBytes = hash.ComputeHash(saltBytes);
+            string saltHashString = Convert.ToBase64String(saltHashBytes).Substring(0, 4);
+
+
+
+
+            string finalHashString = HashSaltPw(hash, pwTextString, saltHashString);
+
+            // Copy hash bytes into resulting array.
+            string[] returnArray = {saltHashString, finalHashString};
+
+
+            if (!VerifyHash(pwTextString, saltHashString, finalHashString)) {
+                throw new Exception("wow ok fuck you");
+            }
+
+
+            return returnArray;
+        }
+
+
+
+
+        /**
+         * Returns the Hash of the password hash concatenated with the salt hash.
+         */
+        private static string HashSaltPw(HashAlgorithm hash, string pwTextString, string saltHashString) {
+            // Convert plain text into a byte array.
+            byte[] pwTextBytes = Encoding.UTF8.GetBytes(pwTextString.Trim());
+
+
+            // Compute hash value of our plain text with appended salt.
+            byte[] pwTextHashBytes = hash.ComputeHash(pwTextBytes);
+            string pwHash = Convert.ToBase64String(pwTextHashBytes);
+
+            string saltAndPwHash = saltHashString + pwHash;
+            byte[] saltPwHashBytes = Encoding.UTF8.GetBytes(saltAndPwHash);
+
+            byte[] finalHashBytes = hash.ComputeHash(saltPwHashBytes);
+            return Convert.ToBase64String(finalHashBytes);
+        }
+
+
+
+
+        /**
+         * <summary>
+         * Compares a hash of the specified plain text value to a given hash
+         * value. Plain text is hashed with the same salt value as the original
+         * hash.
+         * </summary>
+         * <param name="pwTextString">
+         * Plain text to be verified against the specified hash. The function
+         * does not check whether this parameter is null.
+         * </param>
+         * <param name="hashAlgorithm">
+         * Name of the hash algorithm. Allowed values are: "MD5", "SHA1", 
+         * "SHA256", "SHA384", and "SHA512" (if any other value is specified,
+         * MD5 hashing algorithm will be used). This value is case-insensitive.
+         * </param>
+         * <param name="expectedHash">
+         * Base64-encoded hash value produced by ComputeHash function. This value
+         * includes the original salt appended to it.
+         * </param>
+         * <returns>
+         * If computed hash mathes the specified hash the function the return
+         * value is true; otherwise, the function returns false.
+         * </returns>
+         */
+        public static bool VerifyHash(string pwTextString, string salt, string expectedHashString) {
+            // Convert base64-encoded hash value into a byte array.
+
+            HashAlgorithm hash = new SHA256Managed();
+
+
+            // Convert plain text into a byte array.
+            byte[] pwTextBytes = Encoding.UTF8.GetBytes(pwTextString.Trim());
+
+
+            // Compute hash value of our plain text with appended salt.
+            byte[] pwTextHashBytes = hash.ComputeHash(pwTextBytes);
+            string pwHash = Convert.ToBase64String(pwTextHashBytes);
+
+            string saltAndPwHash = salt + pwHash;
+            byte[] saltPwHashBytes = Encoding.UTF8.GetBytes(saltAndPwHash);
+
+            byte[] finalHashBytes = hash.ComputeHash(saltPwHashBytes);
+            string finalHashString = Convert.ToBase64String(finalHashBytes);
+
+            return (expectedHashString == finalHashString);
+        }
+
+
+
+
 
     } /* IRCBot */
 
