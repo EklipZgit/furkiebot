@@ -549,7 +549,7 @@ namespace FurkiebotCMR {
             string re22 = "((?:[a-z][a-z0-9_]*))";
             Regex rr = new Regex(re22, RegexOptions.IgnoreCase | RegexOptions.Singleline);
             Match usernamee = rr.Match(inputt);
-            string nickname = usernamee.ToString();
+            string nickname = usernamee.ToString().ToLower();
 
             #region FurkieBot Output String list
             string[] fbOutput = new string[8];
@@ -606,7 +606,6 @@ namespace FurkiebotCMR {
                     break;
                 case "JOIN": //Message someone when they join a certain channel
                     #region
-                    //DISABLED DUE TO PERMORMANCE ISSUES
                     if (ex[2] == ":" + realRacingChan) {
                         if (StringCompareNoCaps(getUserIrc(nickname), nickname)) {
                             sendData("NOTICE", nickname + fbOutput[0]);
@@ -628,6 +627,32 @@ namespace FurkiebotCMR {
                             {
                             sendData("NOTICE", nickname + " Custom Map Race " + cmrId + " is currently " + ColourChanger("In Progress", "12") + " at " + ColourChanger(realRacingChan, "04") + ". " + CountEntrants(racers) + " entrants");
                         }
+                    }
+                    break;
+                    #endregion                
+                
+                case "PART": //Update identlist on someone leaving channel
+                    #region
+                    if (identlist.ContainsKey(nickname)) {
+                        identlist[nickname] = false;
+                    }
+                    break;
+                    #endregion
+
+                case "QUIT": //Update identlist on QUIT
+                    #region
+                    if (identlist.ContainsKey(nickname)) {
+                        identlist[nickname] = false;
+                    }
+                    break;
+                    #endregion
+
+
+                case "NICK": //Message someone when they join a certain channel
+                    #region
+                    //DISABLED DUE TO PERMORMANCE ISSUES
+                    if (identlist.ContainsKey(nickname)) {
+                        identlist[nickname] = false;
                     }
                     break;
                     #endregion
@@ -1153,7 +1178,8 @@ namespace FurkiebotCMR {
                         switch (ex[4].Trim().ToLower()) {
                             case "register":
                                 if (!IsIdentified(nickname)) {
-                                    sendData("NOTICE", nickname + " :You need to first be using a nick registered on SRL to register with furkiebot. \"/msg NickServ HELP REGISTER\"");
+                                    sendData("NOTICE", nickname + " :You need to first be using a nick registered on SRL to register with furkiebot. ");
+                                    sendData("NOTICE", nickname + " :\"/msg NickServ HELP REGISTER\"");
                                 }
                                 sendData("NOTICE", nickname + " :To register with FurkieBot the password does not need to be the same as your SRL password. This is the username and password that you will use in IRC and on the CMR website.");
                                 sendData("NOTICE", nickname + " :\"/msg FurkieBot REGISTER password\".");
