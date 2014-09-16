@@ -24,7 +24,7 @@ if(mysql_num_rows($result) == 0) // User not found. So, redirect to login_form a
  
 $userData = mysql_fetch_array($result, MYSQL_ASSOC);
 */
-$thing = file_get_contents_curl("../Data/Userlist/userlistmap.JSON");
+$thing = file_get_contents_curl("C:/CMR/Data/Userlist/userlistmap.JSON");
 echo $thing[$username];
 $userData = $thing[$username];
 
@@ -32,12 +32,14 @@ $hash = hash('sha256', $userData['salt'] . hash('sha256', $password) );
  
 if($hash != $userData['password']) // Incorrect password. So, redirect to login_form again.
 {
-    header('Location: login.html');
+	echo "BAD PASSWORD";
+   // header('Location: login.html');
 }else{ // Redirect to home page after successful login.
 	session_regenerate_id();
 	$_SESSION['sess_user_id'] = $userData['username'];
 	$_SESSION['sess_username'] = $userData['username'];
 	session_write_close();
-	header('Location: home.php');
+	echo "GOOD PASSWORD";
+	//header('Location: home.php');
 }
 ?>

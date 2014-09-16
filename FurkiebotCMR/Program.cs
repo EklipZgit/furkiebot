@@ -562,6 +562,7 @@ namespace FurkiebotCMR {
                     info.password = hashes[1];
                     info.ircname = nickname;
                     info.dustforcename = "";
+                    info.streamurl = @"http://twitch.tv";
                     info.admin = false;
                     info.tester = false;
                     info.trusted = false;
@@ -1268,7 +1269,7 @@ namespace FurkiebotCMR {
 
                 switch (command.ToLower()) {
                     case ":.help":
-                    #region
+                        #region
                         switch (ex[4].Trim().ToLower()) {
                             case "register":
                                 if (!IsIdentified(nickname)) {
@@ -1281,7 +1282,7 @@ namespace FurkiebotCMR {
                         }
 
                         break;
-                    #endregion
+                        #endregion
 
                     case ":.j61": // oin #channel
                         sendData("JOIN", ex[4]);
@@ -1573,13 +1574,47 @@ namespace FurkiebotCMR {
                     #endregion
 
 
+
+                    #region .setstream
+                    case ":.setstream": //set the users stream url
+                        if (IsIdentified(nickname)) {
+                            if (IsRegistered(nickname)) {
+                                SetStream(nickname, ex[4]);
+                            } else {
+                                NoticeNotRegistered(nickname);
+                            }
+                        } else {
+                            NoticeNotIdentified(nickname);
+                        }
+                        break;
+                    #endregion
+
+
                     case ":register":
                         AttemptRegistration(nickname, ex[4]);
+                        break;
+
+
+                    case ":verify":
+                        if (IsRegistered(nickname)) {
+                            if (VerifyHash(ex[4], userlist[nickname].salt, userlist[nickname].password)) {
+                                sendData("NOTICE", nickname + " :your password checks out");
+                            } else {
+                                sendData("NOTICE", nickname + " :uh oh something is wrong");
+                            }
+                        }
                         break;
                     
                 }
             }
             return shouldRun;
+        }
+
+        private void SetStream(string nickname, string url) {
+            PlayerInfo info = userlist[nickname];
+            info.streamurl = url;
+            userlist[nickname] = info;
+            WriteUsers();
         }
 
 
