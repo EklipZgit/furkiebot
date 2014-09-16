@@ -449,7 +449,9 @@ namespace FurkiebotCMR {
 
 
 
-
+        /**
+         * Checks to see if a user is identified.
+         */
         private bool IsIdentified(string nick) {
             if (identlist.ContainsKey(nick) && identlist[nick]) {
                 return true;
@@ -463,7 +465,7 @@ namespace FurkiebotCMR {
 
                 while (!is318) {
                     Console.WriteLine(" ");
-                    Console.WriteLine("Waiting on whois");
+                    Console.WriteLine("Waiting on whois for " + nick);
 
                     string[] ex;
                     string data;
@@ -474,6 +476,7 @@ namespace FurkiebotCMR {
                     ex = data.Split(charSeparator, 5);
                     if (ex[2] == "307") {
                         isIdentified = true;
+                        Console.WriteLine("Successfully identified " + nick);
                     } else if (ex[2] == "318") {
                         is318 = true;
                     } else {
@@ -1504,36 +1507,36 @@ namespace FurkiebotCMR {
             int choice = r.Next(6);
 
             if (ex[4] == "me") {
-                sendData("PRIVMSG", mainchannel + " :" + (char)1 + @"ACTION uses " + nickname + "'s own hands to slap himself. \"STOP HITTING YOURSELF, STOP HITTING YOURSELF!" + (char)1);
-            } else if (ex[4] == "FurkieBot" || ex[4] == "FurkieBot_") {
-                sendData("PRIVMSG", mainchannel + " :" + (char)1 + @"ACTION slaps " + nickname + ". Don't be like that!" + (char)1);
+                sendData("PRIVMSG", ex[3] + " :" + (char)1 + @"ACTION uses " + nickname + "'s own hands to slap himself. \"STOP HITTING YOURSELF, STOP HITTING YOURSELF!" + (char)1);
+            } else if (IsAdmin(ex[4].ToLower())) {
+                sendData("PRIVMSG", ex[3] + " :" + (char)1 + @"ACTION slaps " + nickname + ". Don't be like that!" + (char)1);
             } else {
                 switch (choice) {
                     case 0:
-                        sendData("PRIVMSG", mainchannel + " :" + (char)1 + @"ACTION slaps " + ex[4] + " with " + nickname + "'s favorite game console." + (char)1);
+                        sendData("PRIVMSG", ex[3] + " :" + (char)1 + @"ACTION slaps " + ex[4] + " with " + nickname + "'s favorite game console." + (char)1);
                         break;
                     case 1:
-                        if (StringCompareNoCaps(nickname, "furkiepurkie") || StringCompareNoCaps(nickname, "eklipz")) {
+                        if (IsAdmin(nickname.ToLower())) {
                             goto case 4;
                         } else {
-                            sendData("PRIVMSG", mainchannel + " :Only cool people are allowed to .slap people. Go slap yourself, " + nickname + ".");
+                            sendData("PRIVMSG", ex[3] + " :Only cool people are allowed to .slap people. Go slap yourself, " + nickname + ".");
                         }
                         break;
                     case 2:
-                        sendData("PRIVMSG", mainchannel + " :" + (char)1 + @"ACTION slaps " + ex[4] + " around, just a little." + (char)1);
+                        sendData("PRIVMSG", ex[3] + " :" + (char)1 + @"ACTION slaps " + ex[4] + " around, just a little." + (char)1);
                         break;
                     case 3:
-                        sendData("PRIVMSG", mainchannel + " :" + (char)1 + @"ACTION slaps " + ex[4] + " with vigor." + (char)1);
+                        sendData("PRIVMSG", ex[3] + " :" + (char)1 + @"ACTION slaps " + ex[4] + " with vigor." + (char)1);
                         break;
                     case 4:
-                        if (StringCompareNoCaps(nickname, "furkiepurkie") || StringCompareNoCaps(nickname, "eklipz")) {
-                            sendData("PRIVMSG", mainchannel + " :" + (char)1 + @"ACTION slaps " + ex[4] + " with his cold, metal bot-hand" + (char)1);
+                        if (IsAdmin(nickname.ToLower())) {
+                            sendData("PRIVMSG", ex[3] + " :" + (char)1 + @"ACTION slaps " + ex[4] + " with his cold, metal bot-hand" + (char)1);
                         } else {
-                            sendData("PRIVMSG", mainchannel + " :Only cool people are allowed to .slap people. Go slap yourself, " + nickname + ".");
+                            sendData("PRIVMSG", ex[3] + " :Only cool people are allowed to .slap people. Go slap yourself, " + nickname + ".");
                         }
                         break;
                     case 5:
-                        sendData("PRIVMSG", mainchannel + " :" + (char)1 + @"ACTION slaps " + nickname + ". BE NICE." + (char)1);
+                        sendData("PRIVMSG", ex[3] + " :" + (char)1 + @"ACTION slaps " + nickname + ". BE NICE." + (char)1);
                         break;
                 }
             }
