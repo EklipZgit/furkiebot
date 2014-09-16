@@ -56,7 +56,7 @@ namespace FurkiebotCMR {
 
     internal class FurkieBot : IDisposable {
         public static string SEP = ColourChanger(" | ", "07"); //The orange | seperator also used by GLaDOS
-        public const string MAPS_PATH = @"C:\CMRmaps";
+        public const string MAPS_PATH = @"C:\CMR\Maps";
         public const int MIN_MAPS = 6;
          
 
@@ -154,8 +154,8 @@ namespace FurkiebotCMR {
             cmrtimeString = @"10:30:00"; //make sure this equals the time on TimeSpan cmrtime
 
 
-            pendingMaps = new HashSet<String>(Directory.GetFiles("C:\\CMRmaps\\" + cmrId + "\\pending", "*").Select(path => Path.GetFileName(path)).ToArray());
-            acceptedMaps = new HashSet<String>(Directory.GetFiles("C:\\CMRmaps\\" + cmrId + "\\accepted", "*").Select(path => Path.GetFileName(path)).ToArray());
+            pendingMaps = new HashSet<String>(Directory.GetFiles("C:\\CMR\\Maps\\" + cmrId + "\\pending", "*").Select(path => Path.GetFileName(path)).ToArray());
+            acceptedMaps = new HashSet<String>(Directory.GetFiles("C:\\CMR\\Maps\\" + cmrId + "\\accepted", "*").Select(path => Path.GetFileName(path)).ToArray());
 
 
             /*
