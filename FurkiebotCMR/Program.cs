@@ -56,7 +56,7 @@ namespace FurkiebotCMR {
 
     internal class FurkieBot : IDisposable {
         public static string SEP = ColourChanger(" | ", "07"); //The orange | seperator also used by GLaDOS
-        public const string MAPS_PATH = @"C:\CMR\Maps";
+        public const string MAPS_PATH = @"C:\CMR\Maps\";
         public const int MIN_MAPS = 6;
          
 
@@ -133,7 +133,7 @@ namespace FurkiebotCMR {
 
             dummyRacingChan = "#cmr-"; //first part of racingchannel string
             realRacingChan = ""; //real racing channel string
-            mainchannel = "#dustforcee"; //also the channel that will be joined upon start, change to #dustforcee for testing purposes
+            mainchannel = "#dustforce"; //also the channel that will be joined upon start, change to #dustforcee for testing purposes
             cmrchannel = "#DFcmr";
             cmrId = GetCurrentCMRID();
             comNames = ""; // Used for NAMES commands
@@ -163,8 +163,8 @@ namespace FurkiebotCMR {
              */
             pendingWatcher = new FileSystemWatcher();
             acceptedWatcher = new FileSystemWatcher();
-            pendingWatcher.Path = MAPS_PATH + "\\" + cmrId + "\\pending";
-            acceptedWatcher.Path = MAPS_PATH + "\\" + cmrId + "\\accepted";
+            pendingWatcher.Path = MAPS_PATH + cmrId + "\\pending";
+            acceptedWatcher.Path = MAPS_PATH + cmrId + "\\accepted";
             /* Watch for changes in LastWrite times, and
                the renaming of files or directories. */
             pendingWatcher.NotifyFilter = NotifyFilters.LastWrite
@@ -516,7 +516,12 @@ namespace FurkiebotCMR {
                     char[] charSeparator = new char[] { ' ' };
                     ex = data.Split(charSeparator, 5);
                     Console.WriteLine("Waiting on whois for " + nick + ", ex[1] = " + ex[1]);
-                    Console.WriteLine(data);
+
+                    if (ex.Length > 3 && ex[3].ToLower() == ":register") {
+                        Console.WriteLine("Password info hidden");
+                    } else {
+                        Console.WriteLine(data);
+                    } 
                     if (ex[1] == "307") {
                         isIdentified = true;
                         Console.WriteLine("Successfully identified " + nick);
@@ -569,7 +574,7 @@ namespace FurkiebotCMR {
                     userlist[nickname] = info;
                     WriteUsers();
                 }
-                
+                SendNotice(nickname, "Successfully registered your nick with FurkieBot! Dont forget your password. You can always re-register if you forget the password.");
             } else {
                 NoticeNotIdentified(nickname);
             }
@@ -618,10 +623,14 @@ namespace FurkiebotCMR {
                 string data;
 
                 data = sr.ReadLine();
-                Console.WriteLine(data);
                 char[] charSeparator = new char[] { ' ' };
                 ex = data.Split(charSeparator, 5);
 
+                if (ex.Length > 3 && ex[3].ToLower() == ":register") {
+                    Console.WriteLine("Password info hidden");
+                } else {
+                    Console.WriteLine(data);
+                } 
                 shouldRun = ProcessInput(ex, data, charSeparator);
                 
                 //Console.WriteLine("End Last Switch " + parseTimer.Elapsed);
@@ -780,8 +789,9 @@ namespace FurkiebotCMR {
                         if (!StringCompareNoCaps(ex[2], realRacingChan)) //FurkieBot commands for the main channel
                             {
 
-                            sendData("PRIVMSG", ex[2] + " Commands: .cmr" + SEP + ".maps" + SEP + ".startcmr" + SEP + ".ign <ircname>" + SEP + ".setign <in-game name>" + SEP + ".mappack" + SEP + ".pending" + SEP + ".accepted");
-                            sendData("PRIVMSG", ex[2] + @" CMR info: http://eklipz.us.to/cmr" + SEP + @"Command list: https://github.com/EklipZgit/furkiebot/wiki" + SEP + "FurkieBot announce channel: #DFcmr");
+                            sendData("PRIVMSG", ex[2] + " :Commands: .cmr" + SEP + ".maps" + SEP + ".startcmr" + SEP + ".ign <ircname>" + SEP + ".setign <in-game name>" + SEP + ".mappack" + SEP + ".pending" + SEP + ".accepted");
+                            sendData("PRIVMSG", ex[2] + @" :CMR info: http://eklipz.us.to/cmr" + SEP + @"Command list: https://github.com/EklipZgit/furkiebot/wiki" + SEP + "FurkieBot announce channel: #DFcmr");
+                            sendData("PRIVMSG", ex[2] + @" :.help register" + SEP + ".help tester");
 
                         } else {            // FurkieBot commands for race channel
                             sendData("PRIVMSG", ex[2] + @" Command list: https://github.com/EklipZgit/furkiebot/wiki");
@@ -1275,9 +1285,17 @@ namespace FurkiebotCMR {
                                 if (!IsIdentified(nickname)) {
                                     NoticeNotIdentified(nickname);
                                 }
-                                sendData("NOTICE", nickname + " :To register with FurkieBot the password does not need to be the same as your SRL password. This is the username and password that you will use in IRC and on the CMR website.");
-                                sendData("NOTICE", nickname + " :\"/msg FurkieBot REGISTER password\".");
-                                sendData("NOTICE", nickname + " :DO NOT FORGET THE /msg PART, YOU DONT WANT TO SEND YOUR PASSWORD TO THE WHOLE CHANNEL.");
+                                sendData("PRIVMSG", ex[2] + " :To register with FurkieBot the password does not need to be the same as your SRL password. This is the username and password that you will use in IRC and on the CMR website.");
+                                sendData("PRIVMSG", ex[2] + " :\"/msg FurkieBot REGISTER password\".");
+                                sendData("PRIVMSG", ex[2] + " :DO NOT FORGET THE /msg PART, YOU DONT WANT TO SEND YOUR PASSWORD TO THE WHOLE CHANNEL.");
+                                break;
+                            case "tester":
+                                if (!IsIdentified(nickname)) {
+                                    NoticeNotIdentified(nickname);
+                                }
+                                sendData("PRIVMSG", ex[2] + " :Tester Commands:" + SEP + ".accept <mapAuthor>-<mapName>" + SEP + ".unaccept <mapAuthor>-<mapName>");
+                                sendData("PRIVMSG", ex[2] + " :.settester  -  sets you as a DEDICATED tester for the next CMR. This is not undoable.");
+                                sendData("PRIVMSG", ex[2] + " :To be a map tester you must currently be a trusted community member. Ask a FurkieBot administrator if you cannot use .settester and believe you should be able to.");
                                 break;
                         }
 
@@ -1502,21 +1520,81 @@ namespace FurkiebotCMR {
                         }
                         #endregion
                         break;
+                    case ":.accept":
+                        goto case ":.acceptmap";
 
-                    case ":sendmap": //FurkieBot loves private messages containing potential maps for a CMR!
-                        goto case ":.sendmap";
-                    case ":.sendmap":
-                        #region
-                        if (ex[1] == "PRIVMSG" && StringCompareNoCaps(ex[2], "furkiebot")) //Only private messages ofcourse
-                            {
-                            using (System.IO.StreamWriter file = new System.IO.StreamWriter(@"C:\CMR\Data\Map_Request.txt", true)) {
-                                file.WriteLine(nickname + " - " + ex[4]);
+                    case ":.acceptmap":
+                        if (IsIdentified(nickname) && IsTester(nickname, true)) {
+                            string mapname = ex[4];
+                            for (int i = 5; i < ex.Length; i++) {
+                                mapname = mapname + " " + ex[i];
                             }
-                            sendData("NOTICE", nickname + " You sent the following URL to me: " + ex[4]);
-                            sendData("NOTICE", nickname + " Your map has been added to queue and will be reviewed as soon as possible (????)"); //Gotta thank your mappers :3
-                            sendData("NOTICE", "Furkiepurkie " + nickname + " has added a map to queue: " + ex[4]);
+                            if (File.Exists(MAPS_PATH + cmrId + "\\pending\\" + mapname)) {
+                                File.Move(MAPS_PATH + cmrId + "\\pending\\" + mapname, MAPS_PATH + cmrId + "\\accepted\\" + mapname);
+                                sendData("NOTICE", nickname + " :Map successfully accepted.");
+                            } else {
+                                sendData("PRIVMSG", ex[2] + " :Sorry, no file by the name \"" + MAPS_PATH + cmrId + "\\pending\\" + mapname + "\". Please .accept <mapMakerName>-<mapName>.");
+                            }
                         }
-                        #endregion
+                        break;
+
+
+                    case ":.unaccept":
+                        goto case ":.acceptmap";
+
+                    case ":.unacceptmap":
+                        if (IsIdentified(nickname) && IsTester(nickname, true)) {
+                            string mapname = ex[4];
+                            for (int i = 5; i < ex.Length; i++) {
+                                mapname = mapname + " " + ex[i];
+                            }
+                            if (File.Exists(MAPS_PATH + cmrId + "\\accepted\\" + mapname)) {
+                                File.Move(MAPS_PATH + cmrId + "\\accepted\\" + mapname, MAPS_PATH + cmrId + "\\pending\\" + mapname);
+                                sendData("NOTICE", nickname + " :Map successfully unaccepted.");
+                            } else {
+                                sendData("PRIVMSG", ex[2] + " :Sorry, no file by the name \"" + MAPS_PATH + cmrId + "\\pending\\" + mapname + "\". Please .unaccept <mapMakerName>-<mapName>.");
+                            }
+                        }
+                        break;
+
+                    case ":.settester":
+                        if (IsAdmin(nickname)) {
+                            if (IsRegistered(ex[4])) {
+                                setTester(ex[4], ex[5]);
+                            } else {
+                                SendNotice(nickname, "That person isn't registered.");
+                            }
+                        }
+                        break;
+
+                    case ":.settrusted":
+                        if (IsAdmin(nickname)) {
+                            if (IsRegistered(ex[4])) {
+                                setTrusted(ex[4], ex[5]);
+                            } else {
+                                SendNotice(nickname, "That person isn't registered.");
+                            }
+                        }
+                        break;
+
+                    case ":.setrating":
+                        if (IsAdmin(nickname)) {
+                            if (IsRegistered(ex[4])) {
+                                setRating(ex[4], ex[5]);
+                            } else {
+                                SendNotice(nickname, "That person isn't registered.");
+                            }
+                        }
+                        break;
+
+                    case ":.setrandmaprating":
+                        if (IsAdmin(nickname)) {
+                            if (IsRegistered(ex[4])) {
+                                setRandmapRating(ex[4], ex[5]);
+                            } else {
+                                SendNotice(nickname, "That person isn't registered.");
+                            }
+                        }
                         break;
 
 
@@ -1549,6 +1627,7 @@ namespace FurkiebotCMR {
                     case ":.saydf": //Can be used to broadcast a message to the mainchannel by whispering this command to FurkieBot
                         if (ex[1] == "PRIVMSG" && StringCompareNoCaps(ex[2], "furkiebot")) {
                             sendData("PRIVMSG", mainchannel + " " + ex[4]);
+                            sendData("PRIVMSG", cmrchannel + " " + ex[4]);
                         }
                         break;
 
@@ -1608,6 +1687,26 @@ namespace FurkiebotCMR {
                 }
             }
             return shouldRun;
+        }
+
+        private void setRandmapRating(string p1, string p2) {
+            throw new NotImplementedException();
+        }
+
+        private void setRating(string p1, string p2) {
+            throw new NotImplementedException();
+        }
+
+        private void setTrusted(string p1, string p2) {
+            throw new NotImplementedException();
+        }
+
+        private void setTester(string p1, string p2) {
+            throw new NotImplementedException();
+        }
+
+        private void SendNotice(string nickname, string message) {
+            sendData("NOTICE", nickname + " :" + message);
         }
 
         private void SetStream(string nickname, string url) {
@@ -3024,7 +3123,7 @@ namespace FurkiebotCMR {
         private static void Main(string[] args) {
             IRCConfig conf = new IRCConfig();
             conf.name = "FurkieBot";
-            conf.nick = "FurkieBot_";
+            conf.nick = "FurkieBot";
             conf.altNick = "FurkieBot_";
             conf.port = 6667;
             conf.server = "irc2.speedrunslive.com";
