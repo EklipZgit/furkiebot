@@ -133,7 +133,7 @@ namespace FurkiebotCMR {
 
             dummyRacingChan = "#cmr-"; //first part of racingchannel string
             realRacingChan = ""; //real racing channel string
-            mainchannel = "#dustforcee"; //also the channel that will be joined upon start, change to #dustforcee for testing purposes
+            mainchannel = "#dustforce"; //also the channel that will be joined upon start, change to #dustforcee for testing purposes
             cmrchannel = "#DFcmr";
             cmrId = GetCurrentCMRID();
             comNames = ""; // Used for NAMES commands
@@ -257,7 +257,7 @@ namespace FurkiebotCMR {
             string fileName = Path.GetFileName(e.FullPath);
             acceptedMaps.Remove(fileName);
 
-            string toSay = " :Map un accepted: \"";
+            string toSay = " :Map returned to pending: \"";
 
             string[] split = fileName.Split('-');
             for (int i = 1; i < split.Length; i++) {
@@ -337,8 +337,12 @@ namespace FurkiebotCMR {
             userlist = JsonConvert.DeserializeObject<Dictionary<string, PlayerInfo>>(json); // initially loads the userlist from JSON
             dustforcelist = new Dictionary<string, PlayerInfo>();
             foreach (KeyValuePair<string, PlayerInfo> entry in userlist) {
-                dustforcelist.Add(entry.Value.dustforcename, entry.Value);
-                Console.WriteLine("name " + entry.Value.ircname + " dustforcename " + entry.Value.dustforcename + " tester " + entry.Value.tester + " trusted " + entry.Value.trusted + " admin " + entry.Value.admin);
+                if (!dustforcelist.ContainsKey(entry.Value.dustforcename)) {
+                    dustforcelist.Add(entry.Value.dustforcename, entry.Value);
+                    Console.WriteLine("name " + entry.Value.ircname + " dustforcename " + entry.Value.dustforcename + " tester " + entry.Value.tester + " trusted " + entry.Value.trusted + " admin " + entry.Value.admin);
+                } else {
+                    Console.WriteLine("\n\nDID NOT ADD DUPLICATE NAME \"" + entry.Value.dustforcename + "\"\n\n");
+                }
             }
         } /* IRCBot */
 
@@ -1258,14 +1262,36 @@ namespace FurkiebotCMR {
                             sendData("QUIT", " Updating FurkieBot (????)");
                         }
                         break;
-
-
+                    case ":.admins":
+                        string adminList = " :Admins:";
+                        foreach (KeyValuePair<string, PlayerInfo> entry in userlist) {
+                            if (entry.Value.admin && IsIdentified(entry.Key, nickname)) {
+                                adminList = adminList + SEP + entry.Value.ircname;
+                            }
+                        }
+                        sendData("PRIVMSG", ex[2] + adminList);
+                        break;
+                    case ":.testers":
+                        string testerList = " :Testers:";
+                        foreach (KeyValuePair<string, PlayerInfo> entry in userlist) {
+                            if (entry.Value.tester) {
+                                testerList = testerList + SEP + entry.Value.ircname;
+                            }
+                        }
+                        sendData("PRIVMSG", ex[2] + testerList);
+                        break;
                     //case ":.slap": //Im sorry
                     //    Slap(nickname, ex);
                     //    break;
                 }
             }
             //Console.WriteLine("End no-params command switch " + parseTimer.Elapsed);
+
+
+
+
+
+
 
 
 
@@ -1327,8 +1353,9 @@ namespace FurkiebotCMR {
                             string trimmedEx4 = ex[4].Trim();
                             string ircname = nickname;
 
-                            setUserIGN(ircname, trimmedEx4);
-                            sendData("PRIVMSG", ex[2] + " New IGN registered: " + ColourChanger(ircname, "03") + " > " + ColourChanger(trimmedEx4, "03") + "");
+                            if (setUserIGN(ircname, trimmedEx4)) {
+                                sendData("PRIVMSG", ex[2] + " New IGN registered: " + ColourChanger(ircname, "03") + " > " + ColourChanger(trimmedEx4, "03") + "");
+                            }
                         } else {
                             NoticeNotIdentified(nickname);
                         }
@@ -1530,7 +1557,7 @@ namespace FurkiebotCMR {
                                 File.Move(MAPS_PATH + cmrId + "\\pending\\" + mapname, MAPS_PATH + cmrId + "\\accepted\\" + mapname);
                                 sendData("NOTICE", nickname + " :Map successfully accepted.");
                             } else {
-                                sendData("PRIVMSG", ex[2] + " :Sorry, no file by the name \"" + MAPS_PATH + cmrId + "\\pending\\" + mapname + "\". Please .accept <mapMakerName>-<mapName>.");
+                                sendData("PRIVMSG", ex[2] + " :Sorry, no file by the name \"" + mapname + "\". in pending maps. Please .accept <mapMakerName>-<mapName>.");
                             }
                         } else if (!IsTester(nickname, nickname)) {
                             sendData("NOTICE", nickname + " :You need to be a tester, sorry.");
@@ -1539,7 +1566,7 @@ namespace FurkiebotCMR {
 
 
                     case ":.unaccept":
-                        goto case ":.acceptmap";
+                        goto case ":.unacceptmap";
 
                     case ":.unacceptmap":
                         if (IsIdentified(nickname, nickname) && IsTester(nickname, nickname)) {
@@ -1549,9 +1576,9 @@ namespace FurkiebotCMR {
                             }
                             if (File.Exists(MAPS_PATH + cmrId + "\\accepted\\" + mapname)) {
                                 File.Move(MAPS_PATH + cmrId + "\\accepted\\" + mapname, MAPS_PATH + cmrId + "\\pending\\" + mapname);
-                                sendData("NOTICE", nickname + " :Map successfully unaccepted.");
+                                sendData("NOTICE", nickname + " :Map successfully moved back to pending.");
                             } else {
-                                sendData("PRIVMSG", ex[2] + " :Sorry, no file by the name \"" + MAPS_PATH + cmrId + "\\pending\\" + mapname + "\". Please .unaccept <mapMakerName>-<mapName>.");
+                                sendData("PRIVMSG", ex[2] + " :Sorry, no file by the name \"" + mapname + "\". in accepted maps. Please .unaccept <mapMakerName>-<mapName>.");
                             }
                         } else if (!IsTester(nickname, nickname)) {
                             sendData("NOTICE", nickname + " :You need to be a tester, sorry.");
@@ -1559,16 +1586,16 @@ namespace FurkiebotCMR {
                         break;
 
                     case ":.settester":
-                        if (IsAdmin(nickname, nickname)) {
+                        if (IsAdmin(nickname, nickname)) {  //admin is sending this command
                             char[] separator = { ' ' };
                             string[] split = ex[4].Split(separator, 2);
                             Console.WriteLine("\n\n" + split[0] + " IS REGISTERED? " + IsRegistered(split[0].ToLower()) + "\n\n");
-                            if (split.Length == 2) {
+                            if (split.Length == 2 && (split[1].ToLower() == "true" || split[1].ToLower() == "false")) {    // name true/false
                                 if (IsRegistered(split[0].ToLower())) {
                                     setTester(split[0].ToLower(), split[1]);
                                     SendNotice(split[0], "Your tester status set to: " + split[1]);
                                     SendNotice(nickname, split[0] + "'s tester status set to: " + split[1]);
-                                    if (!IsTrusted(split[0].ToLower(), nickname)) {
+                                    if (!IsTrusted(split[0].ToLower(), nickname) && split[1] == "true") {
                                         setTrusted(split[0].ToLower(), split[1]);
                                         SendNotice(split[0], "You are now trusted.");
                                     }
@@ -1579,19 +1606,50 @@ namespace FurkiebotCMR {
                                 SendNotice(nickname, "Incorrect format. Use <name> <trueOrFalse>");
                             }
                         } else {
-                            if (IsTrusted(nickname, nickname)) {
+                            if (IsTrusted(nickname, nickname)) {//trusted
                                 if (ex[4].ToLower() == "true") {
                                     setTester(nickname, ex[4]);
                                     SendNotice(nickname, "Your tester status set to true.");
-                                } else if (IsAdmin(nickname, nickname)) {
-                                    setTester(nickname, ex[4]);
-                                    SendNotice(nickname, "As you wish, sir.");
+                                } else if (ex[4].ToLower() == "false") {
+
+                                    if (IsAdmin(nickname, nickname)) { //admin wants to set himself to not-tester
+                                        setTester(nickname, ex[4]);
+                                        SendNotice(nickname, "As you wish, sir.");
+                                    } else {                        //normal tester wants to set himself to not-tester
+                                        SendNotice(nickname, "Once you are a tester, you must remain a tester until after the next CMR. Ask a furkiebot admin after the CMR has ended to switch you off of tester.");
+                                    }
                                 } else {
-                                    SendNotice(nickname, "Once you are a tester, you must remain a tester until after the next CMR. Ask a furkiebot admin after the CMR has ended to switch you off of tester.");
+                                    SendNotice(nickname, "Bad format. Use true or false.");
+                                }
+                            } else { //not trusted
+                                SendNotice(nickname, "You are not allowed to be a tester. To get testing privileges, talk to a FurkieBot administrator.");
+                            }
+                        }
+                        break;
+
+                    case ":.setstream":
+                        char[] separ = { ' ' };
+                        string[] splitStream = ex[4].Split(separ, 2);
+                        if (IsAdmin(nickname, nickname) && splitStream.Length > 1) {  //admin is sending this command
+                            setStream(splitStream[0].ToLower(), splitStream[1]);
+                            sendData("PRIVMSG", ex[2] + " :" + splitStream[0] + "'s stream url set to: " + splitStream[1]);
+                        } else {
+                            if (IsIdentified(nickname, nickname)) {
+                                if (IsRegistered(nickname)) {
+                                    setStream(nickname, ex[4]);
+                                    sendData("PRIVMSG", ex[2] + " :" + nickname + "'s stream url set to: " + ex[4]);
+                                } else {
+                                    NoticeNotRegistered(nickname);
                                 }
                             } else {
-                                SendNotice(nickname, "You are not allowed to be a tester. To get testing priveleges, talk to a FurkieBot administrator.");
+                                NoticeNotIdentified(nickname);
                             }
+                        }
+                        break;
+
+                    case ":.stream":
+                        if (userlist.ContainsKey(ex[4].ToLower())) {
+                            sendData("PRIVMSG", ex[2] + " :" + ex[4] + "'s stream url is: " + userlist[ex[4].ToLower()].streamurl);
                         }
                         break;
 
@@ -1599,7 +1657,7 @@ namespace FurkiebotCMR {
                         if (IsAdmin(nickname, nickname)) {
                             char[] separator = { ' ' };
                             string[] split = ex[4].Split(separator, 2);
-                            if (split.Length == 2) {
+                            if (split.Length == 2 && (split[1].ToLower() == "true" || split[1].ToLower() == "false")) {
                                 if (IsRegistered(split[0].ToLower())) {
                                     setTrusted(split[0].ToLower(), split[1]);
                                     SendNotice(split[0], "Your trusted status set to: " + split[1]);
@@ -1610,7 +1668,30 @@ namespace FurkiebotCMR {
                             } else {
                                 SendNotice(nickname, "Incorrect format. Use <name> <trueOrFalse>");
                             }
-                        } 
+                        }
+                        break;
+
+                    case ":.setadmin":
+                        if (IsAdmin(nickname, nickname)) {
+                            char[] separator = { ' ' };
+                            string[] split = ex[4].Split(separator, 2);
+                            if (split[0].ToLower() == "furkiepurkie" || split[0].ToLower() == "eklipz") {
+                                SendNotice(split[0], nickname + " just tried to set your admin status to: " + split[1]);
+                                SendNotice(nickname, "Nice try");
+                            } else {
+                                if (split.Length == 2 && (split[1].ToLower() == "true" || split[1].ToLower() == "false")) {
+                                    if (IsRegistered(split[0].ToLower())) {
+                                        setAdmin(split[0].ToLower(), split[1]);
+                                        SendNotice(split[0], "Your admin status set to: " + split[1]);
+                                        SendNotice(nickname, split[0] + "'s admin status set to: " + split[1]);
+                                    } else {
+                                        SendNotice(nickname, "That person isn't registered.");
+                                    }
+                                } else {
+                                    SendNotice(nickname, "Incorrect format. Use <name> <trueOrFalse>");
+                                }
+                            }
+                        }
                         break;
 
                     case ":.setrating":
@@ -1703,22 +1784,6 @@ namespace FurkiebotCMR {
                     #endregion
 
 
-
-                    #region .setstream
-                    case ":.setstream": //set the users stream url
-                        if (IsIdentified(nickname, nickname)) {
-                            if (IsRegistered(nickname)) {
-                                setStream(nickname, ex[4]);
-                            } else {
-                                NoticeNotRegistered(nickname);
-                            }
-                        } else {
-                            NoticeNotIdentified(nickname);
-                        }
-                        break;
-                    #endregion
-
-
                     case ":register":
                         AttemptRegistration(nickname, ex[4]);
                         break;
@@ -1739,21 +1804,33 @@ namespace FurkiebotCMR {
             return shouldRun;
         }
 
-        private void setRandmapRating(string nickname, string tOrF) {
+        private void setRandmapRating(string nickname, string rating) {
+            throw new NotImplementedException();
             if (IsRegistered(nickname)) {
 
                 PlayerInfo info = userlist[nickname];
-                info.tester = (tOrF.ToLower() == "true" ? true : false);
+                info.tester = (rating.ToLower() == "true" ? true : false);
                 userlist[nickname] = info;
                 WriteUsers();
             }
         }
 
-        private void setRating(string nickname, string tOrF) {
+        private void setRating(string nickname, string rating) {
+            throw new NotImplementedException();
             if (IsRegistered(nickname)) {
 
                 PlayerInfo info = userlist[nickname];
-                info.tester = (tOrF.ToLower() == "true" ? true : false);
+                info.tester = (rating.ToLower() == "true" ? true : false);
+                userlist[nickname] = info;
+                WriteUsers();
+            }
+        }
+
+        private void setAdmin(string nickname, string tOrF) {
+            if (IsRegistered(nickname)) {
+
+                PlayerInfo info = userlist[nickname];
+                info.admin = (tOrF.ToLower() == "true" ? true : false);
                 userlist[nickname] = info;
                 WriteUsers();
             }
@@ -1763,7 +1840,7 @@ namespace FurkiebotCMR {
             if (IsRegistered(nickname)) {
 
                 PlayerInfo info = userlist[nickname];
-                info.tester = (tOrF.ToLower() == "true" ? true : false);
+                info.trusted = (tOrF.ToLower() == "true" ? true : false);
                 userlist[nickname] = info;
                 WriteUsers();
             }
@@ -1781,7 +1858,6 @@ namespace FurkiebotCMR {
 
         private void setStream(string nickname, string url) {
             if (IsRegistered(nickname)) {
-
                 PlayerInfo info = userlist[nickname];
                 info.streamurl = url;
                 userlist[nickname] = info;
@@ -1961,29 +2037,31 @@ namespace FurkiebotCMR {
 
 
 
-        void setUserIGN(string ircuser, string dustforceuser) {
-            if (!dustforcelist.ContainsKey(dustforceuser.ToLower())) {
+        bool setUserIGN(string ircuser, string dustforceuser) {
+            if (!dustforcelist.ContainsKey(dustforceuser) || (dustforcelist[dustforceuser].ircname == ircuser.ToLower())) {
                 PlayerInfo temp = new PlayerInfo();
                 userlist.TryGetValue(ircuser.ToLower(), out temp);
                 string oldname = temp.dustforcename;
-                Console.WriteLine("name " + temp.ircname + " dustforcename " + temp.dustforcename + " tester " + temp.tester + " trusted " + temp.trusted + " admin " + temp.admin);
+                //Console.WriteLine("name " + temp.ircname + " dustforcename " + temp.dustforcename + " tester " + temp.tester + " trusted " + temp.trusted + " admin " + temp.admin);
 
                 //delete old dustforceuser entry
-                if (dustforcelist.ContainsKey(oldname.ToLower())) {
-                    dustforcelist.Remove(oldname.ToLower());
+                if (dustforcelist.ContainsKey(oldname)) {
+                    dustforcelist.Remove(oldname);
                 }
                 if (userlist.ContainsKey(ircuser.ToLower())) {
                     userlist.Remove(ircuser.ToLower());
                 }
-                temp.dustforcename = dustforceuser.ToLower();
+                temp.dustforcename = dustforceuser;
                 userlist.Add(ircuser.ToLower(), temp);
-                dustforcelist.Add(dustforceuser.ToLower(), temp);
+                dustforcelist.Add(dustforceuser, temp);
 
 
                 WriteUsers();
+                return true;
 
             } else {
                 sendData("NOTICE", ircuser + " :Someone already has that IGN (" + dustforceuser + ") registered. You may have registered it to another irc name?");
+                return false;
             }
         }
 
@@ -3201,7 +3279,7 @@ namespace FurkiebotCMR {
         private static void Main(string[] args) {
             IRCConfig conf = new IRCConfig();
             conf.name = "FurkieBot";
-            conf.nick = "FurkieBot_";
+            conf.nick = "FurkieBot";
             conf.altNick = "FurkieBot_";
             conf.port = 6667;
             conf.server = "irc2.speedrunslive.com";
