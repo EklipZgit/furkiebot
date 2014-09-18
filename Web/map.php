@@ -82,7 +82,7 @@ EOT;
 	$_SESSION['redirect'] = "http://eklipz.us.to/cmr/map.php";
 	$_SESSION['warning'] = "You need to log in before uploading maps.";
 	session_write_close();
-	header( 'Location: http://eklipz.us.to/cmr/login.php' )
+	header( 'Location: http://eklipz.us.to/cmr/login.php' );
 }
 	session_write_close();
 ?>

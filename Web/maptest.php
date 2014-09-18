@@ -33,7 +33,7 @@ EOT;
 	$_SESSION['redirect'] = "http://eklipz.us.to/cmr/maptest.php";
 	$_SESSION['warning'] = "You need to log in before accessing the map testing page.";
 	session_write_close();
-	header( 'Location: http://eklipz.us.to/cmr/login.php' )
+	header( 'Location: http://eklipz.us.to/cmr/login.php' );
 }
 echo '</div></body></html>';
 ?>
