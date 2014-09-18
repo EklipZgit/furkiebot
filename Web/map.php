@@ -5,6 +5,11 @@ if (isset($_SESSION['loggedIn'])) {
 <html>
 <head> 
 <style>
+#main {
+	width: 800px;
+	text-alight: left;
+	align: center;
+}
 label {
     display: inline-block;
     width: 100;
@@ -17,9 +22,10 @@ input {
 <body>
 <a href="index.html"> <b> Home</b></a><br><br>
 <b>Upload a map!</b>
+<div id="main">
 <p>
 <div style="width: 410">
-<form action="map.php" method="post"
+<form action="mapsubmit.php" method="post"
 enctype="multipart/form-data">
 <label for="file2">Map File:</label>
 <input type="file" name="file" id="file"><br>
@@ -68,15 +74,15 @@ With that said, here are a few tips for keeping racers happy.<br>
 Place your checkpoint flags flat on the ground. Spawning in the air sucks.<br>
 Ensure your dust color contrasts well with the ground / background. <br>
 Try to avoid gimicky maps that take too long to learn the gimick.<br>
-
+</div>
 </body>
 </html>	
 EOT;
 } else {
-	$_SESSION['redirect'] = "http://eklipz.us.to/cmr/map.html";
+	$_SESSION['redirect'] = "http://eklipz.us.to/cmr/map.php";
 	$_SESSION['warning'] = "You need to log in before uploading maps.";
 	session_write_close();
-	header( 'Location: http://eklipz.us.to/cmr/login.html' )
+	header( 'Location: http://eklipz.us.to/cmr/login.php' )
 }
 	session_write_close();
 ?>
