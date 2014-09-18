@@ -1,4 +1,5 @@
 <?php
+session_start();
 if (isset($_SESSION['loggedIn'])) {
 	$temp = explode(".", $_FILES["file"]["name"]);
 	$extension = end($temp);
@@ -6,14 +7,14 @@ if (isset($_SESSION['loggedIn'])) {
 	if ($extension == "html" || $extension == "php"){
 		echo '<p style="color: red;"><b>Your account is hereby banned from all future CMR\'s and your racedata deleted.</b></p>Just kidding. Don\'t try to exploit my server though. ♥';
 	} else if (count($temp) == 1) { //no file extensions.
-		echo "Thanks " . $_SESSION['username']; . "!<br>";
+		echo "Thanks " . $_SESSION['username'] . "!<br>";
 		if ($_FILES["file"]["error"] > 0) {
 		  echo "ERROR UPLOADING. Return Code: " . $_FILES["file"]["error"] . "<br>";
 		  echo "screenshot this to EklipZ in #DFcmr";
 		} else {
 			$filename = $_SESSION['username'] . "-" . $_POST["mapname"];
 			$safefile = preg_replace('/[\x00-\x1F\x80-\xFF]/', '', $filename);
-		  if (file_exists("C:/CMR/maps/36/pending/" . )) {
+		  if (file_exists("C:/CMR/maps/36/pending/" . $safefile)) {
 			unlink("C:/CMR/Maps/36/pending/" . $safefile);
 			move_uploaded_file($_FILES["file"]["tmp_name"],
 			"C:/CMR/Maps/36/pending/" . $safefile);
@@ -32,6 +33,6 @@ if (isset($_SESSION['loggedIn'])) {
 	$_SESSION['redirect'] = "http://eklipz.us.to/cmr/map.php";
 	$_SESSION['warning'] = "You need to log in before uploading maps.";
 	session_write_close();
-	header( 'Location: http://eklipz.us.to/cmr/login.php' )
+	header( 'Location: http://eklipz.us.to/cmr/login.php' );
 }
 ?>

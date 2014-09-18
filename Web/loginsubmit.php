@@ -2,14 +2,16 @@
 require_once "curl.php";
 //ob_start();
 session_start();
-//strtolower(string);
-$username = $_POST['username'];
+$usernameCase = $_POST['username'];
+//
+$username = strtolower($usernameCase);
 $password = $_POST['password'];
 
 $userlistfile = "C:\CMR\Data\Userlist\userlistmap.json";
 $filestring = file_get_contents($userlistfile);
 $userarray = json_decode($filestring, true);
-if (array_key_exists('username', $userarray)) {
+if (array_key_exists($username, $userarray)) {
+	echo "key existed, user in array";
 	$userData = $userarray[$username];
 	$salt = $userData['salt'];
 	$pwhash = base64_encode(hash('sha256', $password, true));
@@ -19,11 +21,11 @@ if (array_key_exists('username', $userarray)) {
 	if($hash != $userData['password']) // Incorrect password. So, redirect to login_form again.
 	{
 		$_SESSION['warning'] = "BAD PASSWORD";
-		header('Location: login.html');
+		header('Location: login.php');
 	} else { // Logged in successfully.
 		session_regenerate_id();
-		$_SESSION['sess_user_id'] = $userData['username'];
-		$_SESSION['username'] = $userData['username'];
+		$_SESSION['sess_user_id'] = $username;
+		$_SESSION['username'] = $username;
 		$_SESSION['loggedIn'] = true;
 		$_SESSION['trusted'] = $userData['trusted'];
 		$_SESSION['admin'] = $userData['admin'];
@@ -36,7 +38,7 @@ if (array_key_exists('username', $userarray)) {
 			header($temp);
 		} else {
 			session_write_close();
-			header('Location: home.php');
+			header('Location: http://eklipz.us.to/cmr');
 		}
 	}
 } else {

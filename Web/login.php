@@ -10,7 +10,7 @@
 </head>
 <body>
 <?php
-start_session();
+session_start();
 if (isset($_SESSION['warning'])) {
 	echo '<p style="color:red;"><b>' . $_SESSION['warning'] . '</b></p>';
 	unset($_SESSION['warning']);
@@ -21,7 +21,7 @@ session_write_close();
 <form id="form1" name="form1" method="post" action="loginsubmit.php">
 	<table width="510" border="0" align="center">
 		<tr>
-			<td colspan="2">Login Form</td>
+			<td colspan="2">Log in with your FurkieBot registration details!</td>
 		</tr>
 		<tr>
 			<td>Username:</td>
@@ -39,7 +39,7 @@ session_write_close();
 </form>
 
 <p>
-Havent registered with FurkieBot yet? You need to register first before you can login here.<br>Go <a href="http://eklipz.us.to/cmr/register.html">HERE</a> to learn how to register. It's easy!
+<b>Havent registered with FurkieBot yet? <a href="http://eklipz.us.to/cmr/register.html">REGISTER</a></b>
 </p>
 <p>Forgot your CMR password? Just follow the registration instructions above to register a new password. Don't worry, this wont reset your race history or anything like that.
 </p>
