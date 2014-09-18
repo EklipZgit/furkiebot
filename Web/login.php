@@ -1,33 +1,42 @@
 <?php
 require_once "curl.php";
-ob_start();
+//ob_start();
 session_start();
- echo "<html><head></head><body>";
 $username = $_POST['username'];
 $password = $_POST['password'];
 
 $userlistfile = "C:\CMR\Data\Userlist\userlistmap.json";
 $filestring = file_get_contents($userlistfile);
-echo "user: " . $username . "<br>";
 $userarray = json_decode($filestring, true);
-
-$userData = $userarray[$username];
-$salt = $userData['salt'];
-$pwhash = base64_encode(hash('sha256', $password, true));
-$hash =  base64_encode(hash('sha256', $userData['salt'] . $pwhash , true));
-$expected = $userData['password'];
- 
-if($hash != $userData['password']) // Incorrect password. So, redirect to login_form again.
-{
-	echo "BAD PASSWORD";
-   // header('Location: login.html');
-} else { // Redirect to home page after successful login.
-	session_regenerate_id();
-	$_SESSION['sess_user_id'] = $userData['username'];
-	$_SESSION['sess_username'] = $userData['username'];
+if (array_key_exists('username', $userarray)) {
+	$userData = $userarray[$username];
+	$salt = $userData['salt'];
+	$pwhash = base64_encode(hash('sha256', $password, true));
+	$hash =  base64_encode(hash('sha256', $userData['salt'] . $pwhash , true));
+	$expected = $userData['password'];
+	 
+	if($hash != $userData['password']) // Incorrect password. So, redirect to login_form again.
+	{
+		$_SESSION['warning'] = "BAD PASSWORD";
+		header('Location: login.html');
+	} else { // Logged in successfully.
+		session_regenerate_id();
+		$_SESSION['sess_user_id'] = $userData['username'];
+		$_SESSION['sess_username'] = $userData['username'];
+		$_SESSION['loggedIn'] = true;
+		if (isset($_SESSION['redirect'])) {
+			$temp = $_SESSION['redirect'];
+			unset($_SESSION['redirect']);
+			session_write_close();
+			header($temp);
+		} else {
+			session_write_close();
+			header('Location: home.php');
+		}
+	}
+} else {
+	$_SESSION['warning'] = 'NOT A REGISTERED USERNAME, REGISTRATION INFO <a href="http://eklipz.us.to/cmr/register.html">HERE</a>';
 	session_write_close();
-	echo "GOOD PASSWORD";
-	//header('Location: home.php');
+	header('Location: login.html');
 }
-echo "</body></html>";
 ?>

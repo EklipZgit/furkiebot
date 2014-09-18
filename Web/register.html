@@ -1,37 +1,21 @@
-<!<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
 <head>
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<title>Register</title>
+<style>
+#main {
+	width: 800px;
+	text-alight: left;
+	align: center;
+}
+</style>
 </head>
- 
 <body>
-<form name="register" action="register.php" method="post">
-	<table width="510" border="0">
-		<tr>
-			<td colspan="2"><p><strong>Registration Form</strong></p></td>
-		</tr>
-		<tr>
-			<td>Username:</td>
-			<td><input type="text" name="username" maxlength="20" /></td>
-		</tr>
-		<tr>
-			<td>Password:</td>
-			<td><input type="password" name="password1" /></td>
-		</tr>
-		<tr>
-			<td>Confirm Password:</td>
-			<td><input type="password" name="password2" /></td>
-		</tr>
-		<tr>
-			<td>Email:</td>
-			<td><input type="text" name="email" id="email" /></td>
-		</tr>
-		<tr>
-			<td>&nbsp;</td>
-			<td><input type="submit" value="Register" /></td>
-		</tr>
-	</table>
-</form>
+<a href="index.html"> <b> Home</b></a><br><br>
+<div id="main">
+<p>To register you will need to join our IRC channel #dustforce on the speedrunslive irc server. (irc2.speedrunslive.com:6667). You can do this in your web browser with this link: <a href="http://client01.chat.mibbit.com/#dustforce@irc2.speedrunslive.com">#Dustforce on Mibbit</a></p>
+<b>Note /msg is the way to private message in most clients, including Mibbit, mIRC and Hexchat.</b>If you are using another client, it may be /query or something else, check first if you aren't using one of the above 3 so that you dont accidentally broadcast your password to a channel. You may also join an empty channel if you desire with "/join #somethingrandom" so that anything accidentally sent goes there.
+<p>All you need to do is "<b>/nick theNicknameYouWant</b>" to select a nickname that you will use to log into this site, and for races in IRC. Then, "<b>/msg NickServ REGISTER password emailAddress</b>". Because IRC messages are sent in plaintext, there is a risk that passwords sent via IRC could be intercepted, so <b>don't use the same password as you use for important things!</b> In the future, you will need to give NickServ that password in order to identify yourself to continue using this nickname in the future, so don't forget your password!</p>
+<p>Then, once you are "Identified" with NickServ, you will need to register with FurkieBot. "<b>/msg FurkieBot REGISTER password</b>" where your password does NOT need to be the same as your SRL password. This is the password you will use to log into the CMR site with, for things like map submissions, map testing, and any other features that will have anything to do with your specific account. This password is easy to change if you forget it, unlike your SRL password. And dont worry, your passwords are not stored by the CMR website nor by furkiebot. They are never printed to the console, and are hashed with SHA256 encryption, salted, and rehashed before being stored. The code is publicly available for you to see how passwords are encrypted at <a href="https://github.com/EklipZgit/furkiebot"> https://github.com/EklipZgit/furkiebot</a></p>
+</div>
 </body>
 </html>
+

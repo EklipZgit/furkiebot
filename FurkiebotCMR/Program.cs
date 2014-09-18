@@ -133,7 +133,7 @@ namespace FurkiebotCMR {
 
             dummyRacingChan = "#cmr-"; //first part of racingchannel string
             realRacingChan = ""; //real racing channel string
-            mainchannel = "#dustforce"; //also the channel that will be joined upon start, change to #dustforcee for testing purposes
+            mainchannel = "#dustforcee"; //also the channel that will be joined upon start, change to #dustforcee for testing purposes
             cmrchannel = "#DFcmr";
             cmrId = GetCurrentCMRID();
             comNames = ""; // Used for NAMES commands
@@ -3075,7 +3075,6 @@ namespace FurkiebotCMR {
             // Define min and max salt sizes.
             int minSaltSize = 4;
             int maxSaltSize = 8;
-
             // Generate a random number for the size of the salt.
             Random random = new Random();
             int saltSize = random.Next(minSaltSize, maxSaltSize);
@@ -3095,7 +3094,7 @@ namespace FurkiebotCMR {
             // actual hashing algorithm class later during object creation.
             HashAlgorithm hash = new SHA256Managed();
 
-            
+
             byte[] saltHashBytes = hash.ComputeHash(saltBytes);
             string saltHashString = Convert.ToBase64String(saltHashBytes).Substring(0, 4);
 
@@ -3135,7 +3134,9 @@ namespace FurkiebotCMR {
             byte[] saltPwHashBytes = Encoding.UTF8.GetBytes(saltAndPwHash);
 
             byte[] finalHashBytes = hash.ComputeHash(saltPwHashBytes);
-            return Convert.ToBase64String(finalHashBytes);
+            string finalHashString = Convert.ToBase64String(finalHashBytes);
+            return finalHashString;
+            //return Convert.ToBase64String(finalHashBytes);
         }
 
 
@@ -3200,7 +3201,7 @@ namespace FurkiebotCMR {
         private static void Main(string[] args) {
             IRCConfig conf = new IRCConfig();
             conf.name = "FurkieBot";
-            conf.nick = "FurkieBot";
+            conf.nick = "FurkieBot_";
             conf.altNick = "FurkieBot_";
             conf.port = 6667;
             conf.server = "irc2.speedrunslive.com";

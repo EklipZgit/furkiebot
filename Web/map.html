@@ -1,3 +1,7 @@
+<?php
+session_start();
+if (isset($_SESSION['loggedIn'])) {
+	echo <<< EOT
 <html>
 <head> 
 <style>
@@ -15,7 +19,7 @@ input {
 <b>Upload a map!</b>
 <p>
 <div style="width: 410">
-<form action="upload_file.php" method="post"
+<form action="map.php" method="post"
 enctype="multipart/form-data">
 <label for="file2">Map File:</label>
 <input type="file" name="file" id="file"><br>
@@ -23,11 +27,6 @@ enctype="multipart/form-data">
 <label for="mapname">Map Name:</label>
 <input type="text" name="mapname" id="mapname"><br>
 
-<label for="user">Username:</label>
-<input type="text" name="user" id="user"><br>
-
-<!--<label for="pw">Password:</label>
-<input type="password" name="pw" id="pw"><br> -->
 <center>
 <input type="submit" name="submit" value="Submit" id="submitbutton">
 </center>
@@ -71,6 +70,14 @@ Ensure your dust color contrasts well with the ground / background. <br>
 Try to avoid gimicky maps that take too long to learn the gimick.<br>
 
 </body>
-</html>
-
+</html>	
+EOT;
+} else {
+	$_SESSION['redirect'] = "http://eklipz.us.to/cmr/map.html";
+	$_SESSION['warning'] = "You need to log in before uploading maps.";
+	session_write_close();
+	header( 'Location: http://eklipz.us.to/cmr/login.html' )
+}
+	session_write_close();
+?>
 
