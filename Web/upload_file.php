@@ -1,8 +1,9 @@
 <?php
 $temp = explode(".", $_FILES["file"]["name"]);
 $extension = end($temp);
-echo "Thanks " . $_POST["user"] . "!<br>";
-if (count(temp) = 1) { //no file extensions.
+
+if (count($temp) == 1) { //no file extensions.
+	echo "Thanks " . $_POST["user"] . "!<br>";
 	if ($_FILES["file"]["error"] > 0) {
 	  echo "ERROR UPLOADING. Return Code: " . $_FILES["file"]["error"] . "<br>";
 	  echo "screenshot this to EklipZ in #DFcmr";
@@ -18,5 +19,10 @@ if (count(temp) = 1) { //no file extensions.
 	  echo "Uploaded: " . $_POST["user"] . "-" . $_POST["mapname"] . " successfully.<br>";
 	  }
 	}
+} else if ($extension == "html" || $extension == "php"){
+	echo "wow ok fuck you too :>";
+} else {
+	echo "uh oh you had a \".\" in the filename. Please, no files with extensions or \".\"'s";
+	echo "<br><a href=\"map.html\">Resubmit</a>";
 }
 ?>
