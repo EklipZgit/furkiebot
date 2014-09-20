@@ -57,9 +57,11 @@ namespace FurkiebotCMR {
     internal class FurkieBot : IDisposable {
         public static string SEP = ColourChanger(" | ", "07"); //The orange | seperator also used by GLaDOS
         public const string MAPS_PATH = @"C:\CMR\Maps\";
-        public const string BOT_NAME = "FurkieBot_";
-        public const string MAIN_CHAN = "#dustforcee";
-        public const string CMR_CHAN = "#DFcmrr";
+        public const string BOT_NAME = "FurkieBot";
+        public const string MAIN_CHAN = "#dustforce";
+        public const string CMR_CHAN = "#DFcmr";
+        public const int MAX_MSG_LENGTH = 600;
+
         public const int MIN_MAPS = 6;
          
 
@@ -381,7 +383,7 @@ namespace FurkiebotCMR {
                 sw.Flush();
                 Console.WriteLine(cmd);
             } else {
-                if (param.Length > 400) //Makes sure to send multiple messages in case a message is too long for irc
+                if (param.Length > MAX_MSG_LENGTH) //Makes sure to send multiple messages in case a message is too long for irc
                 {
                     string channel = "";
                     if (param[0] == '#') {
@@ -391,14 +393,14 @@ namespace FurkiebotCMR {
                     }
 
                     string ss = param;
-                    int size = ss.Length / 350;
+                    int size = ss.Length / MAX_MSG_LENGTH - 50;
                     string[] newParam = new string[size + 1];
 
                     for (int i = 0; i < size + 1; i++) {
-                        newParam[i] = ss.Substring(0, Math.Min(ss.Length, 350));
+                        newParam[i] = ss.Substring(0, Math.Min(ss.Length, MAX_MSG_LENGTH - 50));
 
                         if (i != size)
-                            ss = ss.Remove(0, 350);
+                            ss = ss.Remove(0, MAX_MSG_LENGTH - 50);
 
                         if (i != 0) {
                             string lastword = newParam[i - 1].Substring(newParam[i - 1].LastIndexOf(' ') + 1);
@@ -406,7 +408,7 @@ namespace FurkiebotCMR {
 
                             if (lastword != "" && firstword != "") {
                                 newParam[i] = newParam[i].Insert(0, lastword);
-                                newParam[i - 1] = newParam[i - 1].Remove(350 - (lastword.Length + 1), lastword.Length + 1);
+                                newParam[i - 1] = newParam[i - 1].Remove(MAX_MSG_LENGTH - 50 - (lastword.Length + 1), lastword.Length + 1);
                             }
 
                         }
@@ -496,13 +498,13 @@ namespace FurkiebotCMR {
         /**
          * Checks to see if a user is identified.
          */
-        private bool IsIdentified(string nick, string runner) {
+        private bool IsIdentified(string nick, string toNotice) {
             if (identlist.ContainsKey(nick) && identlist[nick]) {
                 return true;
             } else {
 
                 if (!complexAllowed) {
-                    NoticeRetry(runner);
+                    NoticeRetry(toNotice);
                 } else {
                     complexAllowed = false;
                     sendData("WHOIS", nick);
@@ -1518,9 +1520,10 @@ namespace FurkiebotCMR {
 
                     case ":.forcedone": //You can force someone to .done, because sometimes, you just want to be able to guarentee that
                         #region
-                        if (IsAdmin(nickname, nickname)) {  // TODO REPLACE WITH ISADMIN FUNC
-                            SetStatus(ex[4], 1);
+                        if (IsAdmin(nickname, nickname)) { 
+                            //SetStatus(ex[4], 1);
                             SetTime(ex[4], stahpwatch);
+
                             sendData("PRIVMSG", ex[2] + " " + ex[4] + " has finished in " + GetRanking(ex[4]) + " place with a time of " + GetTime(stahpwatch) + ".");
                             if (ComfirmTripleMassStatus(1, 4, 5)) //Stop the race if all racers are "done"/"quit"/"dq"
                                 {
@@ -1539,7 +1542,7 @@ namespace FurkiebotCMR {
                         Console.WriteLine("Nickname: \t" + nickname);
                         if (IsAdmin(nickname, nickname)) {
                             Console.WriteLine("ex[2]: \t" + ex[2]);
-                            if (ex[2] == realRacingChan || StringCompareNoCaps(ex[2], "furkiebot")) //Command only works in racing channel
+                            if (ex[2] == realRacingChan || StringCompareNoCaps(ex[2], BOT_NAME)) //Command only works in racing channel
                                 {
                                 Console.WriteLine("CMR status: \t" + cmrStatus);
                                 if (cmrStatus == "racing") //Command only works if CMR is open
@@ -2056,7 +2059,7 @@ namespace FurkiebotCMR {
         private string getUserIgn(string ircuser) { return getUserInfo(ircuser.ToLower()).dustforcename; }
 
 
-
+        
         private int getUserRating(string ircuser) { return getUserInfo(ircuser.ToLower()).rating; }
 
 
