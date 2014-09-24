@@ -14,14 +14,14 @@ if (isset($_SESSION['loggedIn'])) {
 		} else {
 			$filename = $_SESSION['username'] . "-" . $_POST["mapname"];
 			$safefile = preg_replace('/[\x00-\x1F\x80-\xFF]/', '', $filename);
-		  if (file_exists("C:/CMR/maps/36/pending/" . $safefile)) {
-			unlink("C:/CMR/Maps/36/pending/" . $safefile);
+		  if (file_exists("C:/CMR/maps/37/pending/" . $safefile)) {
+			unlink("C:/CMR/Maps/37/pending/" . $safefile);
 			move_uploaded_file($_FILES["file"]["tmp_name"],
-			"C:/CMR/Maps/36/pending/" . $safefile);
+			"C:/CMR/Maps/37/pending/" . $safefile);
 		  echo "Replaced: " . $safefile . " successfully.<br>";
 		  } else {
 			move_uploaded_file($_FILES["file"]["tmp_name"],
-			"C:/CMR/Maps/36/pending/" . $safefile);
+			"C:/CMR/Maps/37/pending/" . $safefile);
 		  echo "Uploaded: " . $safefile . " successfully.<br>";
 		  }
 		}
