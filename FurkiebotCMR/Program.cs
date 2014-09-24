@@ -31,9 +31,9 @@ using Newtonsoft.Json.Linq;
 /// The Furkiebot namespace.
 /// </summary>
 namespace FurkiebotCMR {
-    /**
-     * The configuration settings that FurkieBot gets initialized with.
-     */ 
+    /// <summary>
+    /// The irc configuration parameters that get passed into FurkieBot.
+    /// </summary>
     internal struct IRCConfig {
         public string server;
         public int port;
@@ -407,9 +407,9 @@ namespace FurkiebotCMR {
 
 
 
-        /**
-         * Syncronizes other dictionaries.
-         */ 
+        /// <summary>
+        /// Syncronizes other dictionaries.
+        /// </summary>
         private void SyncOtherTables() {
             dustforcelist = new Dictionary<string, PlayerInfo>();
             foreach (KeyValuePair<string, PlayerInfo> entry in userlist) {
@@ -424,9 +424,10 @@ namespace FurkiebotCMR {
 
 
 
-        /**
-         * Calling this causes FurkieBot to connect via the configuration that FurkieBot was initialized with.
-         */ 
+
+        /// <summary>
+        /// Calling this causes FurkieBot to connect via the configuration that FurkieBot was initialized with.
+        /// </summary>
         public void Connect() {
             try {
                 IRCConnection = new TcpClient(config.server, config.port);
@@ -545,9 +546,13 @@ namespace FurkiebotCMR {
 
 
 
-        /**
-         * Checks if a user is idented and a tester.
-         */
+
+        /// <summary>
+        /// Determines whether the specified nick is a tester.
+        /// </summary>
+        /// <param name="nick">The nick.</param>
+        /// <param name="toNotify">To notify.</param>
+        /// <returns></returns>
         private bool IsTester(string nick, string toNotify) {
             if (IsIdentified(nick, toNotify)) {
                 if (IsRegistered(nick)) {
@@ -564,9 +569,12 @@ namespace FurkiebotCMR {
 
 
 
-        /**
-         * Checks if a user is idented and a tester.
-         */
+        /// <summary>
+        /// Determines whether the specified nick is trusted.
+        /// </summary>
+        /// <param name="nick">The nick.</param>
+        /// <param name="toNotify">To notify.</param>
+        /// <returns></returns>
         private bool IsTrusted(string nick, string toNotify) {
             if (IsIdentified(nick, toNotify)) {
                 if (IsRegistered(nick)) {
@@ -581,9 +589,13 @@ namespace FurkiebotCMR {
 
 
 
-        /**
-         * Checks to see if a user is identified.
-         */
+
+        /// <summary>
+        /// Determines whether the specified nick is identified.
+        /// </summary>
+        /// <param name="nick">The nick.</param>
+        /// <param name="toNotice">To notice.</param>
+        /// <returns>Whether or not the nick is identified.</returns>
         private bool IsIdentified(string nick, string toNotice) {
             if (identlist.ContainsKey(nick) && identlist[nick]) {
                 return true;
@@ -640,10 +652,12 @@ namespace FurkiebotCMR {
 
 
 
-        /**
-         * Attempts to set the Users password to the given password. 
-         * If no user exists by this nickname, create a new user.
-         */
+        /// <summary>
+        /// Attempts to set the Users password to the given password. 
+        /// If no user exists by this nickname, create a new user.
+        /// </summary>
+        /// <param name="nickname">The nickname.</param>
+        /// <param name="password">The password.</param>
         private void AttemptRegistration(string nickname, string password) {
             string nickLower = nickname.ToLower();
             if (IsIdentified(nickLower, nickname)) {
@@ -2796,19 +2810,6 @@ namespace FurkiebotCMR {
             return words;
         } /* StringSplitter() */
 
-
-
-        /* // YAY WE NOW NO LONGER RELY ON READING FROM JSON ALL THE TIME
-         * static DataTable UpdateJsonUserlist() {
-            string filepath = DATA_PATH + @"Userlist\userlist.json"; // !! FILEPATH !!
-            string[] jsonarray = File.ReadAllLines(filepath);
-            string json = string.Join("", jsonarray);
-
-            DataSet ds = JsonConvert.DeserializeObject<DataSet>(json);
-            DataTable dt = ds.Tables["userlist"];
-
-            return dt;
-        }*/
 
 
 
