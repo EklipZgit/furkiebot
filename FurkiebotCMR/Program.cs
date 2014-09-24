@@ -21,17 +21,19 @@ using System.Data;
 using System.Data.SqlClient;
 using System.Security.Permissions;
 using System.Security.Cryptography;
-//using System.Data.OleDb;
-//using DocumentFormat.OpenXml;
 using ClosedXML.Excel;
-//using System.IO.Packaging; //WindowsBase.dll
 using System.Net;
 using Newtonsoft.Json;
 using System.Linq;
 using Newtonsoft.Json.Linq;
 
+/// <summary>
+/// The Furkiebot namespace.
+/// </summary>
 namespace FurkiebotCMR {
-
+    /**
+     * The configuration settings that FurkieBot gets initialized with.
+     */ 
     internal struct IRCConfig {
         public string server;
         public int port;
@@ -42,6 +44,10 @@ namespace FurkiebotCMR {
     } /* IRCConfig */
 
 
+
+    /// <summary>
+    /// Player info struct containing all information about a player.
+    /// </summary>
     internal struct PlayerInfo {
         public string ircname;
         public string dustforcename;
@@ -55,6 +61,11 @@ namespace FurkiebotCMR {
         public string salt;
     }
 
+
+
+    /// <summary>
+    /// A FurkieBot IRC bot.
+    /// </summary>
     internal class FurkieBot : IDisposable {
         public static string SEP = ColourChanger(" | ", "07"); //The orange | seperator also used by GLaDOS
         public const string MAPS_PATH = @"C:\CMR\Maps\";
@@ -115,9 +126,11 @@ namespace FurkiebotCMR {
 
 
 
-        /**
-         * Constructor for FurkieBot, I'm guessing.
-         */
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="FurkieBot"/> class.
+        /// </summary>
+        /// <param name="config">The configuration.</param>
         public FurkieBot(IRCConfig config) {
             this.config = config;   // Create a new FileSystemWatcher and set its properties.
 
@@ -160,8 +173,8 @@ namespace FurkiebotCMR {
             cmrtimeString = @"10:30:00"; //make sure this equals the time on TimeSpan cmrtime
 
 
-            pendingMaps = new HashSet<String>(Directory.GetFiles("C:\\CMR\\Maps\\" + cmrId + "\\pending", "*").Select(path => Path.GetFileName(path)).ToArray());
-            acceptedMaps = new HashSet<String>(Directory.GetFiles("C:\\CMR\\Maps\\" + cmrId + "\\accepted", "*").Select(path => Path.GetFileName(path)).ToArray());
+            pendingMaps = new HashSet<string>(Directory.GetFiles("C:\\CMR\\Maps\\" + cmrId + "\\pending", "*").Select(path => Path.GetFileName(path)).ToArray());
+            acceptedMaps = new HashSet<string>(Directory.GetFiles("C:\\CMR\\Maps\\" + cmrId + "\\accepted", "*").Select(path => Path.GetFileName(path)).ToArray());
 
 
             /*
@@ -198,9 +211,13 @@ namespace FurkiebotCMR {
         }
 
 
-
-
         // Define the filesystem event handlers. 
+
+        /// <summary>
+        /// Handler for when a file is created in the Pending maps folder.
+        /// </summary>
+        /// <param name="source">The source.</param>
+        /// <param name="e">The <see cref="FileSystemEventArgs"/> instance containing the event data.</param>
         private void CreatedPending(object source, FileSystemEventArgs e) {
             // Specify what is done when a file is changed, created, or deleted.
             //Console.WriteLine("File: " + e.FullPath + " " + e.ChangeType);
@@ -221,7 +238,12 @@ namespace FurkiebotCMR {
 
 
 
-        // Define the filesystem event handlers. 
+
+        /// <summary>
+        /// Handler for when a file is removed from the Pending maps folder.
+        /// </summary>
+        /// <param name="source">The source.</param>
+        /// <param name="e">The <see cref="FileSystemEventArgs"/> instance containing the event data.</param>
         private void DeletedPending(object source, FileSystemEventArgs e) {
             // Specify what is done when a file is changed, created, or deleted.
             //Console.WriteLine("File: " + e.FullPath + " " + e.ChangeType);
@@ -231,7 +253,11 @@ namespace FurkiebotCMR {
         }
 
 
-
+        /// <summary>
+        /// Handler for when a file is created in the Accepted maps folder.
+        /// </summary>
+        /// <param name="source">The source.</param>
+        /// <param name="e">The <see cref="FileSystemEventArgs"/> instance containing the event data.</param>
         private void CreatedAccepted(object source, FileSystemEventArgs e) {
             // Specify what is done when a file is renamed.
             //Console.WriteLine("File: {0} renamed to {1}", e.OldFullPath, e.FullPath);
@@ -253,9 +279,11 @@ namespace FurkiebotCMR {
         }
 
 
-
-
-        // Define the filesystem event handlers. 
+        /// <summary>
+        /// Handler for when something is deleted from the Accepted maps folder.
+        /// </summary>
+        /// <param name="source">The source.</param>
+        /// <param name="e">The <see cref="FileSystemEventArgs"/> instance containing the event data.</param>
         private void DeletedAccepted(object source, FileSystemEventArgs e) {
             // Specify what is done when a file is changed, created, or deleted.
             //Console.WriteLine("File: " + e.FullPath + " " + e.ChangeType);
@@ -281,9 +309,10 @@ namespace FurkiebotCMR {
         //    Console.WriteLine("\n\n\nFile: {0} renamed to {1}\n\n\n", e.OldFullPath, e.FullPath);
         //}
 
-
-
-
+        /// <summary>
+        /// Outputs the current CMR's map status to the provided channel.
+        /// </summary>
+        /// <param name="chan">The IRC channel to output to.</param>
         private void OutputMapStatus(string chan) {
             OutputPending(chan);
             OutputAccepted(chan);
@@ -292,6 +321,10 @@ namespace FurkiebotCMR {
 
 
 
+        /// <summary>
+        /// Outputs the current CMR pending map status to the provided channel.
+        /// </summary>
+        /// <param name="chan">The channel.</param>
         private void OutputPending(string chan) {
             string toSay = " :" + pendingMaps.Count + " Pending testing ";
 
@@ -314,6 +347,11 @@ namespace FurkiebotCMR {
 
 
 
+
+        /// <summary>
+        /// Outputs the current CMR accepted map status to the provided channel.
+        /// </summary>
+        /// <param name="chan">The channel.</param>
         private void OutputAccepted(string chan) {
             string toSay = " :" + acceptedMaps.Count + " Accepted ";
             foreach (string s in acceptedMaps) {
@@ -336,6 +374,10 @@ namespace FurkiebotCMR {
 
 
 
+
+        /// <summary>
+        /// Loads the userlist from the userlist map file into the userlist Dictionary.
+        /// </summary>
         private void loadUserlist() {
             string filepath = @"C:\CMR\Data\Userlist\userlistmap.json"; // !! FILEPATH !!
             string[] jsonarray = File.ReadAllLines(filepath);
@@ -346,6 +388,9 @@ namespace FurkiebotCMR {
 
 
 
+        /**
+         * Syncronizes other dictionaries.
+         */ 
         private void SyncOtherTables() {
             dustforcelist = new Dictionary<string, PlayerInfo>();
             foreach (KeyValuePair<string, PlayerInfo> entry in userlist) {
@@ -360,6 +405,9 @@ namespace FurkiebotCMR {
 
 
 
+        /**
+         * Calling this causes FurkieBot to connect via the configuration that FurkieBot was initialized with.
+         */ 
         public void Connect() {
             try {
                 IRCConnection = new TcpClient(config.server, config.port);
@@ -384,6 +432,9 @@ namespace FurkiebotCMR {
 
 
 
+        /**
+         * Sends the provided command and parameters to the IRC server.
+         */ 
         public void sendData(string cmd, string param) {
             if (param == null) {
                 sw.WriteLine(cmd);
@@ -610,6 +661,7 @@ namespace FurkiebotCMR {
                 newUserList[entry.Key] = info;
             }
             userlist = newUserList;
+            WriteUsers();
             SyncOtherTables();
             MsgChans("All testers have been reset to non testers. If you want to be a tester for the next CMR use \".settester true\" provided you have tester permissions. If you try this and don't have permissions, ask an admin.");
         }
@@ -749,9 +801,8 @@ namespace FurkiebotCMR {
 
 
 
-
-            switch (op) //Events
-            {
+            //Events
+            switch (op) {
                 case "001": //Autojoin channel when first response from server
                     sendData("JOIN", mainchannel);
                     sendData("PRIVMSG", "NickServ" + " ghost " + config.nick + " " + config.pass);
@@ -785,9 +836,11 @@ namespace FurkiebotCMR {
                     #region
                     if (chan == ":" + realRacingChan) {
                         if (IsRegistered(nickLower)) {
-                            if (getUserIgn(nickLower) == "") { // if they have no IGN set.
+                            if (getUserIgn(nickLower) == "") { 
+                                // if they have no IGN set.
                                 sendData("NOTICE", nick + " :You need to set your Dustforce name with FurkieBot in order to join a race. Type " + BoldText(".setign dustforcename") + " to register the name you use in Dustforce");
-                            } else {                          // let them know what their IGN currently is.
+                            } else {                          
+                                // let them know what their IGN currently is.
                                 sendData("NOTICE", nick + " :Your Dustforce name is currently set to " + ColourChanger(getUserIgn(nickLower), "03") + ". If your name has changed, please set a new nickname using " + BoldText(".setign dustforcename"));
                             }
                             if (CheckEntrant(nickLower)) {
@@ -864,8 +917,8 @@ namespace FurkiebotCMR {
 
                 switch (command.ToLower()) {
                     case ":.furkiebot": //FurkieBot Commands
-                        if (!StringCompareNoCaps(chan, realRacingChan)) {//FurkieBot commands for the main channel
-
+                        if (!StringCompareNoCaps(chan, realRacingChan)) {
+                            //FurkieBot commands for the main channel
                             sendData("PRIVMSG", chan + " :Commands: .cmr" + SEP + ".maps" + SEP + ".startcmr" + SEP + ".ign <ircname>" + SEP + ".setign <in-game name>" + SEP + ".mappack" + SEP + ".pending" + SEP + ".accepted");
                             sendData("PRIVMSG", chan + @" :Upload maps: http://eklipz.us.to/cmr/map.html" + SEP + "CMR info: http://eklipz.us.to/cmr" + SEP + @"Command list: https://github.com/EklipZgit/furkiebot/wiki" + SEP + "FurkieBot announce channel: #DFcmr");
                             sendData("PRIVMSG", chan + @" :.help register" + SEP + ".help tester");
@@ -1035,8 +1088,8 @@ namespace FurkiebotCMR {
 
                     case ":.entrants": //Shows a list of the users currently in a race
                         #region
-                        if (chan == realRacingChan) //Command only works in racing channel
-                            {
+                        if (chan == realRacingChan) {
+                            //Command only works in racing channel
                             sendData("PRIVMSG", chan + " " + GetEntrantString());
                         }
                         #endregion
@@ -1046,8 +1099,10 @@ namespace FurkiebotCMR {
                         #region
                         goto case ":.enter";
                     case ":.enter":
-                        if (chan == realRacingChan) {//Command only works in racing channel
-                            if (cmrStatus == "open") {//Command only works if CMR is open
+                        if (chan == realRacingChan) {
+                            //Command only works in racing channel
+                            if (cmrStatus == "open") {
+                                //Command only works if CMR is open
                                 if (IsRegistered(nickLower)) {
                                     if (getUserIgn(nickLower) != "+") {
                                         if (!CheckEntrant(nickLower)) {//Command only works if user isn't part of the race
@@ -1079,8 +1134,10 @@ namespace FurkiebotCMR {
                         #region
                         goto case ":.unenter";
                     case ":.unenter":
-                        if (chan.ToLower() == realRacingChan.ToLower()) {//Command only works in racing channel
-                            if (cmrStatus == "open") {//Command only works if CMR is open
+                        if (chan.ToLower() == realRacingChan.ToLower()) {
+                            //Command only works in racing channel
+                            if (cmrStatus == "open") {
+                                //Command only works if CMR is open
                                 if (GetStatus(nickLower) == 6 || GetStatus(nickLower) == 3) {//Command only works if racer status is "standby" or "ready"
                                     //Remove user from race
                                     RemoveEntrant(nickLower);
@@ -1101,9 +1158,12 @@ namespace FurkiebotCMR {
 
                     case ":.ready": //Gotta get them ready for the upcoming CMR maps
                         #region
-                        if (chan == realRacingChan) { //Command is only possible in racing channel
-                            if (cmrStatus == "open") { //Command is only possible if CMR is open
-                                if (GetStatus(nick) == 6) { //Comment only works if racer status is "standby"
+                        if (chan == realRacingChan) { 
+                            //Command is only possible in racing channel
+                            if (cmrStatus == "open") { 
+                                //Command is only possible if CMR is open
+                                if (GetStatus(nick) == 6) { 
+                                    //Comment only works if racer status is "standby"
                                     //Set racer status to "ready"
                                     SetStatus(nickLower, 3);
                                     int notReadyCount = CountEntrants() - CountStatus(3);
@@ -1134,9 +1194,12 @@ namespace FurkiebotCMR {
 
                     case ":.unready": //NO WAIT IM NOT READY YET
                         #region
-                        if (chan == realRacingChan) { //Command only works in racing channel
-                            if (cmrStatus == "open") { //Command only works if CMR is open
-                                if (GetStatus(nickLower) == 3) { //Com//Command only works if CMR is openmand only works if racer status is "ready"
+                        if (chan == realRacingChan) { 
+                            //Command only works in racing channel
+                            if (cmrStatus == "open") { 
+                                //Command only works if CMR is open
+                                if (GetStatus(nickLower) == 3) { 
+                                    //Command only works if CMR is openmand only works if racer status is "ready"
                                     //Set racer status to "standby"
                                     SetStatus(nickLower, 6);
                                     int notReadyCount = CountEntrants() - CountStatus(3);
@@ -1151,21 +1214,24 @@ namespace FurkiebotCMR {
                         #region
                         goto case ":.forfeit";
                     case ":.forfeit":
-                        if (chan == realRacingChan) { //Command only works in racing channel
-                            if (cmrStatus == "racing") { //Command only works if CMR is open
-                                if (GetStatus(nickLower) == 2) { //Command only works if racer status is "racing"
+                        if (chan == realRacingChan) { 
+                            //Command only works in racing channel
+                            if (cmrStatus == "racing") { 
+                                //Command only works if CMR is open
+                                if (GetStatus(nickLower) == 2) { 
+                                    //Command only works if racer status is "racing"
                                     //Set racer status to "quit"
                                     SetStatus(nickLower, 4);
                                     sendData("PRIVMSG", chan + " " + nick + " has forfeited from the race.");
-                                    if (ComfirmDoubleMassStatus(4, 5)) //Stop the race if all racers are "quit"/"dq"
-                                        {
+                                    if (ComfirmDoubleMassStatus(4, 5)) {
+                                        //Stop the race if all racers are "quit"/"dq"
                                         StopRace(stahpwatch);
                                         cmrStatus = "finished";
                                         sendData("TOPIC", realRacingChan + " " + ":Status: Complete | Game: Dustforce | Goal: Custom Map Race " + cmrId + ". Download maps at http://atlas.dustforce.com/tag/custom-map-race-" + cmrId);
                                         sendData("PRIVMSG", mainchannel + " " + "Race Finished: Dustforce - Custom Map Race " + cmrId + " | No one was able to finish the race. The race ended at " + GetTimeRank(1));
                                     } else {
-                                        if (ComfirmTripleMassStatus(1, 4, 5)) //Stop the race if all racers are "done"/"quit"/"dq"
-                                            {
+                                        if (ComfirmTripleMassStatus(1, 4, 5)) {
+                                            //Stop the race if all racers are "done"/"quit"/"dq"
                                             StopRace(stahpwatch);
                                             cmrStatus = "finished";
                                             sendData("TOPIC", realRacingChan + " " + ":Status: Complete | Game: Dustforce | Goal: Custom Map Race " + cmrId + ". Download maps at http://atlas.dustforce.com/tag/custom-map-race-" + cmrId);
@@ -1180,14 +1246,14 @@ namespace FurkiebotCMR {
 
                     case ":.go": //Starts race and timer
                         #region
-                        if (chan == realRacingChan) //Command only works in racing channel
-                            {
-                            if (cmrStatus == "open") //Command only works if CMR is open
-                                {
-                                if (CountEntrants() > 0) //Command only works if there is at least 1 racer
-                                    {
-                                    if (ComfirmMassStatus(3)) //Command only works if all racers have status on "ready"
-                                        {
+                        if (chan == realRacingChan) { 
+                            //Command only works in racing channel
+                            if (cmrStatus == "open") { 
+                                //Command only works if CMR is open
+                                if (CountEntrants() > 0) { 
+                                    //Command only works if there is at least 1 racer
+                                    if (ComfirmMassStatus(3)) { 
+                                        //Command only works if all racers have status on "ready"
                                         cmrStatus = "racing";
                                         sendData("PRIVMSG", chan + " " + BoldText(ColourChanger("The race will begin in 10 seconds!", "04")));
                                         bool five = false;
@@ -1237,10 +1303,10 @@ namespace FurkiebotCMR {
 
                     case ":.time": //Shows elapsed time in CMRs
                         #region
-                        if (chan == realRacingChan) //Command only works in racing channel
-                            {
-                            if (cmrStatus == "racing" || cmrStatus == "finished") //Command only works if CMR is open or finished
-                                {
+                        if (chan == realRacingChan) { 
+                            //Command only works in racing channel
+                            if (cmrStatus == "racing" || cmrStatus == "finished") { 
+                                //Command only works if CMR is open or finished
                                 sendData("PRIVMSG", chan + " " + GetTime(stahpwatch));
                             }
                         }
@@ -1249,15 +1315,17 @@ namespace FurkiebotCMR {
 
                     case ":.done": //When someone gets an SS on every CMR map
                         #region
-                        if (chan == realRacingChan) { //Command only works in racing channel
-                            if (cmrStatus == "racing") { //Command only works if CMR is racing
+                        if (chan == realRacingChan) { 
+                            //Command only works in racing channel
+                            if (cmrStatus == "racing") { 
+                                //Command only works if CMR is racing
                                 if (GetStatus(nickLower) == 2) { //Command only works if racer status is "racing"
                                     //Set racer status to "done"
                                     SetTime(nickLower, stahpwatch);
                                     sendData("PRIVMSG", "TRAXBUSTER" + " :" + ".proofcall " + getUserIgn(nickLower));
                                     sendData("PRIVMSG", chan + " :" + nick + " has finished in " + GetRanking(nickLower) + " place with a time of " + GetTime(stahpwatch) + ".");
-                                    if (ComfirmTripleMassStatus(1, 4, 5)) //Stop the race if all racers are "done"/"quit"/"dq"
-                                        {
+                                    if (ComfirmTripleMassStatus(1, 4, 5)) {
+                                        //Stop the race if all racers are "done"/"quit"/"dq"
                                         //Set race status to "finished"
                                         StopRace(stahpwatch);
                                         cmrStatus = "finished";
@@ -1428,7 +1496,6 @@ namespace FurkiebotCMR {
                         #region
                         if (IsRegistered(nickLower)) {
                             if (IsIdentified(nickLower, nick)) {
-
                                 if (setUserIGN(nick, parameter)) {
                                     sendData("PRIVMSG", chan + " :New IGN registered: " + ColourChanger(nick, "03") + " > " + ColourChanger(parameter, "03") + "");
                                 }
@@ -1582,8 +1649,7 @@ namespace FurkiebotCMR {
                             SetTime(parameter, stahpwatch);
 
                             sendData("PRIVMSG", chan + " " + parameter + " has finished in " + GetRanking(parameter) + " place with a time of " + GetTime(stahpwatch) + ".");
-                            if (ComfirmTripleMassStatus(1, 4, 5)) //Stop the race if all racers are "done"/"quit"/"dq"
-                                {
+                            if (ComfirmTripleMassStatus(1, 4, 5)) { //Stop the race if all racers are "done"/"quit"/"dq"
                                 //Set race status to "finished"
                                 StopRace(stahpwatch);
                                 cmrStatus = "finished";
@@ -1890,7 +1956,6 @@ namespace FurkiebotCMR {
         private void setRandmapRating(string nickname, string rating) {
             throw new NotImplementedException();
             if (IsRegistered(nickname)) {
-
                 PlayerInfo info = userlist[nickname];
                 info.tester = (rating.ToLower() == "true" ? true : false);
                 userlist[nickname] = info;
@@ -1901,7 +1966,6 @@ namespace FurkiebotCMR {
         private void setRating(string nickname, string rating) {
             throw new NotImplementedException();
             if (IsRegistered(nickname)) {
-
                 PlayerInfo info = userlist[nickname];
                 info.tester = (rating.ToLower() == "true" ? true : false);
                 userlist[nickname] = info;
@@ -1911,7 +1975,6 @@ namespace FurkiebotCMR {
 
         private void setAdmin(string nickname, string tOrF) {
             if (IsRegistered(nickname)) {
-
                 PlayerInfo info = userlist[nickname];
                 info.admin = (tOrF.ToLower() == "true" ? true : false);
                 userlist[nickname] = info;
@@ -1921,7 +1984,6 @@ namespace FurkiebotCMR {
 
         private void setTrusted(string nickname, string tOrF) {
             if (IsRegistered(nickname)) {
-
                 PlayerInfo info = userlist[nickname];
                 info.trusted = (tOrF.ToLower() == "true" ? true : false);
                 userlist[nickname] = info;
@@ -1931,7 +1993,6 @@ namespace FurkiebotCMR {
 
         private void setTester(string nickname, string tOrF) {
             if (IsRegistered(nickname)) {
-
                 PlayerInfo info = userlist[nickname];
                 info.tester = (tOrF.ToLower() == "true" ? true : false);
                 userlist[nickname] = info;
@@ -2026,6 +2087,7 @@ namespace FurkiebotCMR {
                         } else {
                             sendData("PRIVMSG", chan + " :Only cool people are allowed to .slap people. Go slap yourself, " + nickname + ".");
                         }
+
                         break;
                     case 2:
                         sendData("PRIVMSG", chan + " :" + (char)1 + @"ACTION slaps " + parameter + " around, just a little." + (char)1);
@@ -2047,7 +2109,6 @@ namespace FurkiebotCMR {
             }
 
         } /* Slap */
-
 
 
         public void Dispose() {
@@ -3273,13 +3334,18 @@ namespace FurkiebotCMR {
 
             return returnArray;
         }
+         
 
 
 
 
-        /**
-         * Returns the Hash of the password hash concatenated with the salt hash.
-         */
+        /// <summary>
+        /// Returns the Hash of the password hash concatenated with the salt hash.
+        /// </summary>
+        /// <param name="hash">The hash algorithm.</param>
+        /// <param name="pwTextString">The pw text string.</param>
+        /// <param name="saltHashString">The salt hash string.</param>
+        /// <returns>The hack of the password concatenated with the salt hash.</returns>
         private static string HashSaltPw(HashAlgorithm hash, string pwTextString, string saltHashString) {
             // Convert plain text into a byte array.
             byte[] pwTextBytes = Encoding.UTF8.GetBytes(pwTextString.Trim());
