@@ -1,0 +1,13 @@
+TODO IMMEDIATE
+	Fix up all the twitch.tv default stream links
+	Fix up .streams to only display streams that have been set
+	PHP should load CMR_ID.txt for current CMR#
+	Tester.php
+
+	
+TODO LONG TERM
+	Create a storage format for map info in PHP, write C# to properly read that if necessary. (Arrays in JSON)
+	Do a thing with stuff.
+	Move from hashmaps and JSON to DynamoDB ?????
+	DONT FORGET THAT EVENTHANDLERS ARE THEIR OWN THREADS YOU DIPSHIT
+	
