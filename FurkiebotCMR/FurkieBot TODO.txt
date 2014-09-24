@@ -1,6 +1,7 @@
 TODO IMMEDIATE
 	Fix up all the twitch.tv default stream links
 	Fix up .streams to only display streams that have been set
+		Maybe only display streams that are online atm (twitch api)? -FP
 	PHP should load CMR_ID.txt for current CMR#
 	Tester.php
 

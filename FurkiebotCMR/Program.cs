@@ -2814,9 +2814,13 @@ namespace FurkiebotCMR {
                 }
             }
             int rest = 0;
-            while (r > 10) {
-                r = r - 10;
-                rest += 10;
+            if (r < 10 && r > 14)
+            {
+                while (r > 10)
+                {
+                    r = r - 10;
+                    rest += 10;
+                }
             }
             int newrank = 0;
             string nr = "";
