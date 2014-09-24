@@ -69,9 +69,10 @@ namespace FurkiebotCMR {
     internal class FurkieBot : IDisposable {
         public static string SEP = ColourChanger(" | ", "07"); //The orange | seperator also used by GLaDOS
         public const string MAPS_PATH = @"C:\CMR\Maps\";
-        public const string BOT_NAME = "FurkieBot";
-        public const string MAIN_CHAN = "#dustforce";
-        public const string CMR_CHAN = "#DFcmr";
+        public const string BOT_NAME = "FurkieBot_";
+        public const string MAIN_CHAN = "#dustforcee";
+        public const string CMR_CHAN = "#DFcmrr";
+        public const string DATA_PATH = @"C:\CMR\Data\";
         public const int MAX_MSG_LENGTH = 450;
 
         public const int MIN_MAPS = 6;
@@ -173,8 +174,7 @@ namespace FurkiebotCMR {
             cmrtimeString = @"10:30:00"; //make sure this equals the time on TimeSpan cmrtime
 
 
-            pendingMaps = new HashSet<string>(Directory.GetFiles("C:\\CMR\\Maps\\" + cmrId + "\\pending", "*").Select(path => Path.GetFileName(path)).ToArray());
-            acceptedMaps = new HashSet<string>(Directory.GetFiles("C:\\CMR\\Maps\\" + cmrId + "\\accepted", "*").Select(path => Path.GetFileName(path)).ToArray());
+            InitDirectories();
 
 
             /*
@@ -182,8 +182,8 @@ namespace FurkiebotCMR {
              */
             pendingWatcher = new FileSystemWatcher();
             acceptedWatcher = new FileSystemWatcher();
-            pendingWatcher.Path = MAPS_PATH + cmrId + "\\pending";
-            acceptedWatcher.Path = MAPS_PATH + cmrId + "\\accepted";
+            pendingWatcher.Path = MAPS_PATH + cmrId + @"\pending";
+            acceptedWatcher.Path = MAPS_PATH + cmrId + @"\accepted";
             /* Watch for changes in LastWrite times, and
                the renaming of files or directories. */
             pendingWatcher.NotifyFilter = NotifyFilters.LastWrite
@@ -207,6 +207,25 @@ namespace FurkiebotCMR {
             // Begin watching.
             pendingWatcher.EnableRaisingEvents = true;
             acceptedWatcher.EnableRaisingEvents = true;
+        }
+
+
+        /// <summary>
+        /// Initializes the File watching handlers and directories.
+        /// </summary>
+        private void InitDirectories() {
+            Directory.CreateDirectory(MAPS_PATH + cmrId);
+            Directory.CreateDirectory(MAPS_PATH + cmrId + @"\pending");
+            Directory.CreateDirectory(MAPS_PATH + cmrId + @"\accepted");
+            pendingMaps = new HashSet<string>(Directory.GetFiles(MAPS_PATH + cmrId + @"\pending", "*").Select(path => Path.GetFileName(path)).ToArray());
+            acceptedMaps = new HashSet<string>(Directory.GetFiles(MAPS_PATH + cmrId + @"\accepted", "*").Select(path => Path.GetFileName(path)).ToArray());
+        }
+
+
+        /// <summary>
+        /// Releases the File watcher handlers.
+        /// </summary>
+        private void ReleaseHandlers() {
 
         }
 
@@ -379,7 +398,7 @@ namespace FurkiebotCMR {
         /// Loads the userlist from the userlist map file into the userlist Dictionary.
         /// </summary>
         private void loadUserlist() {
-            string filepath = @"C:\CMR\Data\Userlist\userlistmap.json"; // !! FILEPATH !!
+            string filepath = DATA_PATH + @"Userlist\userlistmap.json"; // !! FILEPATH !!
             string[] jsonarray = File.ReadAllLines(filepath);
             string json = string.Join("", jsonarray);
             userlist = JsonConvert.DeserializeObject<Dictionary<string, PlayerInfo>>(json); // initially loads the userlist from JSON
@@ -432,9 +451,12 @@ namespace FurkiebotCMR {
 
 
 
-        /**
-         * Sends the provided command and parameters to the IRC server.
-         */ 
+
+        /// <summary>
+        /// Sends the provided command and parameters to the IRC server.
+        /// </summary>
+        /// <param name="cmd">The command.</param>
+        /// <param name="param">The parameter.</param>
         public void sendData(string cmd, string param) {
             if (param == null) {
                 sw.WriteLine(cmd);
@@ -486,9 +508,12 @@ namespace FurkiebotCMR {
 
 
 
-        /**
-         * Checks if a nickname is registered. If not, notifies the user that they must register.
-         */
+
+        /// <summary>
+        /// Determines whether the specified nick is registered.
+        /// </summary>
+        /// <param name="nick">The nickname.</param>
+        /// <returns>bool whether or not the nick is registered.</returns>
         private bool IsRegistered(string nick) {
             if (userlist.ContainsKey(nick)) {
                 if (userlist[nick].password != "") {
@@ -505,9 +530,12 @@ namespace FurkiebotCMR {
 
 
 
-        /**
-         * Checks if a nickname is an admin.
-         */
+        /// <summary>
+        /// Determines whether the specified nick is an admin.
+        /// </summary>
+        /// <param name="nick">The nick.</param>
+        /// <param name="toNotify">The IRC user initiating this check.</param>
+        /// <returns>bool whether or not the nick is an admin.</returns>
         private bool IsAdmin(string nick, string toNotify) {
             nick = nick.ToLower();
             if (IsRegistered(nick) && IsIdentified(nick, toNotify)) {
@@ -650,9 +678,14 @@ namespace FurkiebotCMR {
 
 
 
-        /**
-         * Resets testers to not be testers.
-         */
+
+
+
+
+
+        /// <summary>
+        /// Resets all users' tester status to false.
+        /// </summary>
         private void ResetTesters() {
             Dictionary<string, PlayerInfo> newUserList = new Dictionary<string, PlayerInfo>(userlist.Count * 2);
             foreach (KeyValuePair<string, PlayerInfo> entry in userlist) {
@@ -668,21 +701,28 @@ namespace FurkiebotCMR {
 
 
 
-        /**
-         * Sets the CMR number in the CMR_ID.txt file, and updates the cmrId variable if it hasnt already been updated.
-         */ 
+        /// <summary>
+        /// Sets the upcoming CMR number to the specified number.
+        /// </summary>
+        /// <param name="cmrNum">The CMR number to set to.</param>
         private void SetCMR(int cmrNum) {
-            using (System.IO.StreamWriter file = new System.IO.StreamWriter(@"C:\CMR\Data\CMR_ID.txt")) {
+            using (System.IO.StreamWriter file = new System.IO.StreamWriter(DATA_PATH + @"CMR_ID.txt")) {
                 file.WriteLine(cmrNum.ToString());
             }
             cmrId = cmrNum;
+            InitDirectories();
+            
+            pendingWatcher.Path = MAPS_PATH + cmrId + @"\pending";
+            acceptedWatcher.Path = MAPS_PATH + cmrId + @"\accepted";
         }
 
 
 
-        /**
-         * Notifies a user that they need to Identify with nickserv.
-         */
+
+        /// <summary>
+        /// Notifies the privided nick that they are not identified.
+        /// </summary>
+        /// <param name="nick">The user to notify.</param>
         private void NoticeNotIdentified(string nick) {
             sendData("NOTICE", nick + " :Sorry, you need to first be using a Nickname registered on SRL. ");
             sendData("NOTICE", nick + " :\"/msg NickServ HELP REGISTER\".");
@@ -690,36 +730,44 @@ namespace FurkiebotCMR {
 
 
 
-        /**
-         * Notifies a user that they need to register with FurkieBot.
-         */
+
+        /// <summary>
+        /// Notifies the privided nick that they are not registered.
+        /// </summary>
+        /// <param name="nick">The user to notify.</param>
         private void NoticeNotRegistered(string nick) {
             sendData("NOTICE", nick + " :Sorry, you need to register with FurkieBot first! \".help register\"");
         }
 
 
 
-        /**
-         * Notifies a user that their command was ignored because furkiebot was already processing a complex command.
-         */
-        private void NoticeRetry(string nickname) {
-            sendData("NOTICE", nickname + " :Sorry, FurkieBot was processing something complex. Try that command again!");
+
+        /// <summary>
+        /// Notifies the privided nick that they need to retry the command in a moment.
+        /// </summary>
+        /// <param name="nick">The user to notify.</param>
+        private void NoticeRetry(string nick) {
+            sendData("NOTICE", nick + " :Sorry, FurkieBot was processing something complex. Try that command again!");
         }
 
 
 
-        /**
-         * Sends a message to a channel.
-         */
+
+        /// <summary>
+        /// Sends a message to the provided channel.
+        /// </summary>
+        /// <param name="chan">The channel to message.</param>
+        /// <param name="message">The message to send to the channel.</param>
         private void Msg(string chan, string message) {
             sendData("PRIVMSG", chan + " :" + message);
         }
 
 
 
-        /**
-         * Sends a message to a channel.
-         */
+        /// <summary>
+        /// Sends a message to all currently joined channels.
+        /// </summary>
+        /// <param name="message">The message to send to the channel.</param>
         private void MsgChans(string message) {
             sendData("PRIVMSG", mainchannel + " :" + message);
             sendData("PRIVMSG", cmrchannel + " :" + message);
@@ -727,9 +775,12 @@ namespace FurkiebotCMR {
         }
 
 
-        /**
-         * Sends a notice to a user.
-         */
+
+        /// <summary>
+        /// Sends a notice to the provided user.
+        /// </summary>
+        /// <param name="user">The user to message.</param>
+        /// <param name="message">The message to send to the channel.</param>
         private void Notice(string user, string message) {
             sendData("NOTICE", user + " :" + message);
         }
@@ -737,9 +788,10 @@ namespace FurkiebotCMR {
 
 
 
-        /**
-         * Main loop for the bot.
-         */
+
+        /// <summary>
+        /// The main loop for IRC work.
+        /// </summary>
         public void IRCWork() {
             bool shouldRun = true;
 
@@ -769,9 +821,14 @@ namespace FurkiebotCMR {
 
 
 
-        /**
-         * The code that processes incoming lines from the IRC Server.
-         */
+
+        /// <summary>
+        /// Processes input from the IRC server. Massive switch statement for now.
+        /// </summary>
+        /// <param name="input">The string array of split input from the IRC server.</param>
+        /// <param name="data">The whole string unsplit from IRC server.</param>
+        /// <param name="charSeparator">The character separator. Why am I passing this in? No idea.</param>
+        /// <returns>A boolean indicating whether or not to continue running.</returns>
         private bool ProcessInput(string[] input, string data, char[] charSeparator) {
             bool shouldRun = true;
 
@@ -1057,7 +1114,7 @@ namespace FurkiebotCMR {
                                         sendData("NAMES", realRacingChan);
                                         sendData("MODE", realRacingChan + " +im");
                                         racers.Clear();
-                                        using (System.IO.StreamWriter file = new System.IO.StreamWriter(@"C:\CMR\Data\CMR_ID.txt")) // !! FILEPATH !!
+                                        using (System.IO.StreamWriter file = new System.IO.StreamWriter(DATA_PATH + @"CMR_ID.txt")) // !! FILEPATH !!
                                             {
                                             int newid = Convert.ToInt32(cmrId) + 1;
                                             file.WriteLine(newid.ToString());
@@ -1496,9 +1553,8 @@ namespace FurkiebotCMR {
                         #region
                         if (IsRegistered(nickLower)) {
                             if (IsIdentified(nickLower, nick)) {
-                                if (setUserIGN(nick, parameter)) {
-                                    sendData("PRIVMSG", chan + " :New IGN registered: " + ColourChanger(nick, "03") + " > " + ColourChanger(parameter, "03") + "");
-                                }
+                                setUserIGN(nick, parameter);
+                                sendData("PRIVMSG", chan + " :New IGN registered: " + ColourChanger(nick, "03") + " > " + ColourChanger(parameter, "03") + "");
                             } else {
                                 NoticeNotIdentified(nick);
                             }
@@ -1541,6 +1597,7 @@ namespace FurkiebotCMR {
                         #region
                         sendData("PRIVMSG", chan + " :Custom Map Race has been set to " + parameter);
                         if (int.TryParse(parameter, out cmrId)) {
+                            ResetTesters();
                             SetCMR(cmrId);
                         }
                         #endregion
@@ -2012,6 +2069,13 @@ namespace FurkiebotCMR {
 
 
 
+        /// <summary>
+        /// Outputs info about the current CMR
+        /// </summary>
+        /// <param name="chan">The channel.</param>
+        /// <param name="cmrtime">The cmrtime.</param>
+        /// <param name="cmrtimeString">The cmrtime string.</param>
+        /// <param name="nickname">The nickname.</param>
         private void OutputCMRinfo(string chan, TimeSpan cmrtime, string cmrtimeString, string nickname) {
             //Veryfying whether it is Saturday and if the time matches with CMR time
             DateTime saturday;
@@ -2065,21 +2129,25 @@ namespace FurkiebotCMR {
 
 
 
-        /*
-         * Slaps based on things.
-         */
-        private void Slap(string nickname, string chan, string parameter) {
+
+        /// <summary>
+        /// Slaps the specified nickname.
+        /// </summary>
+        /// <param name="nickname">The nickname.</param>
+        /// <param name="chan">The channel.</param>
+        /// <param name="nameToSlap">The parameter.</param>
+        private void Slap(string nickname, string chan, string nameToSlap) {
             Random r = new Random();
             int choice = r.Next(6);
 
-            if (parameter == "me") {
+            if (nameToSlap == "me") {
                 sendData("PRIVMSG", chan + " :" + (char)1 + @"ACTION uses " + nickname + "'s own hands to slap himself. \"STOP HITTING YOURSELF, STOP HITTING YOURSELF!" + (char)1);
-            } else if (IsAdmin(parameter.ToLower(), nickname)) {
+            } else if (IsAdmin(nameToSlap.ToLower(), nickname)) {
                 sendData("PRIVMSG", chan + " :" + (char)1 + @"ACTION slaps " + nickname + ". Don't be like that!" + (char)1);
             } else {
                 switch (choice) {
                     case 0:
-                        sendData("PRIVMSG", chan + " :" + (char)1 + @"ACTION slaps " + parameter + " with " + nickname + "'s favorite game console." + (char)1);
+                        sendData("PRIVMSG", chan + " :" + (char)1 + @"ACTION slaps " + nameToSlap + " with " + nickname + "'s favorite game console." + (char)1);
                         break;
                     case 1:
                         if (IsAdmin(nickname.ToLower(), nickname)) {
@@ -2090,14 +2158,14 @@ namespace FurkiebotCMR {
 
                         break;
                     case 2:
-                        sendData("PRIVMSG", chan + " :" + (char)1 + @"ACTION slaps " + parameter + " around, just a little." + (char)1);
+                        sendData("PRIVMSG", chan + " :" + (char)1 + @"ACTION slaps " + nameToSlap + " around, just a little." + (char)1);
                         break;
                     case 3:
-                        sendData("PRIVMSG", chan + " :" + (char)1 + @"ACTION slaps " + parameter + " with vigor." + (char)1);
+                        sendData("PRIVMSG", chan + " :" + (char)1 + @"ACTION slaps " + nameToSlap + " with vigor." + (char)1);
                         break;
                     case 4:
                         if (IsAdmin(nickname.ToLower(), nickname)) {
-                            sendData("PRIVMSG", chan + " :" + (char)1 + @"ACTION slaps " + parameter + " with his cold, metal bot-hand" + (char)1);
+                            sendData("PRIVMSG", chan + " :" + (char)1 + @"ACTION slaps " + nameToSlap + " with his cold, metal bot-hand" + (char)1);
                         } else {
                             sendData("PRIVMSG", chan + " :Only cool people are allowed to .slap people. Go slap yourself, " + nickname + ".");
                         }
@@ -2111,6 +2179,9 @@ namespace FurkiebotCMR {
         } /* Slap */
 
 
+        /// <summary>
+        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+        /// </summary>
         public void Dispose() {
             if (sr != null)
                 sr.Close();
@@ -2125,9 +2196,12 @@ namespace FurkiebotCMR {
 
 
 
-        /**
-         * returns the PlayerInfo for a specific ircuser.
-         */
+
+        /// <summary>
+        /// Gets the user information.
+        /// </summary>
+        /// <param name="ircuser">The ircuser.</param>
+        /// <returns></returns>
         PlayerInfo getUserInfo(string ircuser) {
 
             PlayerInfo res = new PlayerInfo();
@@ -2143,9 +2217,12 @@ namespace FurkiebotCMR {
 
 
 
-        /**
-         * Returns the ircname for a dustforceuser.
-         */
+
+        /// <summary>
+        /// Gets the user ircname by the provided dustforceuser name.
+        /// </summary>
+        /// <param name="dustforceuser">The dustforceuser.</param>
+        /// <returns></returns>
         private string getUserIrc(string dustforceuser) {
             PlayerInfo res = new PlayerInfo();
             if (dustforcelist.ContainsKey(dustforceuser.ToLower())) {
@@ -2158,60 +2235,89 @@ namespace FurkiebotCMR {
 
 
 
-        private string getUserIgn(string ircuser) { return getUserInfo(ircuser.ToLower()).dustforcename; }
-
-
-
-        private int getUserRating(string ircuser) { return getUserInfo(ircuser.ToLower()).rating; }
-
-
-        /**
-         * writes out the users file.
-         */
-        private void WriteUsers() {
-            string json = JsonConvert.SerializeObject(userlist, Formatting.Indented);
-
-            File.WriteAllText(@"C:\CMR\Data\Userlist\userlistmap.json", json); // !! FILEPATH !!
-        }
-
-
-
-
-        private bool setUserIGN(string ircuser, string dustforceuser) {
-            string ircLower = ircuser.ToLower();
-            //if (!dustforcelist.ContainsKey(dustforceuser) || (dustforcelist[dustforceuser].ircname.ToLower() == ircLower)) {
-            if (true) {
-                PlayerInfo temp = new PlayerInfo();
-                userlist.TryGetValue(ircLower, out temp);
-                string oldname = temp.dustforcename;
-                //Console.WriteLine("name " + temp.ircname + " dustforcename " + temp.dustforcename + " tester " + temp.tester + " trusted " + temp.trusted + " admin " + temp.admin);
-
-                //delete old dustforceuser entry
-                if (oldname != null && dustforcelist.ContainsKey(oldname)) {
-                    dustforcelist.Remove(oldname);
-                }
-                if (userlist.ContainsKey(ircLower)) {
-                    userlist.Remove(ircLower);
-                }
-                temp.dustforcename = dustforceuser;
-                temp.ircname = ircuser;
-                userlist.Add(ircLower, temp);
-                dustforcelist.Add(dustforceuser, temp);
-
-
-                WriteUsers();
-                return true;
-
+        /// <summary>
+        /// Gets the users in game dustforce name.
+        /// </summary>
+        /// <param name="ircuser">The nick of the user.</param>
+        /// <returns>The users dustforce name.</returns>
+        private string getUserIgn(string ircuser) {
+            PlayerInfo res = new PlayerInfo();
+            if (userlist.ContainsKey(ircuser.ToLower())) {
+                userlist.TryGetValue(ircuser.ToLower(), out res);
+                return res.dustforcename;
             } else {
-                sendData("NOTICE", ircuser + " :Someone already has that IGN (" + dustforceuser + ") registered. You may have registered it to another irc name?");
-                return false;
+                return null;
             }
         }
 
 
 
+        /// <summary>
+        /// Gets the user rating.
+        /// </summary>
+        /// <param name="ircuser">The ircuser.</param>
+        /// <returns></returns>
+        private int getUserRating(string ircuser) {
+            PlayerInfo res = new PlayerInfo();
+            if (userlist.ContainsKey(ircuser.ToLower())) {
+                userlist.TryGetValue(ircuser.ToLower(), out res);
+                return res.rating;
+            } else {
+                return -1;
+            }
+        }
 
 
+
+        /// <summary>
+        /// Serializes the user data to disk.
+        /// </summary>
+        private void WriteUsers() {
+            string json = JsonConvert.SerializeObject(userlist, Formatting.Indented);
+
+            File.WriteAllText(DATA_PATH + @"Userlist\userlistmap.json", json); // !! FILEPATH !!
+        }
+
+
+
+
+        /// <summary>
+        /// Sets a users in game dustforce name.
+        /// </summary>
+        /// <param name="ircuser">The ircuser whose name to set.</param>
+        /// <param name="dustforceuser">The users dustforce name.</param>
+        private void setUserIGN(string ircuser, string dustforceuser) {
+            string ircLower = ircuser.ToLower();
+            //if (!dustforcelist.ContainsKey(dustforceuser) || (dustforcelist[dustforceuser].ircname.ToLower() == ircLower)) {
+            PlayerInfo temp = new PlayerInfo();
+            userlist.TryGetValue(ircLower, out temp);
+            string oldname = temp.dustforcename;
+            //Console.WriteLine("name " + temp.ircname + " dustforcename " + temp.dustforcename + " tester " + temp.tester + " trusted " + temp.trusted + " admin " + temp.admin);
+
+            //delete old dustforceuser entry
+            if (oldname != null && dustforcelist.ContainsKey(oldname)) {
+                dustforcelist.Remove(oldname);
+            }
+            if (userlist.ContainsKey(ircLower)) {
+                userlist.Remove(ircLower);
+            }
+            temp.dustforcename = dustforceuser;
+            temp.ircname = ircuser;
+            userlist.Add(ircLower, temp);
+            dustforcelist.Add(dustforceuser, temp);
+
+            WriteUsers();
+        }
+
+
+
+
+
+        /// <summary>
+        /// Adds an entrant to the race.
+        /// </summary>
+        /// <param name="racer">The racer.</param>
+        /// <returns></returns>
         private bool AddEntrant(string racer) //Used to add a racer to entrants
         {
             racers.Rows.Add(racer, 6, 0, 0, 0, 0, "", getUserRating(racer)); //name, status, hour, min, sec, 10th sec, comment, rating
@@ -2223,29 +2329,15 @@ namespace FurkiebotCMR {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
         static int GetCurrentCMRidFromFile() {//Used to fetch the current CMR number
-            string[] id = System.IO.File.ReadAllLines(@"C:\CMR\Data\CMR_ID.txt"); // !! FILEPATH !!
+            string[] id = System.IO.File.ReadAllLines(DATA_PATH + @"CMR_ID.txt"); // !! FILEPATH !!
             return Int32.Parse(id[0]);
         } /* GetCurrentCMRID() */
 
 
 
         static string GetCurrentCMRStatus() {//Used to fetch current CMR status
-            string[] info = System.IO.File.ReadAllLines(@"C:\CMR\Data\CMR_STATUS.txt"); // !! FILEPATH !!
+            string[] info = System.IO.File.ReadAllLines(DATA_PATH + @"CMR_STATUS.txt"); // !! FILEPATH !!
             return info[0];
         } /* GetCurrentCMRStatus */
 
@@ -2253,7 +2345,7 @@ namespace FurkiebotCMR {
 
         static void SetCurrentCMRStatus(string s) {//Used to either open or close a CMR
             string text = s;
-            System.IO.File.WriteAllText(@"C:\CMR\Data\CMR_STATUS.txt", s); // !! FILEPATH !!
+            System.IO.File.WriteAllText(DATA_PATH + @"CMR_STATUS.txt", s); // !! FILEPATH !!
         } /* SetCurrentCMRStatus() */
 
 
@@ -2708,7 +2800,7 @@ namespace FurkiebotCMR {
 
         /* // YAY WE NOW NO LONGER RELY ON READING FROM JSON ALL THE TIME
          * static DataTable UpdateJsonUserlist() {
-            string filepath = @"C:\CMR\Data\Userlist\userlist.json"; // !! FILEPATH !!
+            string filepath = DATA_PATH + @"Userlist\userlist.json"; // !! FILEPATH !!
             string[] jsonarray = File.ReadAllLines(filepath);
             string json = string.Join("", jsonarray);
 
@@ -2722,7 +2814,7 @@ namespace FurkiebotCMR {
 
 
         static DataTable UpdateFaqList() {
-            string filepath = @"C:\CMR\Data\FAQ\faq.json"; // !! FILEPATH !!
+            string filepath = DATA_PATH + @"FAQ\faq.json"; // !! FILEPATH !!
             string[] jsonarray = File.ReadAllLines(filepath);
             string json = string.Join("", jsonarray);
 
@@ -2836,7 +2928,7 @@ namespace FurkiebotCMR {
 
 
         static DataTable UpdateJsonToDtMaps(string cmrid) {
-            string filepath = @"C:\CMR\Data\CMR Data\Maps\CMR" + cmrid + "Maps.json"; // !! FILEPATH !!
+            string filepath = DATA_PATH + @"CMR Data\Maps\CMR" + cmrid + "Maps.json"; // !! FILEPATH !!
             Console.WriteLine(filepath);
 
             if (File.Exists(filepath)) {
@@ -2867,7 +2959,7 @@ namespace FurkiebotCMR {
         static bool DeleteCmrMap(string cmrid, string mapname) {
             bool res = false;
 
-            string filepath = @"C:\CMR\Data\CMR Data\Maps\CMR" + cmrid + "Maps.json"; // !! FILEPATH !!
+            string filepath = DATA_PATH + @"CMR Data\Maps\CMR" + cmrid + "Maps.json"; // !! FILEPATH !!
 
             if (File.Exists(filepath)) {
                 string[] jsonarray = File.ReadAllLines(filepath);
@@ -2887,7 +2979,7 @@ namespace FurkiebotCMR {
                 dt.AcceptChanges();
 
                 string json2 = JsonConvert.SerializeObject(ds, Formatting.Indented);
-                System.IO.File.WriteAllText(@"C:\CMR\Data\CMR Data\Maps\CMR" + cmrid + "Maps.json", json); // !! FILEPATH !!
+                System.IO.File.WriteAllText(DATA_PATH + @"CMR Data\Maps\CMR" + cmrid + "Maps.json", json); // !! FILEPATH !!
             }
 
             return res;
@@ -2906,7 +2998,7 @@ namespace FurkiebotCMR {
 
             string json = JsonConvert.SerializeObject(ds, Formatting.Indented);
 
-            System.IO.File.WriteAllText(@"C:\CMR\Data\CMR Data\Maps\CMR" + cmrid + "Maps.json", json); // !! FILEPATH !!
+            System.IO.File.WriteAllText(DATA_PATH + @"CMR Data\Maps\CMR" + cmrid + "Maps.json", json); // !! FILEPATH !!
         }
 
 
@@ -2927,7 +3019,7 @@ namespace FurkiebotCMR {
 
             string json = JsonConvert.SerializeObject(ds, Formatting.Indented);
 
-            System.IO.File.WriteAllText(@"C:\CMR\Data\CMR Data\Maps\CMR" + cmrid + "Maps.json", json); // !! FILEPATH !!
+            System.IO.File.WriteAllText(DATA_PATH + @"CMR Data\Maps\CMR" + cmrid + "Maps.json", json); // !! FILEPATH !!
         }
 
 
@@ -2935,9 +3027,9 @@ namespace FurkiebotCMR {
         static string JsonToDatatableMaps2(DataTable dt, string cmrid, string irccommand, string ircchannel) {
             string res = "";
 
-            if (File.Exists(@"C:\CMR\Data\CMR Results\CMR" + cmrid + "Results.json")) //Check if CMR number exists // !! FILEPATH !!
+            if (File.Exists(DATA_PATH + @"CMR Results\CMR" + cmrid + "Results.json")) //Check if CMR number exists // !! FILEPATH !!
             {
-                string[] path = System.IO.File.ReadAllLines(@"C:\CMR\Data\CMR Results\CMR" + cmrid + "Results.json"); // !! FILEPATH !!
+                string[] path = System.IO.File.ReadAllLines(DATA_PATH + @"CMR Results\CMR" + cmrid + "Results.json"); // !! FILEPATH !!
                 string json = string.Join("", path);
 
                 JsonTextReader reader = new JsonTextReader(new StringReader(json));
@@ -3082,7 +3174,7 @@ namespace FurkiebotCMR {
                 writer.WriteEndObject();
             }
 
-            System.IO.File.WriteAllText(@"C:\CMR\Data\CMR Results\CMR" + cmrid + @"Results.json", sb.ToString()); // !! FILEPATH !!
+            System.IO.File.WriteAllText(DATA_PATH + @"CMR Results\CMR" + cmrid + @"Results.json", sb.ToString()); // !! FILEPATH !!
         }
 
 
@@ -3111,7 +3203,7 @@ namespace FurkiebotCMR {
                 lines[i + 2] = "|" + rank + "|" + name + "|" + time.ToString(@"%h\:mm\:ss") + "|" + comment + "|" + rating + "|";
             }
 
-            System.IO.File.WriteAllLines(@"C:\CMR\Data\CMR Results\Reddit" + cmrid + @".txt", lines); // !! FILEPATH !!
+            System.IO.File.WriteAllLines(DATA_PATH + @"CMR Results\Reddit" + cmrid + @".txt", lines); // !! FILEPATH !!
         }
 
 
