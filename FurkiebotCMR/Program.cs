@@ -69,9 +69,9 @@ namespace FurkiebotCMR {
     internal class FurkieBot : IDisposable {
         public static string SEP = ColourChanger(" | ", "07"); //The orange | seperator also used by GLaDOS
         public const string MAPS_PATH = @"C:\CMR\Maps\";
-        public const string BOT_NAME = "FurkieBot_";
-        public const string MAIN_CHAN = "#dustforcee";
-        public const string CMR_CHAN = "#DFcmrr";
+        public const string BOT_NAME = "FurkieBot";
+        public const string MAIN_CHAN = "#dustforce";
+        public const string CMR_CHAN = "#DFcmr";
         public const string DATA_PATH = @"C:\CMR\Data\";
         public const int MAX_MSG_LENGTH = 450;
 
@@ -174,7 +174,6 @@ namespace FurkiebotCMR {
             cmrtimeString = @"10:30:00"; //make sure this equals the time on TimeSpan cmrtime
 
 
-            InitDirectories();
 
 
             /*
@@ -182,8 +181,7 @@ namespace FurkiebotCMR {
              */
             pendingWatcher = new FileSystemWatcher();
             acceptedWatcher = new FileSystemWatcher();
-            pendingWatcher.Path = MAPS_PATH + cmrId + @"\pending";
-            acceptedWatcher.Path = MAPS_PATH + cmrId + @"\accepted";
+            InitDirectories();
             /* Watch for changes in LastWrite times, and
                the renaming of files or directories. */
             pendingWatcher.NotifyFilter = NotifyFilters.LastWrite
@@ -219,14 +217,8 @@ namespace FurkiebotCMR {
             Directory.CreateDirectory(MAPS_PATH + cmrId + @"\accepted");
             pendingMaps = new HashSet<string>(Directory.GetFiles(MAPS_PATH + cmrId + @"\pending", "*").Select(path => Path.GetFileName(path)).ToArray());
             acceptedMaps = new HashSet<string>(Directory.GetFiles(MAPS_PATH + cmrId + @"\accepted", "*").Select(path => Path.GetFileName(path)).ToArray());
-        }
-
-
-        /// <summary>
-        /// Releases the File watcher handlers.
-        /// </summary>
-        private void ReleaseHandlers() {
-
+            pendingWatcher.Path = MAPS_PATH + cmrId + @"\pending";
+            acceptedWatcher.Path = MAPS_PATH + cmrId + @"\accepted";
         }
 
 
@@ -243,7 +235,7 @@ namespace FurkiebotCMR {
             Console.WriteLine("\nCreatedPending: " + e.FullPath + " " + e.ChangeType + "\n");
             string fileName = Path.GetFileName(e.FullPath);
             pendingMaps.Add(fileName);
-            string toSay = " :New map submitted for testing: \"";
+            string toSay = "New map submitted for testing: \"";
 
             string[] split = fileName.Split('-');
             for (int i = 1; i < split.Length; i++) {
@@ -251,8 +243,9 @@ namespace FurkiebotCMR {
             }
             toSay += "\" by " + split[0];
 
-            sendData("PRIVMSG", mainchannel + toSay);
-            sendData("PRIVMSG", cmrchannel + toSay);
+            sendData("PRIVMSG", mainchannel + " :" + toSay);
+            sendData("PRIVMSG", cmrchannel + " :" + toSay);
+            MsgTesters(toSay);
         }
 
 
@@ -285,7 +278,7 @@ namespace FurkiebotCMR {
             acceptedMaps.Add(fileName);
             pendingMaps.Remove(fileName);
 
-            string toSay = " :Map accepted: \"";
+            string toSay = "Map accepted: \"";
 
             string[] split = fileName.Split('-');
             for (int i = 1; i < split.Length; i++) {
@@ -293,8 +286,9 @@ namespace FurkiebotCMR {
             }
             toSay += "\" by " + split[0];
 
-            sendData("PRIVMSG", mainchannel + toSay);
-            sendData("PRIVMSG", cmrchannel + toSay);
+            sendData("PRIVMSG", mainchannel + " :" + toSay);
+            sendData("PRIVMSG", cmrchannel + " :" + toSay);
+            MsgTesters(toSay);
         }
 
 
@@ -310,7 +304,7 @@ namespace FurkiebotCMR {
             string fileName = Path.GetFileName(e.FullPath);
             acceptedMaps.Remove(fileName);
 
-            string toSay = " :Map returned to pending: \"";
+            string toSay = "Map removed from accepted maps: \"";
 
             string[] split = fileName.Split('-');
             for (int i = 1; i < split.Length; i++) {
@@ -318,8 +312,9 @@ namespace FurkiebotCMR {
             }
             toSay += "\" by " + split[0];
 
-            sendData("PRIVMSG", mainchannel + toSay);
-            sendData("PRIVMSG", cmrchannel + toSay);
+            sendData("PRIVMSG", mainchannel + " :" + toSay);
+            sendData("PRIVMSG", cmrchannel + " :" + toSay);
+            MsgTesters(toSay);
         }
 
         //private static void OnRenamed(object source, RenamedEventArgs e) {
@@ -331,7 +326,7 @@ namespace FurkiebotCMR {
         /// <summary>
         /// Outputs the current CMR's map status to the provided channel.
         /// </summary>
-        /// <param name="chan">The IRC channel to output to.</param>
+        /// <param name="chan">The IRC channel to output to. If empty or null, output to both main channels.</param>
         private void OutputMapStatus(string chan) {
             OutputPending(chan);
             OutputAccepted(chan);
@@ -343,7 +338,7 @@ namespace FurkiebotCMR {
         /// <summary>
         /// Outputs the current CMR pending map status to the provided channel.
         /// </summary>
-        /// <param name="chan">The channel.</param>
+        /// <param name="chan">The channel. If empty or null, output to both main channels.</param>
         private void OutputPending(string chan) {
             string toSay = " :" + pendingMaps.Count + " Pending testing ";
 
@@ -370,7 +365,7 @@ namespace FurkiebotCMR {
         /// <summary>
         /// Outputs the current CMR accepted map status to the provided channel.
         /// </summary>
-        /// <param name="chan">The channel.</param>
+        /// <param name="chan">The channel. If empty or null, output to both main channels.</param>
         private void OutputAccepted(string chan) {
             string toSay = " :" + acceptedMaps.Count + " Accepted ";
             foreach (string s in acceptedMaps) {
@@ -598,6 +593,7 @@ namespace FurkiebotCMR {
         /// <returns>Whether or not the nick is identified.</returns>
         private bool IsIdentified(string nick, string toNotice) {
             if (identlist.ContainsKey(nick) && identlist[nick]) {
+                Console.WriteLine("Successfully identified " + nick);
                 return true;
             } else {
 
@@ -624,7 +620,7 @@ namespace FurkiebotCMR {
                         if (ex.Length > 3 && ex[3].ToLower() == ":register") {
                             Console.WriteLine("Password info hidden");
                         } else {
-                            Console.WriteLine(data);
+                            Console.WriteLine("IsIdentified: " + data);
                         }
                         if (ex[1] == "307") {
                             isIdentified = true;
@@ -685,6 +681,7 @@ namespace FurkiebotCMR {
                     WriteUsers();
                 }
                 Notice(nickname, "Successfully registered your nick with FurkieBot! Dont forget your password. You can always re-register if you forget the password.");
+                Notice(nickname, "You will now want to set your in-game dustforce name with FurkieBot. use \".setign <steam / drm-free name>\" to set your IGN with FurkieBot.");
             } else {
                 NoticeNotIdentified(nickname);
             }
@@ -725,9 +722,6 @@ namespace FurkiebotCMR {
             }
             cmrId = cmrNum;
             InitDirectories();
-            
-            pendingWatcher.Path = MAPS_PATH + cmrId + @"\pending";
-            acceptedWatcher.Path = MAPS_PATH + cmrId + @"\accepted";
         }
 
 
@@ -773,7 +767,7 @@ namespace FurkiebotCMR {
         /// <param name="chan">The channel to message.</param>
         /// <param name="message">The message to send to the channel.</param>
         private void Msg(string chan, string message) {
-            sendData("PRIVMSG", chan + " :" + message);
+            sendData("PRIVMSG", " " + chan + " :" + message);
         }
 
 
@@ -802,6 +796,20 @@ namespace FurkiebotCMR {
 
 
 
+        /// <summary>
+        /// Sends a message to all testers.
+        /// </summary>
+        /// <param name="toSay">The message.</param>
+        private void MsgTesters(string toSay) {
+            List<string> testers = GetTesters();
+            foreach (string tester in testers) {
+                //Console.WriteLine("\n\n\nTester: " + tester + " ");
+                //Console.WriteLine("is identified? " + identified + ".\n\n\n");
+                Msg(tester.Trim(), toSay);
+            }
+        }
+
+
 
         /// <summary>
         /// The main loop for IRC work.
@@ -822,7 +830,7 @@ namespace FurkiebotCMR {
                 if (ex.Length > 3 && ex[3].ToLower() == ":register") {
                     Console.WriteLine("Password info hidden");
                 } else {
-                    Console.WriteLine(data);
+                    Console.WriteLine("Outer: " + data);
                 }
                 shouldRun = ProcessInput(ex, data, charSeparator);
 
@@ -990,12 +998,12 @@ namespace FurkiebotCMR {
                     case ":.furkiebot": //FurkieBot Commands
                         if (!StringCompareNoCaps(chan, realRacingChan)) {
                             //FurkieBot commands for the main channel
-                            sendData("PRIVMSG", chan + " :Commands: .cmr" + SEP + ".maps" + SEP + ".startcmr" + SEP + ".ign <ircname>" + SEP + ".setign <in-game name>" + SEP + ".mappack" + SEP + ".pending" + SEP + ".accepted");
+                            sendData("PRIVMSG", chan + @" :Commands: .cmr" + SEP + ".maps" + SEP + ".startcmr" + SEP + ".ign <ircname>" + SEP + ".setign <in-game name>" + SEP + ".mappack" + SEP + ".pending" + SEP + ".accepted");
                             sendData("PRIVMSG", chan + @" :Upload maps: http://eklipz.us.to/cmr/map.html" + SEP + "CMR info: http://eklipz.us.to/cmr" + SEP + @"Command list: https://github.com/EklipZgit/furkiebot/wiki" + SEP + "FurkieBot announce channel: #DFcmr");
                             sendData("PRIVMSG", chan + @" :.help register" + SEP + ".help tester");
 
                         } else {            // FurkieBot commands for race channel
-                            sendData("PRIVMSG", chan + @" Command list: https://github.com/EklipZgit/furkiebot/wiki");
+                            sendData("PRIVMSG", chan + @" Command list: " + SEP + ".enter" + SEP + ".ready" + SEP + ".setign <dustforceName>" + SEP + ".register" + SEP + ".streams" + SEP + ".setstream <URL>" + SEP + @"More commands: https://github.com/EklipZgit/furkiebot/wiki");
                             //sendData("PRIVMSG", ex[2] + " Commands: .entrants" + SEP + ".join" + SEP + ".unjoin" + SEP + ".ready" + SEP + ".unready" + SEP + ".done" + SEP + ".undone" + SEP + ".forfeit" + SEP + ".ign <ircname>" + SEP + ".setign <in-game name>");                    
                         }
                         break;
@@ -1494,10 +1502,9 @@ namespace FurkiebotCMR {
                         break;
                     case ":.testers":
                         string testerList = " :Testers:";
-                        foreach (KeyValuePair<string, PlayerInfo> entry in userlist) {
-                            if (entry.Value.tester) {
-                                testerList = testerList + SEP + entry.Value.ircname;
-                            }
+                        List<string> testers = GetTesters();
+                        foreach (string tester in testers) {
+                            testerList += SEP + tester;
                         }
                         sendData("PRIVMSG", chan + testerList);
                         break;
@@ -1613,6 +1620,7 @@ namespace FurkiebotCMR {
                         if (int.TryParse(parameter, out cmrId)) {
                             ResetTesters();
                             SetCMR(cmrId);
+                            InitDirectories();
                         }
                         #endregion
                         break;
@@ -1842,17 +1850,22 @@ namespace FurkiebotCMR {
                         char[] separ = { ' ' };
                         string[] splitStream = parameter.Split(separ, 2);
                         if (IsAdmin(nickLower, nick) && splitStream.Length > 1) {  //admin is sending this command
-                            if (IsRegistered(splitStream[0].ToLower())) {
-                                setStream(splitStream[0].ToLower(), splitStream[1].Trim());
-                                sendData("PRIVMSG", chan + " :" + splitStream[0] + "'s stream url set to: " + splitStream[1]);
+                            string streamURL = splitStream[1].Trim();
+                            streamURL = FormatStreamURL(streamURL);
+                            string streamNick = splitStream[0].Trim();
+                            if (IsRegistered(streamNick.ToLower())) {
+                                setStream(streamNick.ToLower(), streamURL);
+                                sendData("PRIVMSG", chan + " :" + streamNick + "'s stream url set to: " + streamURL);
                             } else {
                                 Notice(nick, "That user isnt registered.");
                             }
                         } else {
+                            string streamURL = splitStream[0];
+                            streamURL = FormatStreamURL(streamURL);
                             if (IsIdentified(nickLower, nick)) {
                                 if (IsRegistered(nickLower)) {
-                                    setStream(nickLower, parameter);
-                                    sendData("PRIVMSG", chan + " :" + nick + "'s stream url set to: " + parameter);
+                                    setStream(nickLower, streamURL);
+                                    sendData("PRIVMSG", chan + " :" + nick + "'s stream url set to: " + streamURL);
                                 } else {
                                     NoticeNotRegistered(nick);
                                 }
@@ -2005,6 +2018,48 @@ namespace FurkiebotCMR {
                 }
             }
             return shouldRun;
+        }
+
+        /// <summary>
+        /// Gets an array of the nicks of users registered to test maps for this CMR.
+        /// </summary>
+        /// <returns>An array of the nicks of users registered to test maps for this CMR.</returns>
+        private List<string> GetTesters() {
+            List<string> testers = new List<string>();
+            foreach (KeyValuePair<string, PlayerInfo> entry in userlist) {
+                if (entry.Value.tester) {
+                    testers.Add(entry.Value.ircname);
+                    Console.WriteLine("added to testers: \"" + entry.Value.ircname + "\"");
+                }
+            }
+            return testers;
+        }
+
+
+        /// <summary>
+        /// Formats the provided stream URL.
+        /// </summary>
+        /// <param name="streamURL">The provided stream URL.</param>
+        /// <returns>The final stream url.</returns>
+        private string FormatStreamURL(string streamURL) {
+            
+            string streamLower = streamURL.ToLower();
+            string finalURL = "";
+            if (streamLower.StartsWith(@"http://") || streamLower.StartsWith(@"https://")) {//Already starts with http://
+                return streamURL;
+            } else {
+                finalURL = @"http://";
+                if (streamLower.StartsWith(@"www.")) {
+                    return finalURL + streamURL;
+                } else {
+                    finalURL = finalURL + @"www.";
+                }
+                if (!streamLower.StartsWith(@"twitch.tv/") && !streamLower.StartsWith(@"hitbox.tv/")) {
+                    finalURL = finalURL + @"twitch.tv/";
+                }
+                finalURL = finalURL + streamURL;
+                return finalURL;
+            }
         }
 
         private string getStream(string nickname) {
