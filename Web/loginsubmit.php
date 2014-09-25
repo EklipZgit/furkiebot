@@ -9,6 +9,7 @@ $password = $_POST['password'];
 $userlistfile = "C:\\CMR\\Data\\Userlist\\userlistmap.json";
 $filestring = file_get_contents($userlistfile);
 $userarray = json_decode($filestring, true);
+
 if (array_key_exists($username, $userarray)) {
 	echo "key existed, user in array";
 	$userData = $userarray[$username];

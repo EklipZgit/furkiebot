@@ -9,7 +9,7 @@
 /*
  * IRC CODES https://www.alien.net.au/irc/irc2numerics.html
  */
-
+//testing
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -2415,7 +2415,7 @@ namespace FurkiebotCMR {
         } /* GetCurrentCMRID() */
 
 
-
+        
         static string GetCurrentCMRStatus() {//Used to fetch current CMR status
             string[] info = System.IO.File.ReadAllLines(DATA_PATH + @"CMR_STATUS.txt"); // !! FILEPATH !!
             return info[0];
