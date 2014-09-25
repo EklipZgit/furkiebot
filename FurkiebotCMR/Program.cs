@@ -289,6 +289,7 @@ namespace FurkiebotCMR {
             sendData("PRIVMSG", mainchannel + " :" + toSay);
             sendData("PRIVMSG", cmrchannel + " :" + toSay);
             MsgTesters(toSay);
+
         }
 
 

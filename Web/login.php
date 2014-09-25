@@ -1,5 +1,5 @@
 <head>
-<title>Login Form</title>
+<title>Login</title>
 <style>
 #main {
 	width: 800px;

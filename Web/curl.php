@@ -1,7 +1,7 @@
 <?php
 // cURL replacement for file_get_contents()
 // Safer alternative to enabling allow_url_fopen in php.ini :)
- 
+
 function file_get_contents_curl($url) {
   $ch = curl_init();
   curl_setopt($ch, CURLOPT_HEADER, 0);
