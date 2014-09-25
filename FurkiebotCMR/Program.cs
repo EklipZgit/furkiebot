@@ -9,7 +9,7 @@
 /*
  * IRC CODES https://www.alien.net.au/irc/irc2numerics.html
  */
-//testing
+
 using System;
 using System.Collections.Generic;
 using System.Text;
