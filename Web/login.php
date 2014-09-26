@@ -18,6 +18,7 @@
   session_write_close();
   ?>
 	<div class="skinny">
+		<div class="container">
 			<center><h3 class="heading">Log in with your FurkieBot registration details!</h3></center>
 				<form class="form-signin" id="form1" name="form1" role="form" method="post" action="loginsubmit.php">
 				<input type="username" class="form-control" placeholder="Username" name="username" id="username" required autofocus>
@@ -32,7 +33,8 @@
 				<p>If you forgot your password, you can request an e-mail with instructions to reset it using "/nickserv resetpass (nickname)". The e-mail may be filtered by your spam filter.</p>
 
 				<p>Switched SRL nicks and need your info transferred onto a new nick? Talk to an admin. We won't be happy with you, but for now it is doable.</p>
-				</div>
+			</div>
+		</div>
     </div>
   </body>
 </html>
