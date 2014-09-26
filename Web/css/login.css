@@ -5,7 +5,9 @@ body {
 }
 
 .skinny {
-  width: 800px;
+  width: 700px;
+  margin-left: auto;
+  margin-right: auto;
 }
 .form-signin {
   max-width: 330px;
