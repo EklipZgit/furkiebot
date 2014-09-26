@@ -19,7 +19,7 @@ input {
     width: 300;
 }
 </style>
-</head>
+</headd>
 <body>
 <a href="index.html"> <b> Home</b></a><br><br>
 <b>Upload a map!</b>
