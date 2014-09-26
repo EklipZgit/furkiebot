@@ -26,7 +26,8 @@ if (array_key_exists($username, $userarray)) {
 	} else { // Logged in successfully.
 		session_regenerate_id();
 		$_SESSION['sess_user_id'] = $username;
-		$_SESSION['username'] = $usernameCase;
+		$_SESSION['username'] = $username;
+		$_SESSION['usernameCase'] = $usernameCase;
 		$_SESSION['loggedIn'] = true;
 		$_SESSION['trusted'] = $userData['trusted'];
 		$_SESSION['admin'] = $userData['admin'];

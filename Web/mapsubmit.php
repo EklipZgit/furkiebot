@@ -9,12 +9,12 @@ if (isset($_SESSION['loggedIn'])) {
 	if ($extension == "html" || $extension == "php"){
 		echo '<p style="color: red;"><b>Your account is hereby banned from all future CMR\'s and your racedata deleted.</b></p>Just kidding. Don\'t try to exploit my server though. ♥';
 	} else if (count($temp) == 1) { //no file extensions.
-		echo "Thanks " . $_SESSION['username'] . "!<br>";
+		echo "Thanks " . $_SESSION['usernameCase'] . "!<br>";
 		if ($_FILES["file"]["error"] > 0) {
 		  echo "ERROR UPLOADING. Return Code: " . $_FILES["file"]["error"] . "<br>";
 		  echo "screenshot this to EklipZ in #DFcmr";
 		} else {
-			$filename = $_SESSION['username'] . "-" . $_POST["mapname"];
+			$filename = $_SESSION['usernameCase'] . "-" . $_POST["mapname"];
 			$safefile = preg_replace('/[\x00-\x1F\x80-\xFF]/', '', $filename); //REGEX's OUT CONTROL CODES AND WHATNOT.
 		  if (file_exists("C:/CMR/maps/" . $cmrID . "/pending/" . $safefile)) {
 			unlink("C:/CMR/Maps/" . $cmrID . "/pending/" . $safefile);

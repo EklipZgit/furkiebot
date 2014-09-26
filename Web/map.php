@@ -1,6 +1,7 @@
 <?php
+include "../WebInclude/funcs.php";
 session_start();
-if (isset($_SESSION['loggedIn'])) {
+if (isLoggedIn()) {
 	echo <<< EOT
 <html>
 <head> 

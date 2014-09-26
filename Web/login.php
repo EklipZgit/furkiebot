@@ -10,9 +10,7 @@
 </head>
 <body>
 <?php
-session_start();
 include "../WebInclude/displaymessages.php";
-session_write_close();
 ?>
 <div id="main">
 <form id="form1" name="form1" method="post" action="loginsubmit.php">
