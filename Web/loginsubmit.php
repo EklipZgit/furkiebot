@@ -1,5 +1,4 @@
 <?php
-require_once "curl.php";
 //ob_start();
 session_start();
 
