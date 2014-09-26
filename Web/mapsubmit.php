@@ -1,4 +1,6 @@
 <?php
+include "../WebInclude/mapfuncs.php";
+$cmrID = getCMRID();
 session_start();
 if (isset($_SESSION['loggedIn'])) {
 	$temp = explode(".", $_FILES["file"]["name"]);
@@ -13,15 +15,15 @@ if (isset($_SESSION['loggedIn'])) {
 		  echo "screenshot this to EklipZ in #DFcmr";
 		} else {
 			$filename = $_SESSION['username'] . "-" . $_POST["mapname"];
-			$safefile = preg_replace('/[\x00-\x1F\x80-\xFF]/', '', $filename);
-		  if (file_exists("C:/CMR/maps/37/pending/" . $safefile)) {
-			unlink("C:/CMR/Maps/37/pending/" . $safefile);
+			$safefile = preg_replace('/[\x00-\x1F\x80-\xFF]/', '', $filename); //REGEX's OUT CONTROL CODES AND WHATNOT.
+		  if (file_exists("C:/CMR/maps/" . $cmrID . "/pending/" . $safefile)) {
+			unlink("C:/CMR/Maps/" . $cmrID . "/pending/" . $safefile);
 			move_uploaded_file($_FILES["file"]["tmp_name"],
-			"C:/CMR/Maps/37/pending/" . $safefile);
+			"C:/CMR/Maps/" . $cmrID . "/pending/" . $safefile);
 		  echo "Replaced: " . $safefile . " successfully.<br>";
 		  } else {
 			move_uploaded_file($_FILES["file"]["tmp_name"],
-			"C:/CMR/Maps/37/pending/" . $safefile);
+			"C:/CMR/Maps/" . $cmrID . "/pending/" . $safefile);
 		  echo "Uploaded: " . $safefile . " successfully.<br>";
 		  }
 		}

@@ -1493,7 +1493,7 @@ namespace FurkiebotCMR {
                         }
                         break;
                     case ":.admins":
-                        string adminList = " :Admins:";
+                        string adminList = " :CMR admins:";
                         foreach (KeyValuePair<string, PlayerInfo> entry in userlist) {
                             if (entry.Value.admin && IsIdentified(entry.Key, nickLower)) {
                                 adminList = adminList + SEP + entry.Value.ircname;
@@ -1502,7 +1502,7 @@ namespace FurkiebotCMR {
                         sendData("PRIVMSG", chan + adminList);
                         break;
                     case ":.testers":
-                        string testerList = " :Testers:";
+                        string testerList = " :CMR map testers:";
                         List<string> testers = GetTesters();
                         foreach (string tester in testers) {
                             testerList += SEP + tester;
@@ -1771,7 +1771,11 @@ namespace FurkiebotCMR {
                         }
                         #endregion
                         break;
-                    case ":.accept":
+                    case ":.accept"://aliases for accept map
+                        goto case ":.acceptmap";
+                    case ":.approve":
+                        goto case ":.acceptmap";
+                    case ":.approvemap":
                         goto case ":.acceptmap";
 
                     case ":.acceptmap":
@@ -1789,7 +1793,13 @@ namespace FurkiebotCMR {
                         break;
 
 
-                    case ":.unaccept":
+                    case ":.unaccept": //aliases for unaccept map
+                        goto case ":.unacceptmap";
+
+                    case ":.unapprove":
+                        goto case ":.unacceptmap";
+
+                    case ":.unapprovemap":
                         goto case ":.unacceptmap";
 
                     case ":.unacceptmap":

@@ -2,17 +2,17 @@
 require_once "curl.php";
 //ob_start();
 session_start();
-$usernameCase = $_POST['username'];
-//
-$username = strtolower($usernameCase);
+
+$username = strtolower($_POST['username']);
 $password = $_POST['password'];
 
-$userlistfile = "C:\CMR\Data\Userlist\userlistmap.json";
+$userlistfile = "C:\\CMR\\Data\\Userlist\\userlistmap.json";
 $filestring = file_get_contents($userlistfile);
 $userarray = json_decode($filestring, true);
 if (array_key_exists($username, $userarray)) {
 	echo "key existed, user in array";
 	$userData = $userarray[$username];
+	$usernameCase = $userData['ircname'];
 	$salt = $userData['salt'];
 	$pwhash = base64_encode(hash('sha256', $password, true));
 	$hash =  base64_encode(hash('sha256', $userData['salt'] . $pwhash , true));
@@ -25,7 +25,7 @@ if (array_key_exists($username, $userarray)) {
 	} else { // Logged in successfully.
 		session_regenerate_id();
 		$_SESSION['sess_user_id'] = $username;
-		$_SESSION['username'] = $username;
+		$_SESSION['username'] = $usernameCase;
 		$_SESSION['loggedIn'] = true;
 		$_SESSION['trusted'] = $userData['trusted'];
 		$_SESSION['admin'] = $userData['admin'];
@@ -35,7 +35,7 @@ if (array_key_exists($username, $userarray)) {
 			$temp = $_SESSION['redirect'];
 			unset($_SESSION['redirect']);
 			session_write_close();
-			header($temp);
+			header('Location: ' + $temp);
 		} else {
 			session_write_close();
 			header('Location: http://eklipz.us.to/cmr');

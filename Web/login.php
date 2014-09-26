@@ -11,10 +11,7 @@
 <body>
 <?php
 session_start();
-if (isset($_SESSION['warning'])) {
-	echo '<p style="color:red;"><b>' . $_SESSION['warning'] . '</b></p>';
-	unset($_SESSION['warning']);
-}
+include "../WebInclude/displaymessages.php";
 session_write_close();
 ?>
 <div id="main">
