@@ -19,7 +19,7 @@
 </head>
 <body>
 	<div class="skinny">
-		<?php displayNavbar("Home"); ?>
+		<?php displayNavbar("Participate"); ?>
 		<div id="main">
 			<p>In order to participate in a CMR you will need to join our IRC channel #dustforce on the speedrunslive irc server. (irc2.speedrunslive.com:6667). You can do this in your web browser with this link: <a href="http://client01.chat.mibbit.com/#dustforce@irc2.speedrunslive.com">Mibbit connection</a></p>
 			<p> In order to improve the system and add in cool features like rankings, acceptance / map tracking via the website, etc, I've needed to add a layer of security into CMR's. This means that you must be using a Registered Nickname on the SpeedRunsLive IRC server, and then also register with FurkieBot on the IRC server. Dont worry, its easy!</p>

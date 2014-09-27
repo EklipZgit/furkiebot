@@ -2,7 +2,7 @@
 //include me where you want your accept code to run.
 include_once "../WebInclude/funcs.php";
 //done until additional map metadata is added.
-session_start();
+ensureSession();
 if (isLoggedIn()) {
 	$cmrID = getCMRID();
 	$mapname = urldecode($_GET['map']);

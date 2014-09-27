@@ -5,6 +5,13 @@
 		} else return false;
 	}
 	
+	function ensureSession() {
+		if (session_status() == PHP_SESSION_NONE) {
+		    session_start();
+		}
+	}
+
+	
 	function isTester() {
 	
 	}

@@ -2,22 +2,22 @@
 <?php
 include_once "funcs.php";
 function displayNavbar($currentpage) {
-
 	$ek = "http://eklipz.us.to/cmr/";
 
 	//THIS IS WHERE YOU ADD NEW PAGES. They will auto add to the sidebar.
 	$navlist = [
-	"Home" => "${ek}index.php",
 	"FAQ" => "${ek}about.php",
 	"Upload map" => "${ek}map.php",
 	"Map Testers" => "${ek}maptest.php",
+	"Map Rules" => "${ek}tester.php",
 	//    "Home" => "${ek}index.html",      //add more as more shit gets added to site
 	];
+	ensureSession();
 	if (isLoggedIn()) {		
-			$navlist['Log out!'] = "${ek}logout.php";					
+		$navlist['Log out!'] = "${ek}logout.php";					
 	} else {
-			$navlist['Log in!'] = "${ek}login.php";
-			$navlist['Register?'] = "${ek}register.php";
+		$navlist['Log in!'] = "${ek}login.php";
+		$navlist['Register?'] = "${ek}register.php";
 	}
 	?>
 
@@ -29,22 +29,20 @@ function displayNavbar($currentpage) {
 				<span class="icon-bar"></span>
 				<span class="icon-bar"></span>
 			</button>
-			<a class="navbar-brand">Custom Map Races</a>
+			<?php echo "<a href=\"${ek}index.php\" class=\"navbar-brand\">FurkieBot Central</a>"; ?>
 		</div>
 
 		<div class="collapse navbar-collapse">
 			<ul class="nav navbar-nav">
 
 				<?php 
-
-					foreach ($navlist as $key => $value) {
-						if ($key == $currentpage) {
-							echo '<li class="active"><a href="' . $value . '">' . $key . '</a></li>';			//THE CURRENTLY SELECTED PAGES NAVBAR BUTTON
-						} else {
-							echo '<li class="inactive"><a href="' . $value . '">' . $key . '</a></li>';			//ALL OTHER PAGES NAVBAR BUTTONS
-						}
+				foreach ($navlist as $key => $value) {
+					if ($key == $currentpage) {
+						echo '<li class="active"><a href="' . $value . '">' . $key . '</a></li>';			//THE CURRENTLY SELECTED PAGES NAVBAR BUTTON
+					} else {
+						echo '<li class="inactive"><a href="' . $value . '">' . $key . '</a></li>';			//ALL OTHER PAGES NAVBAR BUTTONS
 					}
-
+				}
 				?>
 				
 			</ul>

@@ -27,7 +27,7 @@
 
 					<center>
   					<?php
-  					session_start();
+  					ensureSession();
   					include "../WebInclude/displaymessages.php";
   					session_write_close();
   					?>

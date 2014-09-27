@@ -9,8 +9,6 @@ function file_get_contents_curl($url) {
   curl_setopt($ch, CURLOPT_URL, $url);
   $data = curl_exec($ch);
   curl_close($ch);
-echo print_r($data);
-echo "<br>"; 
   return $data;
 }
 ?>
