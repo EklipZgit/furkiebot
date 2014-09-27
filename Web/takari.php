@@ -1,6 +1,23 @@
-<html>
+<!DOCTYPE html>
+<?php include "../WebInclude/navbar.php"; // YOU NEED TO INCLUDE THIS FILE AT THE TOP OF THE PAGE.
+?> 
+
+<html lang="en">
+<head>
+	<title>NAVBAR DEMO</title>
+	<!-- Bootstrap core CSS -->
+	<link href="css/bootstrap.min.css" rel="stylesheet">
+	<!-- Custom styles for this template -->
+	<link href="css/starter-template.css" rel="stylesheet">
+
+</head>
+
 <body>
-<a href="index.html"> <b> Home</b></a><br><br>
+
+<?php 			// CALL THIS METHOD LIKE SO AND PASS IN THE NAME (as displayed on the navbar) OF THE CURRENT PAGE.
+	displayNavbar("Home");      
+?>
+<a href="index.php"> <b> Home</b></a><br><br>
 <img src="takari.gif" alt="Takari as a young kitten" style="height:100%">
 </body>
 </html>

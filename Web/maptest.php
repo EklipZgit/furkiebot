@@ -1,20 +1,35 @@
 <?php
 session_start();
 if (isset($_SESSION['loggedIn'])) {
-echo <<< EOT
-	<html><head><style>
-	#main {
-		width: 800px;
-		text-alight: left;
-		align: center;
-	}
-	#tester {
-		width: 800px;
-		text-alight: left;
-		align: center;
-	}
-	</style></head><body><div id="main">
-EOT;
+	include "../WebInclude/navbar.php"
+
+?>
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+	<title>Test maps!</title>
+	<!-- Bootstrap core CSS -->
+	<link href="css/bootstrap.min.css" rel="stylesheet">
+	<!-- Custom styles for this template -->
+	<link href="css/starter-template.css" rel="stylesheet">
+	<style>
+		#main {
+			width: 800px;
+			text-alight: left;
+			align: center;
+		}
+		#tester {
+			width: 800px;
+			text-alight: left;
+			align: center;
+		}
+	</style>
+</head>
+
+<body>
+	<div id="main">
+<?php 
 
 	include "../WebInclude/displaymessages.php";
 	$userlistfile = "C:/CMR/Data/Userlist/userlistmap.json";
