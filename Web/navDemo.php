@@ -1,4 +1,7 @@
 <!DOCTYPE html>
+<?php include "../WebInclude/navbar.php"; // YOU NEED TO INCLUDE THIS FILE AT THE TOP OF THE PAGE.
+?> 
+
 <html lang="en">
 <head>
 	<title>NAVBAR DEMO</title>
@@ -12,8 +15,9 @@
 </head>
 
 <body>
-	<?php include "../WebInclude/navbar.php"; ?>
-
+<?php 
+	displayNavbar("Home");      // CALL THIS METHOD LIKE SO AND PASS IN THE NAME (as displayed on the navbar) OF THE CURRENT PAGE.
+?>
 </body>
 <footer>
 </footer>
