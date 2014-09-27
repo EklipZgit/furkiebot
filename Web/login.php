@@ -12,11 +12,6 @@
   </head>
 
   <body>
-  <?php
-  session_start();
-  include "../WebInclude/displaymessages.php";
-  session_write_close();
-  ?>
 	<div class="skinny">
 			<center><h3 class="heading">Log in with your FurkieBot registration details!</h3></center>
 				<form class="form-signin" id="form1" name="form1" role="form" method="post" action="loginsubmit.php">
@@ -24,6 +19,15 @@
 				<input type="password" class="form-control" placeholder="Password" name="password" id="password"  required>
 				<button class="btn btn-lg btn-primary btn-block" type="submit" value="Submit" >Log in</button>
 				</form>
+
+					<center>
+  					<?php
+  					session_start();
+  					include "../WebInclude/displaymessages.php";
+  					session_write_close();
+  					?>
+  					</center>
+  					
 			<p><b>Haven't registered with FurkieBot yet? <a href="http://eklipz.us.to/cmr/register.html">Learn how to register</a></b></p>
 			<p>Forgot your CMR password? Just follow the registration instructions above to register a new password. <br>Don't worry, this won't reset your race history or anything like that.</br></p>
 			<p>Forgot your SpeedRunsLive identify password? You will need to follow their instructions for resetting below:</p>
