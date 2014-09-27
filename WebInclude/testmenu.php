@@ -15,8 +15,8 @@
 			$mapname = $split[1];
 			$mapper = $split[0];
 			echo '<tr class="pendingrow">';
-			echo '<td class="pendingmap">' . $mapname . '</td>';
 			echo '<td class="pendingname">' . $mapper . '</td>';
+			echo '<td class="pendingmap">' . $mapname . '</td>';
 			echo '<td class="pendingdownload"><a href="downloadmap.php?map=' . urlencode($pending[$i]) . '">Download</a></td>';
 			echo '<td class="pendinglink"><a href="accept.php?map=' . urlencode($pending[$i]) . '">Accept this map</a></td>';
 			echo '<td class="pendinglink"><a href="deny.php?map=' . urlencode($pending[$i]) . '">Deny this map</a></td>';
@@ -36,8 +36,8 @@
 			$mapname = $split[1];
 			$mapper = $split[0];
 			echo '<tr class="pendingrow">';
-			echo '<td class="pendingmap">' . $mapname . '</td>';
 			echo '<td class="pendingname">' . $mapper . '</td>';
+			echo '<td class="pendingmap">' . $mapname . '</td>';
 			echo '<td class="pendingdownload"><a href="downloadmap.php?map=' . urlencode($accepted[$i]) . '">Download</a></td>';
 			echo '<td class="pendinglink"><a href="unaccept.php?map=' . urlencode($accepted[$i]) . '">Unaccept this map</a></td>';
 			echo '</tr>';
