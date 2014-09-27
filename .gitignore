@@ -5,3 +5,5 @@ FurkieBusterCMR/obj/*
 *.suo
 *.Cache
 WebSublimeProject.sublime-workspace
+tdd furkiebot.sublime-project
+tdd furkiebot.sublime-workspace
