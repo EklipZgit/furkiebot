@@ -28,6 +28,11 @@ if (isset($_SESSION['loggedIn'])) {
 </head>
 
 <body>
+
+
+<?php 			// CALL THIS METHOD LIKE SO AND PASS IN THE NAME (as displayed on the navbar) OF THE CURRENT PAGE.
+	displayNavbar("Home");      
+?>
 	<div id="main">
 <?php 
 

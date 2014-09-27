@@ -1,5 +1,7 @@
 
 <!DOCTYPE html>
+<?php include "../WebInclude/navbar.php"; // YOU NEED TO INCLUDE THIS FILE AT THE TOP OF THE PAGE.
+?> 
 <html lang="en">
 <head>
 
@@ -21,6 +23,10 @@
 
 <body>
 
+
+<?php 			// CALL THIS METHOD LIKE SO AND PASS IN THE NAME (as displayed on the navbar) OF THE CURRENT PAGE.
+	displayNavbar("Home");      
+?>
 	<div class="jumbotron">
 		<h1>Custom Map Races</h1>
 		<p class="mr">A Custom Map Race (CMR) is a BLIND SS race of custom maps. <br>Mapmakers make these maps during the week or so leading up to the race.<br>
