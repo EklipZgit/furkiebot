@@ -2175,8 +2175,8 @@ namespace FurkiebotCMR {
             string nextCmrS = duration.Seconds.ToString();
 
             if (CmrMapCount(cmrId.ToString()) < MIN_MAPS) { //If there are less than 6 maps submitted
-                sendData("PRIVMSG", chan + " :" + " Upcoming race is Custom Map Race " + cmrId + ". There are only " + acceptedMaps.Count + " maps currently accepted, and we need at least " + MIN_MAPS + ".");
-                sendData("PRIVMSG", chan + " :" + " It will happen on Saturday, " + saturday.Month + " " + saturday.Day.ToString() + @" at 6:30 pm GMT (conversion to your time here: http://www.timebie.com/std/gmt.php?q=18.5");
+                sendData("PRIVMSG", chan + " :" + "Upcoming race is Custom Map Race " + cmrId + ". There are only " + acceptedMaps.Count + " maps currently accepted, and we need at least " + MIN_MAPS + ".");
+                sendData("PRIVMSG", chan + " :" + "It will happen on Saturday, " + saturday.Month + " " + saturday.Day.ToString() + @" at 6:30 pm GMT (conversion to your time here: http://www.timebie.com/std/gmt.php?q=18.5");
             } else {
                 Console.WriteLine(DateTime.Now.TimeOfDay + "\t" + DateTime.Now.Date.ToString("dddd"));
                 if (DateTime.Now.TimeOfDay < cmrtime && DateTime.Now.Date.ToString("dddd") == "Saturday") { //If it isnt CMR time yet
