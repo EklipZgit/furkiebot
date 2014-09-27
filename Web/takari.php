@@ -4,7 +4,7 @@
 
 <html lang="en">
 <head>
-	<title>NAVBAR DEMO</title>
+	<title>Takari.php</title>
 	<!-- Bootstrap core CSS -->
 	<link href="css/bootstrap.min.css" rel="stylesheet">
 	<!-- Custom styles for this template -->

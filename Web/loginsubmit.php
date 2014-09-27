@@ -3,7 +3,7 @@
 
 //ob_start();
 session_start();
-		if ($DEBUG) { echo "starting loginsubmit.php"; }
+//		if ($DEBUG) { echo "starting loginsubmit.php"; }
 
 $username = strtolower($_POST['username']);
 $password = $_POST['password'];
@@ -35,6 +35,7 @@ if (array_key_exists($username, $userarray)) {
 		$_SESSION['trusted'] = $userData['trusted'];
 		$_SESSION['admin'] = $userData['admin'];
 		$_SESSION['tester'] = $userData['tester'];
+		$_SESSION['LAST_ACTIVITY'] = time(); 
 		//		if ($DEBUG) {echo "logged in successfully<br>";}
 		if (isset($_SESSION['redirect'])) {
 			$temp = $_SESSION['redirect'];

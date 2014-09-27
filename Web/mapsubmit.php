@@ -1,5 +1,5 @@
 <?php
-include "../WebInclude/mapfuncs.php";
+include "../WebInclude/funcs.php";
 $cmrID = getCMRID();
 session_start();
 if (isset($_SESSION['loggedIn'])) {
@@ -11,26 +11,26 @@ if (isset($_SESSION['loggedIn'])) {
 	} else if (count($temp) == 1) { //no file extensions.
 		echo "Thanks " . $_SESSION['usernameCase'] . "!<br>";
 		if ($_FILES["file"]["error"] > 0) {
-		  echo "ERROR UPLOADING. Return Code: " . $_FILES["file"]["error"] . "<br>";
-		  echo "screenshot this to EklipZ in #DFcmr";
+			echo "ERROR UPLOADING. Return Code: " . $_FILES["file"]["error"] . "<br>";
+			echo "screenshot this to EklipZ in #DFcmr";
 		} else {
 			$filename = $_SESSION['usernameCase'] . "-" . $_POST["mapname"];
-			$safefile = preg_replace('/[\x00-\x1F\x80-\xFF]/', '', $filename); //REGEX's OUT CONTROL CODES AND WHATNOT.
-		  if (file_exists("C:/CMR/maps/" . $cmrID . "/pending/" . $safefile)) {
+		$safefile = preg_replace('/[\x00-\x1F\x80-\xFF]/', '', $filename); //REGEX's OUT CONTROL CODES AND WHATNOT.
+		if (file_exists("C:/CMR/maps/" . $cmrID . "/pending/" . $safefile)) {
 			unlink("C:/CMR/Maps/" . $cmrID . "/pending/" . $safefile);
 			move_uploaded_file($_FILES["file"]["tmp_name"],
-			"C:/CMR/Maps/" . $cmrID . "/pending/" . $safefile);
-		  echo "Replaced: " . $safefile . " successfully.<br>";
-		  } else {
+				"C:/CMR/Maps/" . $cmrID . "/pending/" . $safefile);
+			echo "Replaced: " . $safefile . " successfully.<br>";
+		} else {
 			move_uploaded_file($_FILES["file"]["tmp_name"],
-			"C:/CMR/Maps/" . $cmrID . "/pending/" . $safefile);
-		  echo "Uploaded: " . $safefile . " successfully.<br>";
-		  }
+				"C:/CMR/Maps/" . $cmrID . "/pending/" . $safefile);
+			echo "Uploaded: " . $safefile . " successfully.<br>";
 		}
-	} else {
-		echo "uh oh you had a \".\" in the filename. Please, no files with extensions or \".\"'s";
-		echo "<br><a href=\"map.php\">Resubmit</a>";
 	}
+} else {
+	echo "uh oh you had a \".\" in the filename. Please, no files with extensions or \".\"'s";
+	echo "<br><a href=\"map.php\">Resubmit</a>";
+}
 } else {
 	$_SESSION['redirect'] = "http://eklipz.us.to/cmr/map.php";
 	$_SESSION['warning'] = "You need to log in before uploading maps.";

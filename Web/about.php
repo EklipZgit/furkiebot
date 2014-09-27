@@ -14,8 +14,9 @@
 	<link href="css/navbar.css" rel="stylesheet">
 
 	<style>
-		p.mr {
+		ul.mr {
 			margin-right: 55%;
+			font-size: 20pt;
 		}
 	</style>
 
@@ -26,31 +27,66 @@
 	<div class="jumbotron">
 
 
-		<?php displayNavbar("FAQ");  ?>
-		<h2>Custom Map Races</h2>
-		<p class="mr">
-			A Custom Map Race (CMR) is a BLIND SS race of custom maps. 
-			<br>Mapmakers make these maps during the week or so leading up to the race.<br>
-			Every Saturday the mappers whose maps have been accepted by the maptester(s) upload their maps to Atlas right before the race, and the racers download the maps after clearing their Custom Maps folder to make finding the maps quicker.
-		</p>
+		<?php displayNavbar("FAQ"); ?>
+
+		<h2>Custom Map Race FAQ</h2>
+		<ul class="mr">
+			<li>
+				A Custom Map Race (CMR) is a BLIND SS race of custom maps. 
+			</li>
+			<li>
+				Mapmakers make these maps during the week or so leading up to the race.
+			</li>
+			<li>
+				Every Saturday the mappers whose maps have been accepted by the maptester(s) upload their maps to Atlas right before the race. The racers then download the maps, and wait for FurkieBot to give the word to start the race!
+			</li>
+		</ul>
 	</div>
 
 	<!-- Example row of columns -->
 	<div class="row">
 		<div class="col-md-4">
 			<h3>IRC</h3>
-			<p>Donec id elit non mi porta gravida at eget metus. Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa justo sit amet risus. Etiam porta sem malesuada magna mollis euismod. Donec sed odio dui. </p>
-			<p><a class="btn btn-default" href="http://client01.chat.mibbit.com/#dustforce@irc2.speedrunslive.com" role="button">IRC &raquo;</a></p>
+			<p>
+				The race is held in the SpeedrunsLive IRC server, in a custom channel that FurkieBot will create when preparing to start the race.
+			</p>
+			<p>
+				<a class="btn btn-default" href="http://client01.chat.mibbit.com/#dustforce@irc2.speedrunslive.com" role="button">IRC &raquo;</a>
+			</p>
+		</div>
+		<div class="col-md-4">
+			<h3>Maps</h3>
+			<p>
+				<li>
+				Anybody can make a CMR map! By making maps for the CMR, you get the advantage of knowing the maps you made ahead of time for the race! <b><a href="testing.php">You must first read the Map Making rules carefully</a></b>, however. Your map will not be accepted if you do not follow the rules!
+				</li>
+
+				<li>
+					You can either be there to upload your map to atlas when the race starts, or FurkieBot will publish your map for you (and give you credit) if you are not in the IRC channel within 10 minutes of the designated race time (20 minutes after the time listed).
+				</li>
+				<li>
+				You just need to register with FurkieBot <a href="http://eklipz.us.to/cmr/register.php">(More info here)</a> and then use the Map submission form on this site to submit your map!
+				</li>
+				<li>
+				Maps do not need to be decorated before submission, but the gameplay should be done. When decorating after submission there can be severe penalties if you:
+				<li>Make parts of the map too dark to see</li>
+				<li>Zoom the camera out further than it was in the submission</li>
+				<li>Change the color scheme so that dust, enemies, or the player are harder to see</li>
+				<li>Add things to layer 20 that obscure dust, the player, or make it hard to tell what parts of the map the player is able to touch</li>
+				</li>
+			</p>
+			<p>
+				<a class="btn btn-default" href="#" role="button">View details &raquo;</a>
+			</p>
 		</div>
 		<div class="col-md-4">
 			<h3>Heading</h3>
-			<p>Donec id elit non mi porta gravida at eget metus. Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa justo sit amet risus. Etiam porta sem malesuada magna mollis euismod. Donec sed odio dui. </p>
-			<p><a class="btn btn-default" href="#" role="button">View details &raquo;</a></p>
-		</div>
-		<div class="col-md-4">
-			<h3>Heading</h3>
-			<p>Donec sed odio dui. Cras justo odio, dapibus ac facilisis in, egestas eget quam. Vestibulum id ligula porta felis euismod semper. Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa justo sit amet risus.</p>
-			<p><a class="btn btn-default" href="#" role="button">View details &raquo;</a></p>
+			<p>
+				Donec sed odio dui. Cras justo odio, dapibus ac facilisis in, egestas eget quam. Vestibulum id ligula porta felis euismod semper. Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa justo sit amet risus.
+			</p>
+			<p>
+				<a class="btn btn-default" href="#" role="button">View details &raquo;</a>
+			</p>
 		</div>
 
 	</div>

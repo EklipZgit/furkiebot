@@ -1,7 +1,8 @@
 <?php
+	include_once "../WebInclude/funcs.php";
 session_start();
-if (isset($_SESSION['loggedIn'])) {
-	include "../WebInclude/navbar.php"
+if (isLoggedIn()) {
+	include "../WebInclude/navbar.php";
 
 ?>
 <!DOCTYPE html>
@@ -16,14 +17,44 @@ if (isset($_SESSION['loggedIn'])) {
 	<style>
 		#main {
 			width: 800px;
-			text-alight: left;
-			align: center;
+			text-align: left;
+			padding-left: 30px;
+			padding-top: 30px;
 		}
-		#tester {
-			width: 800px;
-			text-alight: left;
-			align: center;
+		#pending {
+			text-align: left;
+			padding: 275px;
+			cellpadding: 10px;
 		}
+		#accepted {
+			text-align: left;
+			padding-bottom: 275px;
+		}
+		tr.pendingrow {
+			border-bottom-width: 1px;
+			border-bottom-style: solid;
+			border-bottom-color: black;
+			border-top-width: 1px;
+			border-top-style: solid;
+			border-top-color: black;		
+		}
+		td.pendinglink {
+			width: 150px;
+			padding: 10px;	
+		}
+		td.pendingdownload {
+			width: 90px;
+			padding: 10px;	
+		}
+		td.pendingname {
+			width: 100px;
+			padding: 5px;	
+		}
+		td.pendingmap {
+			width: 200px;
+			padding: 5px;	
+		}
+
 	</style>
 </head>
 
@@ -32,6 +63,7 @@ if (isset($_SESSION['loggedIn'])) {
 
 	<div class="skinny">
 		<?php displayNavbar("Map Testers"); ?>
+		<?php include "../WebInclude/displaymessages.php"; ?>
 		<div id="main">
 			<?php 
 
@@ -43,9 +75,9 @@ if (isset($_SESSION['loggedIn'])) {
 			if (array_key_exists($username, $userarray)) {
 				$userData = $userarray[$username];
 				if ($_SESSION['trusted'] == 1) {
-					echo "user is trusted<br>";
+					//echo "user is trusted<br>";
 					if ($_SESSION['tester'] == 1) { //THIS GUY IS A DEDICATED CMR TESTER???
-						echo "user is tester<br><br><br>";
+						//echo "user is tester<br><br><br>";
 						include "../WebInclude/testmenu.php";
 						//do shit
 					} else { //THIS GUY IS NOT ALLOWED TO DEDI-CMR TEST.

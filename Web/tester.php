@@ -4,7 +4,7 @@
 
 <html lang="en">
 <head>
-	<title>NAVBAR DEMO</title>
+	<title>Map test information!</title>
 	<!-- Bootstrap core CSS -->
 	<link href="css/bootstrap.min.css" rel="stylesheet">
 	<!-- Custom styles for this template -->
@@ -12,8 +12,7 @@
 	<style>
 		#main {
 			width: 800px;
-			text-alight: left;
-			align: center;
+			text-align: left;
 		}
 	</style>
 
