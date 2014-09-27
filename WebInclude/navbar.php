@@ -13,7 +13,12 @@ function displayNavbar($currentpage) {
 	"Map Testers" => "${ek}maptest.php",
 	//    "Home" => "${ek}index.html",      //add more as more shit gets added to site
 	];
-
+	if (isLoggedIn()) {		
+			$navlist['Log out!'] = "${ek}logout.php";					
+	} else {
+			$navlist['Log in!'] = "${ek}login.php";
+			$navlist['Register?'] = "${ek}register.php";
+	}
 	?>
 
 	<div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
@@ -38,12 +43,6 @@ function displayNavbar($currentpage) {
 						} else {
 							echo '<li class="inactive"><a href="' . $value . '">' . $key . '</a></li>';			//ALL OTHER PAGES NAVBAR BUTTONS
 						}
-					}
-					if (isLoggedIn()) {
-							echo '<li class="inactive login"><a href="' . $ek . "login.php" . '">Log In!</a></li>';	
-							echo '<li class="inactive register"><a href="' . $ek . "register.php" . '">Register?</a></li>';							
-					} else {
-							echo '<li class="inactive logout"><a href="' . $ek . "logout.php" . '">Log out</a></li>';	
 					}
 
 				?>

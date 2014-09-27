@@ -20,7 +20,6 @@
 <body>
 	<div class="skinny">
 		<?php displayNavbar("Home");   ?>
-		<a href="index.php"> <b> Home</b></a><br><br>
 		<div id="main">
 			<p>To register you will need to join our IRC channel #dustforce on the speedrunslive irc server. (irc2.speedrunslive.com:6667). You can do this in your web browser with this link: <a href="http://client01.chat.mibbit.com/#dustforce@irc2.speedrunslive.com">#Dustforce on Mibbit</a></p>
 

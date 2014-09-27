@@ -11,7 +11,7 @@
 </head>
 <body>
 <div class="skinny">
-<?php displayNavbar("Home"); ?>
+	<?php displayNavbar("Home"); ?>
 	<!--<br><br>
 	To register as an uploader, go <a href="register.php">here</a> (does not exist yet) -->
 	<b>The next CMR will be on Saturday, september 20'th at <a href="http://www.timebie.com/std/gmt.php?q=18.5">6:30 pm GMT.</a></b><br><br>

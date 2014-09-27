@@ -14,9 +14,8 @@
 
 <body>
 
-<?php displayNavbar("Takari"); ?>
-<a href="index.php"> <b> Home</b></a><br><br>
-<img src="takari.gif" alt="Takari as a young kitten" style="height:100%">
+	<?php displayNavbar("Takari"); ?>
+	<img src="takari.gif" alt="Takari as a young kitten" style="height:100%">
 </body>
 </html>
 

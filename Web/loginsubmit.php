@@ -47,7 +47,7 @@ if (array_key_exists($username, $userarray)) {
 	}
 } else {
 	echo "user not in array, redirecting to login<br>";
-	$_SESSION['warning'] = 'NOT A REGISTERED USERNAME, REGISTRATION INFO <a href="http://eklipz.us.to/cmr/register.html">HERE</a>';
+	$_SESSION['warning'] = 'NOT A REGISTERED USERNAME, REGISTRATION INFO <a href="http://eklipz.us.to/cmr/register.php">HERE</a>';
 	session_write_close();
 	header('Location: http://eklipz.us.to/cmr/login.php');
 }

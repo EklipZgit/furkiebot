@@ -27,7 +27,7 @@
 
 
 		<?php displayNavbar("FAQ");  ?>
-		<h1>Custom Map Races</h1>
+		<h2>Custom Map Races</h2>
 		<p class="mr">
 			A Custom Map Race (CMR) is a BLIND SS race of custom maps. 
 			<br>Mapmakers make these maps during the week or so leading up to the race.<br>
@@ -38,21 +38,21 @@
 	<!-- Example row of columns -->
 	<div class="row">
 		<div class="col-md-4">
-			<h2>IRC</h2>
+			<h3>IRC</h3>
 			<p>Donec id elit non mi porta gravida at eget metus. Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa justo sit amet risus. Etiam porta sem malesuada magna mollis euismod. Donec sed odio dui. </p>
 			<p><a class="btn btn-default" href="http://client01.chat.mibbit.com/#dustforce@irc2.speedrunslive.com" role="button">IRC &raquo;</a></p>
 		</div>
 		<div class="col-md-4">
-			<h2>Heading</h2>
+			<h3>Heading</h3>
 			<p>Donec id elit non mi porta gravida at eget metus. Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa justo sit amet risus. Etiam porta sem malesuada magna mollis euismod. Donec sed odio dui. </p>
 			<p><a class="btn btn-default" href="#" role="button">View details &raquo;</a></p>
 		</div>
 		<div class="col-md-4">
-			<h2>Heading</h2>
+			<h3>Heading</h3>
 			<p>Donec sed odio dui. Cras justo odio, dapibus ac facilisis in, egestas eget quam. Vestibulum id ligula porta felis euismod semper. Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa justo sit amet risus.</p>
 			<p><a class="btn btn-default" href="#" role="button">View details &raquo;</a></p>
 		</div>
 
-	</div>	<!-- was missing -->
+	</div>
 </body>
 </html>
