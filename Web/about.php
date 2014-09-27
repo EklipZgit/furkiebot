@@ -26,6 +26,8 @@
 		}
 		li.ml {
 			margin-left: 1cm;
+			padding-bottom: 8px;
+			font-size: 11pt;
 		}
 	</style>
 
@@ -40,13 +42,13 @@
 
 		<h2>Custom Map Race FAQ</h2>
 		<ul class="mr">
-			<li>
+			<li class="ml">
 				A Custom Map Race (CMR) is a BLIND SS race of custom maps. 
 			</li>
-			<li>
+			<li class="ml">
 				Mapmakers make these maps during the week or so leading up to the race.
 			</li>
-			<li>
+			<li class="ml">
 				Every Saturday the mappers whose maps have been accepted by the maptester(s) upload their maps to Atlas right before the race. The racers then download the maps, and wait for FurkieBot to give the word to start the race!
 			</li>
 		</ul>
