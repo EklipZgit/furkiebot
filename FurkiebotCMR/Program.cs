@@ -245,7 +245,7 @@ namespace FurkiebotCMR {
 
             sendData("PRIVMSG", mainchannel + " :" + toSay);
             sendData("PRIVMSG", cmrchannel + " :" + toSay);
-            MsgTesters(toSay);
+            MsgTesters(toSay + ". Test and accept it at http://eklipz.us.to/cmr/maptest.php");
         }
 
 
@@ -398,6 +398,16 @@ namespace FurkiebotCMR {
             string[] jsonarray = File.ReadAllLines(filepath);
             string json = string.Join("", jsonarray);
             userlist = JsonConvert.DeserializeObject<Dictionary<string, PlayerInfo>>(json); // initially loads the userlist from JSON
+            Dictionary<string, PlayerInfo> temp = new Dictionary<string, PlayerInfo>();
+            foreach (KeyValuePair<string, PlayerInfo> entry in userlist) {
+                PlayerInfo info = entry.Value;
+                if (info.streamurl == "http://twitch.tv") {
+                    info.streamurl = "";
+                }
+                temp[entry.Key] = info;
+            }
+            userlist = temp;
+            WriteUsers();
             SyncOtherTables();
         }
 
@@ -470,7 +480,7 @@ namespace FurkiebotCMR {
                     }
 
                     string ss = param;
-                    int size = ss.Length / MAX_MSG_LENGTH - 50;
+                    int size = ss.Length / MAX_MSG_LENGTH;
                     string[] newParam = new string[size + 1];
 
                     for (int i = 0; i < size + 1; i++) {
@@ -674,7 +684,7 @@ namespace FurkiebotCMR {
                     info.password = hashes[1];
                     info.ircname = nickname;
                     info.dustforcename = "";
-                    info.streamurl = @"http://twitch.tv";
+                    info.streamurl = "";
                     info.admin = false;
                     info.tester = false;
                     info.trusted = false;
@@ -1137,11 +1147,6 @@ namespace FurkiebotCMR {
                                         sendData("NAMES", realRacingChan);
                                         sendData("MODE", realRacingChan + " +im");
                                         racers.Clear();
-                                        using (System.IO.StreamWriter file = new System.IO.StreamWriter(DATA_PATH + @"CMR_ID.txt")) // !! FILEPATH !!
-                                            {
-                                            int newid = Convert.ToInt32(cmrId) + 1;
-                                            file.WriteLine(newid.ToString());
-                                        }
                                     }
                                 }
                             }
@@ -1240,9 +1245,9 @@ namespace FurkiebotCMR {
                         #region
                         if (chan == realRacingChan) { 
                             //Command is only possible in racing channel
-                            if (cmrStatus == "open") { 
+                            //if (cmrStatus == "open") { 
                                 //Command is only possible if CMR is open
-                                if (GetStatus(nick) == 6) { 
+                                if (GetStatus(nickLower) == 6) { 
                                     //Comment only works if racer status is "standby"
                                     //Set racer status to "ready"
                                     SetStatus(nickLower, 3);
@@ -1252,7 +1257,7 @@ namespace FurkiebotCMR {
                                 if (ComfirmMassStatus(3) && racers.Rows.Count > 1) {
                                     goto case ":.go";
                                 }
-                            }
+                            //}
                         }
                         #endregion
                         break;
@@ -1262,9 +1267,11 @@ namespace FurkiebotCMR {
                         #region
                         if (chan == realRacingChan) { //Command is only possible in racing channel
                             if (racers.Rows.Count > 0) {
-                                string streamsOut = " :Entrants streams: " + getStream(racers.Rows[0]["Name"].ToString().ToLower());
-                                for (int i = 1; i < racers.Rows.Count; i++) {
-                                    streamsOut = streamsOut + SEP + getStream(racers.Rows[i]["Name"].ToString().ToLower());
+                                string streamsOut = " :Entrants streams: ";
+                                for (int i = 0; i < racers.Rows.Count; i++) {
+                                    if (getStream(racers.Rows[i]["Name"].ToString().ToLower()) != "http://www.twitch.tv" && getStream(racers.Rows[i]["Name"].ToString().ToLower()) != "") {
+                                        streamsOut = streamsOut + SEP + getStream(racers.Rows[i]["Name"].ToString().ToLower());
+                                    }
                                 }
                                 sendData("PRIVMSG", realRacingChan + streamsOut);
                             }
