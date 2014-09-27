@@ -13,7 +13,7 @@
 
 
 
-	function displayNavbar(string $currentpage) {
+	function displayNavbar($currentpage) {
 
 ?>
 		<div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
