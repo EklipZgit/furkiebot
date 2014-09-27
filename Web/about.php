@@ -23,11 +23,10 @@
 
 <body>
 
-
-<?php 			// CALL THIS METHOD LIKE SO AND PASS IN THE NAME (as displayed on the navbar) OF THE CURRENT PAGE.
-	displayNavbar("Home");      
-?>
 	<div class="jumbotron">
+
+
+<?php displayNavbar("FAQ");  ?>
 		<h1>Custom Map Races</h1>
 		<p class="mr">A Custom Map Race (CMR) is a BLIND SS race of custom maps. <br>Mapmakers make these maps during the week or so leading up to the race.<br>
 			Every Saturday the mappers whose maps have been accepted by the maptester(s) upload their maps to Atlas right before the race, and the racers download the maps after clearing their Custom Maps folder to make finding the maps quicker.</p>

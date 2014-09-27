@@ -1,5 +1,7 @@
-
 <!DOCTYPE html>
+<?php include "../WebInclude/navbar.php"; // YOU NEED TO INCLUDE THIS FILE AT THE TOP OF THE PAGE.
+?> 
+
 <html lang="en">
   <head>
     <title>Login</title>
@@ -12,7 +14,10 @@
   </head>
 
   <body>
+
 	<div class="skinny">
+
+<?php displayNavbar("Log in");?>
 			<center><h3 class="heading">Log in with your FurkieBot registration details!</h3></center>
 				<form class="form-signin" id="form1" name="form1" role="form" method="post" action="loginsubmit.php">
 				<input type="username" class="form-control" placeholder="Username" name="username" id="username" required autofocus>
@@ -28,7 +33,7 @@
   					?>
   					</center>
   					
-			<p><b>Haven't registered with FurkieBot yet? <a href="http://eklipz.us.to/cmr/register.html">Learn how to register</a></b></p>
+			<p><b>Haven't registered with FurkieBot yet? <a href="http://eklipz.us.to/cmr/register.php">Learn how to register</a></b></p>
 			<p>Forgot your CMR password? Just follow the registration instructions above to register a new password. <br>Don't worry, this won't reset your race history or anything like that.</br></p>
 			<p>Forgot your SpeedRunsLive identify password? You will need to follow their instructions for resetting below:</p>
 				

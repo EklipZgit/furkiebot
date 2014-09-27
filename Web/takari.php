@@ -14,9 +14,7 @@
 
 <body>
 
-<?php 			// CALL THIS METHOD LIKE SO AND PASS IN THE NAME (as displayed on the navbar) OF THE CURRENT PAGE.
-	displayNavbar("Home");      
-?>
+<?php displayNavbar("Takari"); ?>
 <a href="index.php"> <b> Home</b></a><br><br>
 <img src="takari.gif" alt="Takari as a young kitten" style="height:100%">
 </body>
