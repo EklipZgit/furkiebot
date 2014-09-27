@@ -1,15 +1,16 @@
 
 <?php
+include_once "funcs.php";
 function displayNavbar($currentpage) {
 
 	$ek = "http://eklipz.us.to/cmr/";
 
 	//THIS IS WHERE YOU ADD NEW PAGES. They will auto add to the sidebar.
 	$navlist = [
-	"Home" => "${ek}index.html",
-	"FAQ" => "${ek}about.html",
+	"Home" => "${ek}index.php",
+	"FAQ" => "${ek}about.php",
 	"Upload map" => "${ek}map.php",
-	"Testers" => "${ek}maptest.php",
+	"Map Testers" => "${ek}maptest.php",
 	//    "Home" => "${ek}index.html",      //add more as more shit gets added to site
 	];
 
@@ -37,6 +38,12 @@ function displayNavbar($currentpage) {
 						} else {
 							echo '<li class="inactive"><a href="' . $value . '">' . $key . '</a></li>';			//ALL OTHER PAGES NAVBAR BUTTONS
 						}
+					}
+					if (isLoggedIn()) {
+							echo '<li class="inactive login"><a href="' . $ek . "login.php" . '">Log In!</a></li>';	
+							echo '<li class="inactive register"><a href="' . $ek . "register.php" . '">Register?</a></li>';							
+					} else {
+							echo '<li class="inactive logout"><a href="' . $ek . "logout.php" . '">Log out</a></li>';	
 					}
 
 				?>
