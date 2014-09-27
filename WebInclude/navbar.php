@@ -1,5 +1,7 @@
 
 <?php
+function displayNavbar($currentpage) {
+
 	$ek = "http://eklipz.us.to/cmr/";
 
 	//THIS IS WHERE YOU ADD NEW PAGES. They will auto add to the sidebar.
@@ -11,41 +13,39 @@
 	//    "Home" => "${ek}index.html",      //add more as more shit gets added to site
 	];
 
+	?>
 
+	<div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+		<div class="navbar-header">
+			<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target=".navbar-collapse">
+				<span class="sr-only">Toggle navigation</span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+			</button>
+			<a class="navbar-brand">Custom Map Races</a>
+		</div>
 
-	function displayNavbar($currentpage) {
+		<div class="collapse navbar-collapse">
+			<ul class="nav navbar-nav">
 
-?>
-		<div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
-			<div class="navbar-header">
-				<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target=".navbar-collapse">
-					<span class="sr-only">Toggle navigation</span>
-					<span class="icon-bar"></span>
-					<span class="icon-bar"></span>
-					<span class="icon-bar"></span>
-				</button>
-				<a class="navbar-brand">Custom Map Races</a>
-			</div>
+				<?php 
 
-			<div class="collapse navbar-collapse">
-				<ul class="nav navbar-nav">
-
-					<?php 
-
-						foreach ($navlist as $key => $value) {
-							if ($key == $currentpage) {
-								echo '<li class="active">' . $key . '</li>';
-							} else {
-								echo '<li class="inactive"><a href="' . $value . '">' . $key . '</a></li>';
-							}
+					foreach ($navlist as $key => $value) {
+						if ($key == $currentpage) {
+							echo '<li class="active"><a href="' . $value . '">' . $key . '</a></li>';			//THE CURRENTLY SELECTED PAGES NAVBAR BUTTON
+						} else {
+							echo '<li class="inactive"><a href="' . $value . '">' . $key . '</a></li>';			//ALL OTHER PAGES NAVBAR BUTTONS
 						}
+					}
 
-					?>
-					
-				</ul>
-			</div><!--/.nav-collapse -->
-</div>
+				?>
+				
+			</ul>
+		</div><!--/.nav-collapse -->
+	</div>
 
-<?php
-	}
+
+	<?php
+}
 ?>
