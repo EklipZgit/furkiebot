@@ -26,6 +26,8 @@ using System.Net;
 using Newtonsoft.Json;
 using System.Linq;
 using Newtonsoft.Json.Linq;
+using System.Threading;
+using FurkieBusterCMR;
 
 /// <summary>
 /// The Furkiebot namespace.
@@ -34,7 +36,7 @@ namespace FurkiebotCMR {
     /// <summary>
     /// The irc configuration parameters that get passed into FurkieBot.
     /// </summary>
-    internal struct IRCConfig {
+    public struct IRCConfig {
         public string server;
         public int port;
         public string nick;
@@ -48,7 +50,7 @@ namespace FurkiebotCMR {
     /// <summary>
     /// Player info struct containing all information about a player.
     /// </summary>
-    internal struct PlayerInfo {
+    public struct PlayerInfo {
         public string ircname;
         public string dustforcename;
         public string streamurl;
@@ -62,20 +64,38 @@ namespace FurkiebotCMR {
     }
 
 
+    /// <summary>
+    /// Struct containing all the data about a map.
+    /// </summary>
+    public struct MapData {
+        public string name;
+        public string url;
+        public string filepath;
+        public string authorname;
+        public string approvedby;
+    }
+
+
 
     /// <summary>
     /// A FurkieBot IRC bot.
     /// </summary>
-    internal class FurkieBot : IDisposable {
+    public class FurkieBot : IDisposable {
         public static string SEP = ColourChanger(" | ", "07"); //The orange | seperator also used by GLaDOS
         public const string MAPS_PATH = @"C:\CMR\Maps\";
-        public const string BOT_NAME = "FurkieBot";
-        public const string MAIN_CHAN = "#dustforce";
-        public const string CMR_CHAN = "#DFcmr";
+        public const string BOT_NAME = "FurkieBot_";
+        public const string MAIN_CHAN = "#dustforcee";
+        public const string CMR_CHAN = "#DFcmrr";
         public const string DATA_PATH = @"C:\CMR\Data\";
         public const int MAX_MSG_LENGTH = 450;
 
         public const int MIN_MAPS = 6;
+
+        private FurkieBuster buster;
+        private Thread busterThread;
+
+
+        public readonly object _whoisLock = new Object();
 
 
         private TcpClient IRCConnection = null;
@@ -87,22 +107,25 @@ namespace FurkiebotCMR {
 
         private FileSystemWatcher pendingWatcher;   //watches the pending maps folder.
         private FileSystemWatcher acceptedWatcher;  //watches the accepted maps folder.
+        private FileSystemWatcher mapsWatcher;
 
 
         private DataTable racers;
         private DataTable users;
-        private HashSet<string> acceptedMaps;
-        private HashSet<string> pendingMaps;
+
+        private List<MapData> acceptedMaps;
+        private List<MapData> pendingMaps;
+
         private Dictionary<string, PlayerInfo> userlist; //ircnames -> userinfo. used for quick lookup and serializing to userlistmap.json upon modification
         private Dictionary<string, PlayerInfo> dustforcelist;// dustforcenames -> userinfo. used only for quick lookup, and duplicate dustforcename checking.
         private Dictionary<string, bool> identlist;// dustforcenames -> userinfo. used only for quick lookup, and duplicate dustforcename checking.
 
 
-        private string dummyRacingChan; //first part of racingchannel string
-        private string realRacingChan; //real racing channel string
-        private string mainchannel; //also the channel that will be joined upon start, change to #dustforcee for testing purposes
-        private string cmrchannel; //also the channel that will be joined upon start, change to #dustforcee for testing purposes
-        private int cmrId;
+        public string dummyRacingChan; //first part of racingchannel string
+        public string realRacingChan; //real racing channel string
+        public string mainchannel; //also the channel that will be joined upon start, change to #dustforcee for testing purposes
+        public string cmrchannel; //also the channel that will be joined upon start, change to #dustforcee for testing purposes
+        public int cmrId;
         private string comNames; // Used for NAMES commands
         private bool complexAllowed; //Set to false when a function is already waiting on a complex return, ie IsIdentified while parsing a /whois. Keeps additional complex functions from starting in the meantime.
 
@@ -150,6 +173,7 @@ namespace FurkiebotCMR {
 
 
             loadUserlist();
+            loadMaplist();
 
             dummyRacingChan = "#cmr-"; //first part of racingchannel string
             realRacingChan = ""; //real racing channel string
@@ -181,12 +205,15 @@ namespace FurkiebotCMR {
              */
             pendingWatcher = new FileSystemWatcher();
             acceptedWatcher = new FileSystemWatcher();
+            mapsWatcher = new FileSystemWatcher();
             InitDirectories();
             /* Watch for changes in LastWrite times, and
                the renaming of files or directories. */
             pendingWatcher.NotifyFilter = NotifyFilters.LastWrite
                | NotifyFilters.FileName | NotifyFilters.DirectoryName;
             acceptedWatcher.NotifyFilter = NotifyFilters.LastWrite
+               | NotifyFilters.FileName | NotifyFilters.DirectoryName;
+            mapsWatcher.NotifyFilter = NotifyFilters.LastWrite
                | NotifyFilters.FileName | NotifyFilters.DirectoryName;
             // Only watch text files.
             //fileWatcher.Filter = "*.txt";
@@ -202,9 +229,16 @@ namespace FurkiebotCMR {
             acceptedWatcher.Deleted += new FileSystemEventHandler(DeletedAccepted);
             //acceptedWatcher.Renamed += new RenamedEventHandler(OnRenamed);
 
+            mapsWatcher.Changed += new FileSystemEventHandler(ChangedMaps);
+            mapsWatcher.Created += new FileSystemEventHandler(CreatedMaps);
+            //mapsWatcher.Renamed += new RenamedEventHandler(OnRenamed);
+
+
+            
             // Begin watching.
             pendingWatcher.EnableRaisingEvents = true;
             acceptedWatcher.EnableRaisingEvents = true;
+            mapsWatcher.EnableRaisingEvents = true;
         }
 
 
@@ -215,10 +249,13 @@ namespace FurkiebotCMR {
             Directory.CreateDirectory(MAPS_PATH + cmrId);
             Directory.CreateDirectory(MAPS_PATH + cmrId + @"\pending");
             Directory.CreateDirectory(MAPS_PATH + cmrId + @"\accepted");
-            pendingMaps = new HashSet<string>(Directory.GetFiles(MAPS_PATH + cmrId + @"\pending", "*").Select(path => Path.GetFileName(path)).ToArray());
-            acceptedMaps = new HashSet<string>(Directory.GetFiles(MAPS_PATH + cmrId + @"\accepted", "*").Select(path => Path.GetFileName(path)).ToArray());
+            
+
+            //pendingMaps = new HashSet<string>(Directory.GetFiles(MAPS_PATH + cmrId + @"\pending", "*").Select(path => Path.GetFileName(path)).ToArray());
+            //acceptedMaps = new HashSet<string>(Directory.GetFiles(MAPS_PATH + cmrId + @"\accepted", "*").Select(path => Path.GetFileName(path)).ToArray());
             pendingWatcher.Path = MAPS_PATH + cmrId + @"\pending";
             acceptedWatcher.Path = MAPS_PATH + cmrId + @"\accepted";
+            mapsWatcher.Path = MAPS_PATH + cmrId;
         }
 
 
@@ -318,11 +355,27 @@ namespace FurkiebotCMR {
             MsgTesters(toSay);
         }
 
-        //private static void OnRenamed(object source, RenamedEventArgs e) {
-        //    // Specify what is done when a file is renamed.
-        //    //Console.WriteLine("File: {0} renamed to {1}", e.OldFullPath, e.FullPath);
-        //    Console.WriteLine("\n\n\nFile: {0} renamed to {1}\n\n\n", e.OldFullPath, e.FullPath);
-        //}
+
+
+        /// <summary>
+        /// The EventHandler function for when the maps json file is changed.
+        /// </summary>
+        /// <param name="source">The source.</param>
+        /// <param name="e">The <see cref="RenamedEventArgs"/> instance containing the event data.</param>
+        private static void ChangedMaps(object source, FileSystemEventArgs e) {
+
+        }
+
+
+
+        /// <summary>
+        /// The EventHander function for when the maps json file is created.
+        /// </summary>
+        /// <param name="source">The source.</param>
+        /// <param name="e">The <see cref="FileSystemEventArgs"/> instance containing the event data.</param>
+        private static void CreatedMaps(object source, FileSystemEventArgs e) {
+            throw new Exception("this shit should never get called???????");
+        }
 
         /// <summary>
         /// Outputs the current CMR's map status to the provided channel.
@@ -409,6 +462,28 @@ namespace FurkiebotCMR {
             userlist = temp;
             WriteUsers();
             SyncOtherTables();
+        }
+
+
+
+        private void loadMaplist() {
+            string mapsJsonPath = MAPS_PATH + cmrId + @"\maps.json";
+            if (File.Exists(mapsJsonPath)) {
+                string[] mapsarray = File.ReadAllLines(mapsJsonPath);
+                string jsonPending = string.Join("", mapsarray);
+                pendingMaps = JsonConvert.DeserializeObject<List<MapData>>(jsonPending); // initially loads the userlist from JSON
+
+            }
+
+            //string acceptedFiles = MAPS_PATH + cmrId + @"\accepted\accepted.json"; // !! FILEPATH !!
+            //string pendingFiles = MAPS_PATH + cmrId + @"\pending\pending.json"; // !! FILEPATH !!
+            //string[] arraypending = File.ReadAllLines(pendingFiles);
+            //string[] arrayaccepted = File.ReadAllLines(acceptedFiles);
+            //string jsonPending = string.Join("", arraypending);
+            //string jsonAccepted = string.Join("", arrayaccepted);
+
+            //pendingMaps = JsonConvert.DeserializeObject<List<MapData>>(jsonPending); // initially loads the userlist from JSON
+            //acceptedMaps = JsonConvert.DeserializeObject<List<MapData>>(jsonAccepted); // initially loads the userlist from JSON
         }
 
 
@@ -543,7 +618,7 @@ namespace FurkiebotCMR {
         /// <param name="nick">The nick.</param>
         /// <param name="toNotify">The IRC user initiating this check.</param>
         /// <returns>bool whether or not the nick is an admin.</returns>
-        private bool IsAdmin(string nick, string toNotify) {
+        public bool IsAdmin(string nick, string toNotify) {
             nick = nick.ToLower();
             if (IsRegistered(nick) && IsIdentified(nick, toNotify)) {
                 return userlist[nick].admin;
@@ -559,7 +634,7 @@ namespace FurkiebotCMR {
         /// <param name="nick">The nick.</param>
         /// <param name="toNotify">To notify.</param>
         /// <returns></returns>
-        private bool IsTester(string nick, string toNotify) {
+        public bool IsTester(string nick, string toNotify) {
             if (IsIdentified(nick, toNotify)) {
                 if (IsRegistered(nick)) {
                     return userlist[nick].tester;
@@ -581,7 +656,7 @@ namespace FurkiebotCMR {
         /// <param name="nick">The nick.</param>
         /// <param name="toNotify">To notify.</param>
         /// <returns></returns>
-        private bool IsTrusted(string nick, string toNotify) {
+        public bool IsTrusted(string nick, string toNotify) {
             if (IsIdentified(nick, toNotify)) {
                 if (IsRegistered(nick)) {
                     return userlist[nick].trusted;
@@ -602,58 +677,61 @@ namespace FurkiebotCMR {
         /// <param name="nick">The nick.</param>
         /// <param name="toNotice">To notice.</param>
         /// <returns>Whether or not the nick is identified.</returns>
-        private bool IsIdentified(string nick, string toNotice) {
-            if (identlist.ContainsKey(nick) && identlist[nick]) {
-                Console.WriteLine("Successfully identified " + nick);
-                return true;
-            } else {
-
-                if (!complexAllowed) {
-                    NoticeRetry(toNotice);
+        public bool IsIdentified(string nick, string toNotice) {
+            lock (_whoisLock) {
+                if (identlist.ContainsKey(nick) && identlist[nick]) {
+                    Console.WriteLine("Successfully identified " + nick);
+                    return true;
                 } else {
-                    complexAllowed = false;
-                    sendData("WHOIS", nick);
 
-                    bool isIdentified = false;
-                    bool is318 = false;
-
-                    while (!is318) {
-
-                        string[] ex;
-                        string data;
-
-                        data = sr.ReadLine();
-                        Console.WriteLine(" ");
-                        char[] charSeparator = new char[] { ' ' };
-                        ex = data.Split(charSeparator, 5);
-                        Console.WriteLine("Waiting on whois for " + nick + ", ex[1] = " + ex[1]);
-
-                        if (ex.Length > 3 && ex[3].ToLower() == ":register") {
-                            Console.WriteLine("Password info hidden");
-                        } else {
-                            Console.WriteLine("IsIdentified: " + data);
-                        }
-                        if (ex[1] == "307") {
-                            isIdentified = true;
-                            Console.WriteLine("Successfully identified " + nick);
-                        } else if (ex[1] == "318") {
-                            is318 = true;
-                        } else {
-                            ProcessInput(ex, data, charSeparator);
-                        }
-
-                        //Console.WriteLine("End Last Switch " + parseTimer.Elapsed);
-                    }
-                    complexAllowed = true;
-                    if (identlist.ContainsKey(nick)) {
-                        identlist[nick] = isIdentified;
+                    if (!complexAllowed) {
+                        NoticeRetry(toNotice);
                     } else {
-                        identlist.Add(nick, isIdentified);
+                        complexAllowed = false;
+                        sendData("WHOIS", nick);
+
+                        bool isIdentified = false;
+                        bool is318 = false;
+
+                        while (!is318) {
+
+                            string[] ex;
+                            string data;
+
+                            data = sr.ReadLine();
+                            Console.WriteLine(" ");
+                            char[] charSeparator = new char[] { ' ' };
+                            ex = data.Split(charSeparator, 5);
+                            Console.WriteLine("Waiting on whois for " + nick + ", ex[1] = " + ex[1]);
+
+                            if (ex.Length > 3 && ex[3].ToLower() == ":register") {
+                                Console.WriteLine("Password info hidden");
+                            } else {
+                                Console.WriteLine("IsIdentified: " + data);
+                            }
+                            if (ex[1] == "307") {
+                                isIdentified = true;
+                                Console.WriteLine("Successfully identified " + nick);
+                                is318 = true;
+                            } else if (ex[1] == "318") {
+                                is318 = true;
+                            } else {
+                                ProcessInput(ex, data, charSeparator);
+                            }
+
+                            //Console.WriteLine("End Last Switch " + parseTimer.Elapsed);
+                        }
+                        complexAllowed = true;
+                        if (identlist.ContainsKey(nick)) {
+                            identlist[nick] = isIdentified;
+                        } else {
+                            identlist.Add(nick, isIdentified);
+                        }
+                        return isIdentified;
                     }
-                    return isIdentified;
+                    return false;
                 }
-                return false;
-            }
+            }           
         }
 
 
@@ -1066,8 +1144,8 @@ namespace FurkiebotCMR {
                             string nextCmrM = duration.Minutes.ToString();
                             string nextCmrS = duration.Seconds.ToString();
 
-                            if (CmrMapCount(cmrId.ToString()) < 6 && cmrtime.ToString(@"%h\:mm\:ss") == "10:30:00") {// If there are less than 6 maps submitted AND if command wasn't issued using .startcmr+
-                                sendData("PRIVMSG", chan + " :" + "There are not enough maps to start a CMR. We need " + (6 - CmrMapCount(cmrId.ToString())).ToString() + " more maps to start a CMR.");
+                            if (acceptedMaps.Count < MIN_MAPS && cmrtime.ToString(@"%h\:mm\:ss") == "10:30:00") {// If there are less than MIN_MAPS maps submitted AND if command wasn't issued using .startcmr+
+                                sendData("PRIVMSG", chan + " :" + "There are not enough maps to start a CMR. We need " + (MIN_MAPS - acceptedMaps.Count) + " more maps to start a CMR.");
                             } else {
                                 TimeSpan stopTheTime = new TimeSpan(20, 29, 20);
                                 DateTime stopTheSpam = saturday.Date + stopTheTime;
@@ -1083,17 +1161,9 @@ namespace FurkiebotCMR {
                                 }
                                 if (DateTime.Now > cmrday) {
                                     if (IsAdmin(nickLower, nick)) {
-                                        realRacingChan = "";
-                                        dummyRacingChan += RandomCharGenerator(5, 1);
-                                        realRacingChan = dummyRacingChan;
-                                        sendData("JOIN", realRacingChan);
-                                        sendData("PRIVMSG", "TRAXBUSTER" + " .join001 " + realRacingChan);
-                                        cmrStatus = "open";
-                                        sendData("PRIVMSG", chan + " :" + "Race initiated for Custom Map Race " + cmrId + ". Join " + ColourChanger(realRacingChan, "04") + " to participate.");
-                                        sendData("TOPIC", realRacingChan + " :" + ":Status: Entry Open | Game: Dustforce | Goal: Custom Map Race " + cmrId + ". Download maps at http://atlas.dustforce.com/tag/custom-map-race-" + cmrId);
-                                        sendData("MODE", realRacingChan + " +t");
+                                        StartCmr(chan);
                                     } else {
-                                        sendData("PRIVMSG", chan + " Only Furkiepurkie can start the race for now, please get him instead.");
+                                        sendData("PRIVMSG", chan + " Only an Admin can start the race for now, please contact an admin to start the race.");
                                     }
                                 }
                             }
@@ -1147,6 +1217,7 @@ namespace FurkiebotCMR {
                                         sendData("NAMES", realRacingChan);
                                         sendData("MODE", realRacingChan + " +im");
                                         racers.Clear();
+                                        buster.NotifyExit();
                                     }
                                 }
                             }
@@ -2037,6 +2108,45 @@ namespace FurkiebotCMR {
             }
             return shouldRun;
         }
+
+        private void StartCmr(string chan) {
+            realRacingChan = "";
+            dummyRacingChan += RandomCharGenerator(5, 1);
+            realRacingChan = dummyRacingChan;
+
+
+            busterThread = new Thread(() => StartTraxBuster(chan));
+            busterThread.Start();
+
+            sendData("JOIN", realRacingChan);
+            cmrStatus = "open";
+            sendData("PRIVMSG", chan + " :" + "Race initiated for Custom Map Race " + cmrId + ". Join " + ColourChanger(realRacingChan, "04") + " to participate.");
+            sendData("TOPIC", realRacingChan + " :" + ":Status: Entry Open | Game: Dustforce | Goal: Custom Map Race " + cmrId + ". Download maps at http://atlas.dustforce.com/tag/custom-map-race-" + cmrId);
+            sendData("MODE", realRacingChan + " +t");
+            sendData("PRIVMSG", "TRAXBUSTER" + " .join001 " + realRacingChan);
+        }
+
+
+
+
+        /// <summary>
+        /// Meant to be called as its own thread, this thread initializes and creates a TraxBuster.
+        /// </summary>
+        public void StartTraxBuster(string racechan) {
+            IRCConfig conf = new IRCConfig();
+            conf.name = "TRAXBUSTER";
+            conf.nick = "TRAXBUSTER";
+            conf.port = 6667;
+            conf.server = "irc2.speedrunslive.com";
+            conf.pass = "ilovecalistuslol";
+            using (buster = new FurkieBuster(conf, this)) {
+                buster.Connect();
+                buster.IRCWork();
+            }
+            Console.WriteLine("Furkiebot quit/crashed");
+            Console.ReadLine();
+        } /* StartTraxBuster */
+
 
         /// <summary>
         /// Gets an array of the nicks of users registered to test maps for this CMR.
@@ -3582,8 +3692,6 @@ namespace FurkiebotCMR {
 
             return (expectedHashString == finalHashString);
         }
-
-
 
 
 
