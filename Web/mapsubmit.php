@@ -33,11 +33,12 @@ if (isset($_SESSION['loggedIn'])) {
 				$mapdata['approvedby'] = "";
 			}
 			
+			//Shit to set up the array for loading into FurkieBot.
 			$mapdata['name'] = $mapname;
 			$mapdata['filepath'] = $mappath;
-			$mapdata['authorname'] = $mapper;
+			$mapdata['author'] = $mapper;
 
-			if (file_exists()) {
+			if (file_exists($mappath)) {
 				unlink($mappath);
 				move_uploaded_file($_FILES["file"]["tmp_name"], $mappath);
 				echo "Replaced: " . $safefile . " successfully.<br>";
@@ -46,7 +47,7 @@ if (isset($_SESSION['loggedIn'])) {
 				echo "Uploaded: " . $safefile . " successfully.<br>";
 			}
 			array_push($maps, $mapdata);
-			writeMaps($maps);
+			writeMaps($maps); //Save the array back to the map file.
 		}
 	} else {
 		echo "uh oh you had a \".\" in the filename. Please, no files with extensions or \".\"'s";

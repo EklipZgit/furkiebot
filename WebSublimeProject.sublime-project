@@ -1,2 +1,13 @@
 {
+	"folders":
+	[
+		{
+			"follow_symlinks": true,
+			"path": "Web"
+		},
+		{
+			"follow_symlinks": true,
+			"path": "WebInclude"
+		}
+	]
 }

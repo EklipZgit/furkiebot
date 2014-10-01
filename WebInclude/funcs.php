@@ -59,7 +59,7 @@
 	function writeMaps($maps) {
 		$mapfile = "C:\\CMR\\Maps\\" . getCMRID() . "\\maps.json";
 		$json = json_encode($maps);
-		$file = fopen($mapfile);
+		$file = fopen($mapfile, 'w');
 		fwrite($file, $json);
 	}
 ?>

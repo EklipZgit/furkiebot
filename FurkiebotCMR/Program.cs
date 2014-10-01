@@ -71,7 +71,7 @@ namespace FurkiebotCMR {
         public string name;
         public string url;
         public string filepath;
-        public string authorname;
+        public string author;
         public string approvedby;
     }
 
@@ -3701,19 +3701,49 @@ namespace FurkiebotCMR {
 
     internal class Program {
         private static void Main(string[] args) {
-            IRCConfig conf = new IRCConfig();
-            conf.name = FurkieBot.BOT_NAME;
-            conf.nick = FurkieBot.BOT_NAME;
-            conf.altNick = "FurkieBot_";
-            conf.port = 6667;
-            conf.server = "irc2.speedrunslive.com";
-            conf.pass = "ilovecalistuslol";
-            using (var bot = new FurkieBot(conf)) {
-                bot.Connect();
-                bot.IRCWork();
-            }
-            Console.WriteLine("Furkiebot quit/crashed");
-            Console.ReadLine();
+            
+        //    IRCConfig conf = new IRCConfig();
+        //    conf.name = FurkieBot.BOT_NAME;
+        //    conf.nick = FurkieBot.BOT_NAME;
+        //    conf.altNick = "FurkieBot_";
+        //    conf.port = 6667;
+        //    conf.server = "irc2.speedrunslive.com";
+        //    conf.pass = "ilovecalistuslol";
+        //    using (var bot = new FurkieBot(conf)) {
+        //        bot.Connect();
+        //        bot.IRCWork();
+        //    }
+        //    Console.WriteLine("Furkiebot quit/crashed");
+        //    Console.ReadLine();
+
+
+            List<MapData> tempthing = new List<MapData>();
+            MapData md1;
+            MapData md2;
+            md2.url = "url2";
+            md2.author = "EklipZ";
+            md2.name = "map2";
+            md2.filepath = @"C:\CMR\Maps\38\pending\EklipZ-map2";
+            md2.approvedby = "";
+
+            md1.url = "url1";
+            md1.author = "EklipZ";
+            md1.name = "map1";
+            md1.filepath = @"C:\CMR\Maps\38\pending\EklipZ-map1";
+            md1.approvedby = "";
+
+            tempthing.Add(md1);
+            tempthing.Add(md2);
+
+            string json = JsonConvert.SerializeObject(tempthing, Formatting.Indented);
+
+            File.WriteAllText(@"C:\CMR\Maps\38\maps.json", json); // !! FILEPATH !!
+
+
         } /* Main() */
+
+
+
+
     } /* Program */
 }
