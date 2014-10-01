@@ -1,7 +1,7 @@
 ﻿/**
  * FurkieBot
  * Program.cs
- * @author FurkiePurkie
+ * @author Furkan Pham (Furkiepurkie)
  * @author Travis Drake (EklipZ)
  */
 
@@ -27,6 +27,7 @@ using Newtonsoft.Json;
 using System.Linq;
 using Newtonsoft.Json.Linq;
 using System.Threading;
+using System.Xml;
 using FurkieBusterCMR;
 
 /// <summary>
@@ -271,7 +272,7 @@ namespace FurkiebotCMR {
             //Console.WriteLine("File: " + e.FullPath + " " + e.ChangeType);
             Console.WriteLine("\nCreatedPending: " + e.FullPath + " " + e.ChangeType + "\n");
             string fileName = Path.GetFileName(e.FullPath);
-            pendingMaps.Add(fileName);
+            //pendingMaps.Add(fileName);
             string toSay = "New map submitted for testing: \"";
 
             string[] split = fileName.Split('-');
@@ -298,7 +299,7 @@ namespace FurkiebotCMR {
             //Console.WriteLine("File: " + e.FullPath + " " + e.ChangeType);
             Console.WriteLine("\nDeletedPending: " + e.FullPath + " " + e.ChangeType + "\n");
             string fileName = Path.GetFileName(e.FullPath);
-            pendingMaps.Remove(fileName);
+            //pendingMaps.Remove(fileName);
         }
 
 
@@ -312,8 +313,8 @@ namespace FurkiebotCMR {
             //Console.WriteLine("File: {0} renamed to {1}", e.OldFullPath, e.FullPath);
             Console.WriteLine("\nCreatedAccepted: " + e.FullPath + " " + e.ChangeType + "\n");
             string fileName = Path.GetFileName(e.FullPath);
-            acceptedMaps.Add(fileName);
-            pendingMaps.Remove(fileName);
+            //acceptedMaps.Add(fileName);
+            //pendingMaps.Remove(fileName);
 
             string toSay = "Map accepted: \"";
 
@@ -340,7 +341,7 @@ namespace FurkiebotCMR {
             //Console.WriteLine("File: " + e.FullPath + " " + e.ChangeType);
             Console.WriteLine("\nDeletedAccepted: " + e.FullPath + " " + e.ChangeType + "\n");
             string fileName = Path.GetFileName(e.FullPath);
-            acceptedMaps.Remove(fileName);
+            //acceptedMaps.Remove(fileName);
 
             string toSay = "Map removed from accepted maps: \"";
 
@@ -381,10 +382,10 @@ namespace FurkiebotCMR {
         /// Outputs the current CMR's map status to the provided channel.
         /// </summary>
         /// <param name="chan">The IRC channel to output to. If empty or null, output to both main channels.</param>
-        private void OutputMapStatus(string chan) {
-            OutputPending(chan);
-            OutputAccepted(chan);
-        }
+        //private void OutputMapStatus(string chan) {
+        //    OutputPending(chan);
+        //    //OutputAccepted(chan);
+        //}
 
 
 
@@ -393,25 +394,25 @@ namespace FurkiebotCMR {
         /// Outputs the current CMR pending map status to the provided channel.
         /// </summary>
         /// <param name="chan">The channel. If empty or null, output to both main channels.</param>
-        private void OutputPending(string chan) {
-            string toSay = " :" + pendingMaps.Count + " Pending testing ";
+        //private void OutputPending(string chan) {
+        //    string toSay = " :" + pendingMaps.Count + " Pending testing ";
 
-            foreach (string s in pendingMaps) {
-                toSay += SEP + "\"";
-                string[] split = s.Split('-');
-                for (int i = 1; i < split.Length; i++) {
-                    toSay += split[i];
-                }
-                toSay += "\" by " + split[0];
-            }
+        //    foreach (string s in pendingMaps) {
+        //        toSay += SEP + "\"";
+        //        string[] split = s.Split('-');
+        //        for (int i = 1; i < split.Length; i++) {
+        //            toSay += split[i];
+        //        }
+        //        toSay += "\" by " + split[0];
+        //    }
 
-            if (chan == null || chan == "" || chan == " ") {
-                sendData("PRIVMSG", mainchannel + toSay);
-                sendData("PRIVMSG", cmrchannel + toSay);
-            } else {
-                sendData("PRIVMSG", chan + toSay);
-            }
-        }
+        //    if (chan == null || chan == "" || chan == " ") {
+        //        sendData("PRIVMSG", mainchannel + toSay);
+        //        sendData("PRIVMSG", cmrchannel + toSay);
+        //    } else {
+        //        sendData("PRIVMSG", chan + toSay);
+        //    }
+        //}
 
 
 
@@ -420,24 +421,24 @@ namespace FurkiebotCMR {
         /// Outputs the current CMR accepted map status to the provided channel.
         /// </summary>
         /// <param name="chan">The channel. If empty or null, output to both main channels.</param>
-        private void OutputAccepted(string chan) {
-            string toSay = " :" + acceptedMaps.Count + " Accepted ";
-            foreach (string s in acceptedMaps) {
-                toSay += SEP + "\"";
-                string[] split = s.Split('-');
-                for (int i = 1; i < split.Length; i++) {
-                    toSay += split[i];
-                }
-                toSay += "\" by " + split[0];
-            }
+        //private void OutputAccepted(string chan) {
+        //    string toSay = " :" + acceptedMaps.Count + " Accepted ";
+        //    foreach (string s in acceptedMaps) {
+        //        toSay += SEP + "\"";
+        //        string[] split = s.Split('-');
+        //        for (int i = 1; i < split.Length; i++) {
+        //            toSay += split[i];
+        //        }
+        //        toSay += "\" by " + split[0];
+        //    }
 
-            if (chan == null || chan == "" || chan == " ") {
-                sendData("PRIVMSG", mainchannel + toSay);
-                sendData("PRIVMSG", cmrchannel + toSay);
-            } else {
-                sendData("PRIVMSG", chan + toSay);
-            }
-        }
+        //    if (chan == null || chan == "" || chan == " ") {
+        //        sendData("PRIVMSG", mainchannel + toSay);
+        //        sendData("PRIVMSG", cmrchannel + toSay);
+        //    } else {
+        //        sendData("PRIVMSG", chan + toSay);
+        //    }
+        //}
 
 
 
@@ -1225,22 +1226,22 @@ namespace FurkiebotCMR {
                         break;
                         #endregion
 
-                    case ":.maps": //Shows a list of currently approved maps
-                        #region
-                        goto case ":.cmrmaps";
+                    //case ":.maps": //Shows a list of currently approved maps
+                    //    #region
+                    //    goto case ":.cmrmaps";
 
-                    case ":.cmrmaps":
-                        OutputMapStatus(chan);
-                        break;
+                    //case ":.cmrmaps":
+                    //    OutputMapStatus(chan);
+                    //    break;
 
-                    case ":.pending":
-                        OutputPending(chan);
-                        break;
+                    //case ":.pending":
+                    //    OutputPending(chan);
+                    //    break;
 
-                    case ":.accepted":
-                        OutputAccepted(chan);
-                        break;
-                        #endregion
+                    //case ":.accepted":
+                    //    OutputAccepted(chan);
+                    //    break;
+                        //#endregion
 
                     case ":.entrants": //Shows a list of the users currently in a race
                         #region
@@ -2470,7 +2471,7 @@ namespace FurkiebotCMR {
         /// Serializes the user data to disk.
         /// </summary>
         private void WriteUsers() {
-            string json = JsonConvert.SerializeObject(userlist, Formatting.Indented);
+            string json = JsonConvert.SerializeObject(userlist, Newtonsoft.Json.Formatting.Indented);
 
             File.WriteAllText(DATA_PATH + @"Userlist\userlistmap.json", json); // !! FILEPATH !!
         }
@@ -3166,7 +3167,7 @@ namespace FurkiebotCMR {
                 }
                 dt.AcceptChanges();
 
-                string json2 = JsonConvert.SerializeObject(ds, Formatting.Indented);
+                string json2 = JsonConvert.SerializeObject(ds, Newtonsoft.Json.Formatting.Indented);
                 System.IO.File.WriteAllText(DATA_PATH + @"CMR Data\Maps\CMR" + cmrid + "Maps.json", json); // !! FILEPATH !!
             }
 
@@ -3184,7 +3185,7 @@ namespace FurkiebotCMR {
 
             ds.AcceptChanges();
 
-            string json = JsonConvert.SerializeObject(ds, Formatting.Indented);
+            string json = JsonConvert.SerializeObject(ds, Newtonsoft.Json.Formatting.Indented);
 
             System.IO.File.WriteAllText(DATA_PATH + @"CMR Data\Maps\CMR" + cmrid + "Maps.json", json); // !! FILEPATH !!
         }
@@ -3205,7 +3206,7 @@ namespace FurkiebotCMR {
 
             ds.AcceptChanges();
 
-            string json = JsonConvert.SerializeObject(ds, Formatting.Indented);
+            string json = JsonConvert.SerializeObject(ds, Newtonsoft.Json.Formatting.Indented);
 
             System.IO.File.WriteAllText(DATA_PATH + @"CMR Data\Maps\CMR" + cmrid + "Maps.json", json); // !! FILEPATH !!
         }
@@ -3286,7 +3287,7 @@ namespace FurkiebotCMR {
             StringWriter sw = new StringWriter(sb);
 
             using (JsonWriter writer = new JsonTextWriter(sw)) {
-                writer.Formatting = Formatting.Indented;
+                writer.Formatting = Newtonsoft.Json.Formatting.Indented;
 
                 writer.WriteStartObject();
 
@@ -3692,7 +3693,6 @@ namespace FurkiebotCMR {
 
             return (expectedHashString == finalHashString);
         }
-
 
 
     } /* IRCBot */
