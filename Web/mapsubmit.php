@@ -14,23 +14,44 @@ if (isset($_SESSION['loggedIn'])) {
 			echo "ERROR UPLOADING. Return Code: " . $_FILES["file"]["error"] . "<br>";
 			echo "screenshot this to EklipZ in #DFcmr";
 		} else {
+			$maps = getMaps();
+
 			$filename = $_SESSION['usernameCase'] . "-" . $_POST["mapname"];
-		$safefile = preg_replace('/[\x00-\x1F\x80-\xFF]/', '', $filename); //REGEX's OUT CONTROL CODES AND WHATNOT.
-		if (file_exists("C:/CMR/maps/" . $cmrID . "/pending/" . $safefile)) {
-			unlink("C:/CMR/Maps/" . $cmrID . "/pending/" . $safefile);
-			move_uploaded_file($_FILES["file"]["tmp_name"],
-				"C:/CMR/Maps/" . $cmrID . "/pending/" . $safefile);
-			echo "Replaced: " . $safefile . " successfully.<br>";
-		} else {
-			move_uploaded_file($_FILES["file"]["tmp_name"],
-				"C:/CMR/Maps/" . $cmrID . "/pending/" . $safefile);
-			echo "Uploaded: " . $safefile . " successfully.<br>";
+			$safefile = preg_replace('/[\x00-\x1F\x80-\xFF]/', '', $filename); //REGEX's OUT CONTROL CODES AND WHATNOT.
+			
+			$split = explode("-", $safefile, 2);
+			$mapname = $split[1];
+			$mapper = $split[0];
+
+			$mappath = "C:/CMR/maps/" . $cmrID . "/pending/" . $safefile;
+
+			if (isset($maps[$safefile])) {
+				$mapdata = $maps[$safefile];
+			} else {
+				$mapdata = array();
+				$mapdata['url'] = "";
+				$mapdata['approvedby'] = "";
+			}
+			
+			$mapdata['name'] = $mapname;
+			$mapdata['filepath'] = $mappath;
+			$mapdata['authorname'] = $mapper;
+
+			if (file_exists()) {
+				unlink($mappath);
+				move_uploaded_file($_FILES["file"]["tmp_name"], $mappath);
+				echo "Replaced: " . $safefile . " successfully.<br>";
+			} else {
+				move_uploaded_file($_FILES["file"]["tmp_name"], $mappath);
+				echo "Uploaded: " . $safefile . " successfully.<br>";
+			}
+			array_push($maps, $mapdata);
+			writeMaps($maps);
 		}
+	} else {
+		echo "uh oh you had a \".\" in the filename. Please, no files with extensions or \".\"'s";
+		echo "<br><a href=\"map.php\">Resubmit</a>";
 	}
-} else {
-	echo "uh oh you had a \".\" in the filename. Please, no files with extensions or \".\"'s";
-	echo "<br><a href=\"map.php\">Resubmit</a>";
-}
 } else {
 	$_SESSION['redirect'] = "http://eklipz.us.to/cmr/map.php";
 	$_SESSION['warning'] = "You need to log in before uploading maps.";
