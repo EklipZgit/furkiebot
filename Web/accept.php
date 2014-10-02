@@ -6,12 +6,16 @@
 	session_start();
 	if (isLoggedIn()) {
 		$cmrID = getCMRID();
+		$maps = getMaps();
 		$mapname = urldecode($_GET['map']);
-		$mappath = 'C:\\CMR\\Maps\\' . $cmrID . '\\pending\\' . $mapname;
-		$targetpath = 'C:\\CMR\\Maps\\' . $cmrID . '\\accepted\\' . $mapname;
+		$nameLower = strtolower($mapname);
+		$mappath = 'C:\\CMR\\Maps\\' . $cmrID . '\\' . $mapname;
 
-		if (file_exists($mappath)) {
-			rename($mappath, $targetpath);
+		if (array_key_exists($nameLower, $maps)) {
+			$maps[$nameLower]['accepted'] = true;
+			$maps[$nameLower]['acceptedBy'] = $_SESSION['usernameCase'];
+			writeMaps($maps);
+			
 			$_SESSION['message'] = "You successfully accepted " . $mapname;
 		} else {
 			$_SESSION['warning'] = "error, you tried to accept a file that doesnt exist.";

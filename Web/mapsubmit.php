@@ -13,40 +13,41 @@ if (isset($_SESSION['loggedIn'])) {
 		if ($_FILES["file"]["error"] > 0) {
 			echo "ERROR UPLOADING. Return Code: " . $_FILES["file"]["error"] . "<br>";
 			echo "screenshot this to EklipZ in #DFcmr";
+		} else if ($_POST['mapname'] == "") {
+			echo "ERROR. You need to submit a map along with an actual name.";
 		} else {
 			$maps = getMaps();
 
-			$filename = $_SESSION['usernameCase'] . "-" . $_POST["mapname"];
-			$safefile = preg_replace('/[\x00-\x1F\x80-\xFF]/', '', $filename); //REGEX's OUT CONTROL CODES AND WHATNOT.
+			$filename = $_POST["mapname"];
+			$mapname = preg_replace('/[\x00-\x1F\x80-\xFF]/', '', $filename); //REGEX's OUT CONTROL CODES AND WHATNOT.
 			
-			$split = explode("-", $safefile, 2);
-			$mapname = $split[1];
-			$mapper = $split[0];
+			$mapnameLower = strtolower($mapname);
+			$mapper = $_SESSION['usernameCase'];
 
-			$mappath = "C:/CMR/maps/" . $cmrID . "/pending/" . $safefile;
+			$mappath = "C:/CMR/Maps/" . $cmrID . "/" . $mapname;
 
-			if (isset($maps[$safefile])) {
-				$mapdata = $maps[$safefile];
+			if (isset($maps[$mapnameLower])) {
+				$mapdata = $maps[$mapnameLower];
 			} else {
 				$mapdata = array();
-				$mapdata['url'] = "";
-				$mapdata['approvedby'] = "";
+				$mapdata['id'] = -1;
+				$mapdata['acceptedBy'] = "";
 			}
 			
 			//Shit to set up the array for loading into FurkieBot.
 			$mapdata['name'] = $mapname;
 			$mapdata['filepath'] = $mappath;
 			$mapdata['author'] = $mapper;
-
+			$mapdata['accepted'] = false;
+			$maps[$mapnameLower] = $mapdata;
 			if (file_exists($mappath)) {
 				unlink($mappath);
 				move_uploaded_file($_FILES["file"]["tmp_name"], $mappath);
-				echo "Replaced: " . $safefile . " successfully.<br>";
+				echo "Replaced: " . $mapname . " successfully.<br>";
 			} else {
 				move_uploaded_file($_FILES["file"]["tmp_name"], $mappath);
-				echo "Uploaded: " . $safefile . " successfully.<br>";
+				echo "Uploaded: " . $mapname . " successfully.<br>";
 			}
-			array_push($maps, $mapdata);
 			writeMaps($maps); //Save the array back to the map file.
 		}
 	} else {

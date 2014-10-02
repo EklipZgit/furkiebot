@@ -58,7 +58,7 @@
 
 	function writeMaps($maps) {
 		$mapfile = "C:\\CMR\\Maps\\" . getCMRID() . "\\maps.json";
-		$json = json_encode($maps);
+		$json = json_encode($maps, 128 + 16 + 64);	//128 == JSON_PRETTY_PRINT, 16 == FORCE OBJECT, 64 is UNESCAPED /'s
 		$file = fopen($mapfile, 'w');
 		fwrite($file, $json);
 	}

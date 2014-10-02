@@ -6,15 +6,19 @@
 	session_start();
 	if (isLoggedIn()) {
 		$cmrID = getCMRID();
+		$maps = getMaps();
 		$mapname = urldecode($_GET['map']);
-		$mappath = 'C:\\CMR\\Maps\\' . $cmrID . '\\accepted\\' . $mapname;
-		$targetpath = 'C:\\CMR\\Maps\\' . $cmrID . '\\pending\\' . $mapname;
+		$nameLower = strtolower($mapname);
+		$mappath = 'C:\\CMR\\Maps\\' . $cmrID . '\\' . $mapname;
 
-		if (file_exists($mappath)) {
-			rename($mappath, $targetpath);
-			$_SESSION['message'] = "You successfully unaccepted " . $mapname;
+		if (array_key_exists($nameLower, $maps)) {
+			$maps[$nameLower]['accepted'] = false;
+			$maps[$nameLower]['acceptedBy'] = "";
+			writeMaps($maps);
+			
+			$_SESSION['message'] = "You successfully un-accepted " . $mapname;
 		} else {
-			$_SESSION['warning'] = "error, you tried to unaccept a file that doesnt exist.";
+			$_SESSION['warning'] = "error, you tried to un-accept a file that doesnt exist.";
 		}
 		session_write_close();
 		header('Location: http://eklipz.us.to/cmr/maptest.php');

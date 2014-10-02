@@ -6,7 +6,7 @@ ensureSession();
 if (isLoggedIn()) {
 	$cmrID = getCMRID();
 	$mapname = trim(urldecode($_GET['map']));
-	$mappath = 'C:/CMR/Maps/' . $cmrID . '/pending/' . $mapname;
+	$mappath = 'C:/CMR/Maps/' . $cmrID . '/' . $mapname;
 	if (file_exists($mappath)) {
 		header("X-Sendfile: $mappath");
 		header("Content-type: application/octet-stream");

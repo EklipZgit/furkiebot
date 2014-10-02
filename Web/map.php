@@ -47,7 +47,7 @@ if (isLoggedIn()) {
 						</tr>
 						<tr>
 							<td><label for="mapname">Map Name:</label></td>
-							<td><input type="text" name="mapname" id="mapname"></td>
+							<td><input type="text" name="mapname" id="mapname" required></td>
 						</tr>
 						<tr>
 							<td>&nbsp</td>
