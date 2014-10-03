@@ -1,0 +1,13 @@
+<glass> was thinking about adding a new function, where you add your user to a list that furkiebot will ping when a race is about to start
+
+
+
+
+
+
+
+
+
+Feature request
+	Add yourself to a list of people who are nickflashed when a race channel opens up.
+	
