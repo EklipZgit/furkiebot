@@ -58,6 +58,7 @@ namespace FurkiebotCMR {
         public bool tester;
         public bool trusted;
         public bool admin;
+        public bool notify;
         public int rating;
         public int randmaprating;
         public string password;
@@ -1163,6 +1164,7 @@ namespace FurkiebotCMR {
                                 if (DateTime.Now > cmrday) {
                                     if (IsAdmin(nickLower, nick)) {
                                         StartCmr(chan);
+                                        NotifyUsers();
                                     } else {
                                         sendData("PRIVMSG", chan + " Only an Admin can start the race for now, please contact an admin to start the race.");
                                     }
@@ -1666,6 +1668,28 @@ namespace FurkiebotCMR {
                         #endregion
                         break;
 
+                    case ":.notify":
+                        #region
+                        bool notifyoption = false;
+                        if (StringCompareNoCaps(parameter, "on")) {
+                            notifyoption = true;
+                        } else if (StringCompareNoCaps(parameter, "off")) {
+                            notifyoption = false;
+                        } else {
+                            sendData("PRIVMSG", chan + " :" + "notify off/on" );
+                            break;
+                        }
+                        if (IsRegistered(nickLower)) {
+                            if (IsIdentified(nickLower, nick)) {
+                                setUserNotify(nickLower, notifyoption)
+                                sendData("PRIVMSG", chan + " :" + "Ok" );
+                            }    
+                        #endregion
+                        break;
+                                
+                                
+
+
                     case ":.comment": //Adds a comment after a racer is done
                         #region
                         if (GetStatus(nickLower) == 1 || GetStatus(nickLower) == 4) {
@@ -2126,7 +2150,19 @@ namespace FurkiebotCMR {
             sendData("MODE", realRacingChan + " +t");
             sendData("PRIVMSG", "TRAXBUSTER" + " .join001 " + realRacingChan);
         }
-
+        
+        
+        private void NotifyUsers(){
+            List<string> userstonotify = new List<string>();
+            foreach(KeyValuePair<string, PlayerInfo> entry in userlist) {
+                if ( entry.Value.notify == true; ) {
+                   userstonotify.add(Entry.Key);
+                }
+            }
+            if ( userstonotify != null ){
+                sendData("PRIVMSG", chan + " :" + "Cmr has started, " + string.Join<string>(", ", userstonotify) );
+            }
+        }
 
 
 
@@ -2506,8 +2542,24 @@ namespace FurkiebotCMR {
 
             WriteUsers();
         }
+        
+        
+        /// <summary>
+        /// Sets a user irc notify on/off
+        /// </summary>
+        /// <param name="ircuser">The ircuser whose name to set.</param>
+        /// <param name="option">On or Off</param>
+        private void setUserNotify(string ircuser, bool option) {
+            string ircLower = ircuser.ToLower();
+            PlayerInfo temp = new PlayerInfo();
+            userlist.TryGetValue(ircLower, out temp);
+            string oldoption = temp.notify;
+            
+            temp.notify = option;
+            userlist.Add(ircLower, temp);
 
-
+            WriteUsers();
+        }
 
 
 
