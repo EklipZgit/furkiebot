@@ -1091,7 +1091,7 @@ namespace FurkiebotCMR {
                             //FurkieBot commands for the main channel
                             sendData("PRIVMSG", chan + @" :Commands: .cmr" + SEP + ".maps" + SEP + ".startcmr" + SEP + ".ign <ircname>" + SEP + ".setign <in-game name>" + SEP + ".mappack" + SEP + ".pending" + SEP + ".accepted");
                             sendData("PRIVMSG", chan + @" :CMR info: http://eklipz.us.to/cmr" + SEP + @"Command list: https://github.com/EklipZgit/furkiebot/wiki" + SEP + "FurkieBot announce channel: #DFcmr");
-                            sendData("PRIVMSG", chan + @" :.help register" + SEP + ".help tester");
+                            sendData("PRIVMSG", chan + @" :.help register" + SEP + ".help tester" + SEP + ".help othercommands");
 
                         } else {            // FurkieBot commands for race channel
                             sendData("PRIVMSG", chan + @" Command list: " + SEP + ".enter" + SEP + ".ready" + SEP + ".setign <dustforceName>" + SEP + ".register" + SEP + ".streams" + SEP + ".setstream <URL>" + SEP + @"More commands: https://github.com/EklipZgit/furkiebot/wiki");
@@ -1163,8 +1163,8 @@ namespace FurkiebotCMR {
                                 }
                                 if (DateTime.Now > cmrday) {
                                     if (IsAdmin(nickLower, nick)) {
-                                        StartCmr(chan);
-                                        NotifyUsers();
+                                        StartCmr();
+                                        NotifyCmrStarting();
                                     } else {
                                         sendData("PRIVMSG", chan + " Only an Admin can start the race for now, please contact an admin to start the race.");
                                     }
@@ -1624,9 +1624,12 @@ namespace FurkiebotCMR {
                                 if (!IsIdentified(nickLower, nick)) {
                                     NoticeNotIdentified(nick);
                                 }
-                                sendData("PRIVMSG", chan + " :Tester Commands:" + SEP + ".accept <mapAuthor>-<mapName>" + SEP + ".unaccept <mapAuthor>-<mapName>");
+                                sendData("PRIVMSG", chan + " :Tester Commands:" + SEP + "Test maps at http://eklipz.us.to/maptest.php" + SEP + "To accept via IRC \".accept <mapAuthor>-<mapName>\"" + SEP + "\".unaccept <mapAuthor>-<mapName>\"");
                                 sendData("PRIVMSG", chan + " :.settester <trueOrFalse> -  sets you as a DEDICATED tester for the next CMR. This is not undoable.");
                                 sendData("PRIVMSG", chan + " :To be a map tester you must currently be a trusted community member. Ask a FurkieBot administrator if you cannot use .settester and believe you should be able to.");
+                                break;
+                            case "othercommands":
+                                sendData("PRIVMSG", chan + " :Other Commands:" + SEP + "\".setnotify <trueORfalse>\" to be notified when the CMR race channel opens" + SEP + "\".slap <name>\" is a useless command to slap people");
                                 break;
                         }
 
@@ -1667,23 +1670,25 @@ namespace FurkiebotCMR {
 
                         #endregion
                         break;
-
+                    case ":.setnotify":
+                        goto case ":.notify";
                     case ":.notify":
                         #region
-                        bool notifyoption = false;
-                        if (StringCompareNoCaps(parameter, "on")) {
-                            notifyoption = true;
-                        } else if (StringCompareNoCaps(parameter, "off")) {
-                            notifyoption = false;
-                        } else {
-                            sendData("PRIVMSG", chan + " :" + "notify off/on" );
-                            break;
-                        }
+
                         if (IsRegistered(nickLower)) {
                             if (IsIdentified(nickLower, nick)) {
-                                setUserNotify(nickLower, notifyoption)
-                                sendData("PRIVMSG", chan + " :" + "Ok" );
-                            }    
+                                if (StringCompareNoCaps(parameter, "on") || StringCompareNoCaps(parameter, "true")) {
+                                    setUserNotify(nickLower, true);
+                                    Msg(chan, "You will be notified via IRC when the CMR channel opens.");
+                                } else if (StringCompareNoCaps(parameter, "off") || StringCompareNoCaps(parameter, "false")) {
+                                    setUserNotify(nickLower, false);
+                                    Msg(chan, "You will NOT be notified via IRC when the CMR channel opens.");
+                                } else {
+                                    sendData("PRIVMSG", chan + " :" + "Syntax is \".notify <false/true>\"");
+                                    break;
+                                }
+                            } else { NoticeNotIdentified(nick); }
+                        } else { NoticeNotRegistered(nick); }
                         #endregion
                         break;
                                 
@@ -2134,34 +2139,34 @@ namespace FurkiebotCMR {
             return shouldRun;
         }
 
-        private void StartCmr(string chan) {
+        private void StartCmr() {
             realRacingChan = "";
             dummyRacingChan += RandomCharGenerator(5, 1);
             realRacingChan = dummyRacingChan;
 
 
-            busterThread = new Thread(() => StartTraxBuster(chan));
+            busterThread = new Thread(() => StartTraxBuster(realRacingChan));
             busterThread.Start();
 
             sendData("JOIN", realRacingChan);
             cmrStatus = "open";
-            sendData("PRIVMSG", chan + " :" + "Race initiated for Custom Map Race " + cmrId + ". Join " + ColourChanger(realRacingChan, "04") + " to participate.");
+            MsgChans("Race initiated for Custom Map Race " + cmrId + ". Join " + ColourChanger(realRacingChan, "04") + " to participate.");
             sendData("TOPIC", realRacingChan + " :" + ":Status: Entry Open | Game: Dustforce | Goal: Custom Map Race " + cmrId + ". Download maps at http://atlas.dustforce.com/tag/custom-map-race-" + cmrId);
             sendData("MODE", realRacingChan + " +t");
             sendData("PRIVMSG", "TRAXBUSTER" + " .join001 " + realRacingChan);
         }
-        
-        
-        private void NotifyUsers(){
-            List<string> userstonotify = new List<string>();
+
+
+        /// <summary>
+        /// Notifies the users of the start of a CMR.
+        /// </summary>
+        private void NotifyCmrStarting(){
             foreach(KeyValuePair<string, PlayerInfo> entry in userlist) {
-                if ( entry.Value.notify == true; ) {
-                   userstonotify.add(Entry.Key);
+                if ( entry.Value.notify == true ) {
+                    Notice(entry.Value.ircname, "The CMR channel has opened. You asked to be notified of this event. If you wish these messages to stop, please type \".notify false\"");
                 }
             }
-            if ( userstonotify != null ){
-                sendData("PRIVMSG", chan + " :" + "Cmr has started, " + string.Join<string>(", ", userstonotify) );
-            }
+
         }
 
 
@@ -2553,7 +2558,7 @@ namespace FurkiebotCMR {
             string ircLower = ircuser.ToLower();
             PlayerInfo temp = new PlayerInfo();
             userlist.TryGetValue(ircLower, out temp);
-            string oldoption = temp.notify;
+            string oldoption = (temp.notify ? "true" : "false");
             
             temp.notify = option;
             userlist.Add(ircLower, temp);
