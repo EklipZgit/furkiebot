@@ -98,6 +98,9 @@ namespace FurkiebotCMR {
         private Thread busterThread;
 
 
+        private string lastSlapper = "";
+        private int repeatSlaps = 0; 
+
         /// <summary>
         /// A flag that is set when FurkieBot itself modified the map file, so that the change handler knows not to reload anything.
         /// </summary>
@@ -2381,45 +2384,98 @@ namespace FurkiebotCMR {
         /// <param name="chan">The channel.</param>
         /// <param name="nameToSlap">The parameter.</param>
         private void Slap(string nickname, string chan, string nameToSlap) {
-            Random r = new Random();
-            int choice = r.Next(6);
-
-            if (nameToSlap == "me") {
-                sendData("PRIVMSG", chan + " :" + (char)1 + @"ACTION uses " + nickname + "'s own hands to slap himself. \"STOP HITTING YOURSELF, STOP HITTING YOURSELF!" + (char)1);
-            } else if (IsAdmin(nameToSlap.ToLower(), nickname)) {
-                sendData("PRIVMSG", chan + " :" + (char)1 + @"ACTION slaps " + nickname + ". Don't be like that!" + (char)1);
+            int allowedSlaps = 3;
+            if (nickname.ToLower() != lastSlapper.ToLower()) {
+                lastSlapper = nickname;
+                repeatSlaps = 0;
             } else {
-                switch (choice) {
-                    case 0:
-                        sendData("PRIVMSG", chan + " :" + (char)1 + @"ACTION slaps " + nameToSlap + " with " + nickname + "'s favorite game console." + (char)1);
-                        break;
-                    case 1:
-                        if (IsAdmin(nickname.ToLower(), nickname)) {
-                            goto case 4;
-                        } else {
-                            sendData("PRIVMSG", chan + " :Only cool people are allowed to .slap people. Go slap yourself, " + nickname + ".");
-                        }
-
-                        break;
-                    case 2:
-                        sendData("PRIVMSG", chan + " :" + (char)1 + @"ACTION slaps " + nameToSlap + " around, just a little." + (char)1);
-                        break;
-                    case 3:
-                        sendData("PRIVMSG", chan + " :" + (char)1 + @"ACTION slaps " + nameToSlap + " with vigor." + (char)1);
-                        break;
-                    case 4:
-                        if (IsAdmin(nickname.ToLower(), nickname)) {
-                            sendData("PRIVMSG", chan + " :" + (char)1 + @"ACTION slaps " + nameToSlap + " with his cold, metal bot-hand" + (char)1);
-                        } else {
-                            sendData("PRIVMSG", chan + " :Only cool people are allowed to .slap people. Go slap yourself, " + nickname + ".");
-                        }
-                        break;
-                    case 5:
-                        sendData("PRIVMSG", chan + " :" + (char)1 + @"ACTION slaps " + nickname + ". BE NICE." + (char)1);
-                        break;
-                }
+                repeatSlaps++;
             }
 
+            if (repeatSlaps < allowedSlaps) {
+                Random r = new Random();
+                int choice = r.Next(15);
+
+                if (nameToSlap == "me" || nickname.ToLower() == nameToSlap.ToLower()) {
+                    sendData("PRIVMSG", chan + " :" + (char)1 + @"ACTION uses " + nickname + "'s own hands to slap himself. \"STOP HITTING YOURSELF, STOP HITTING YOURSELF!" + (char)1);
+                } else if (IsAdmin(nameToSlap.ToLower(), nickname)) {
+                    sendData("PRIVMSG", chan + " :" + (char)1 + @"ACTION slaps " + nickname + ". Don't be like that!" + (char)1);
+                } else {
+                    switch (choice) {
+                        case 0:
+                            sendData("PRIVMSG", chan + " :" + (char)1 + @"ACTION slaps " + nameToSlap + " with " + nickname + "'s favorite game console." + (char)1);
+                            break;
+                        case 1:
+                            if (IsAdmin(nickname.ToLower(), nickname)) {
+                                goto case 4;
+                            } else {
+                                sendData("PRIVMSG", chan + " :Only cool people are allowed to .slap people. Go slap yourself, " + nickname + ".");
+                            }
+
+                            break;
+                        case 2:
+                            sendData("PRIVMSG", chan + " :" + (char)1 + @"ACTION slaps " + nameToSlap + " around, just a little." + (char)1);
+                            break;
+                        case 3:
+                            sendData("PRIVMSG", chan + " :" + (char)1 + @"ACTION slaps " + nameToSlap + " with vigor." + (char)1);
+                            break;
+                        case 4:
+                            if (IsAdmin(nickname.ToLower(), nickname)) {
+                                sendData("PRIVMSG", chan + " :" + (char)1 + @"ACTION slaps " + nameToSlap + " with his cold, metal bot-hand" + (char)1);
+                            } else {
+                                sendData("PRIVMSG", chan + " :Only cool people are allowed to .slap people. Go slap yourself, " + nickname + ".");
+                            }
+                            break;
+                        case 5:
+                            if (IsAdmin(nickname.ToLower(), nickname)) {
+                                goto case 6;
+                            } else {
+                                sendData("PRIVMSG", chan + " :" + (char)1 + @"ACTION slaps " + nickname + ". BE NICE." + (char)1);
+                            }
+                            break;
+                        case 6:
+                            sendData("PRIVMSG", chan + " :" + (char)1 + @"ACTION slaps " + nameToSlap + " around with a trashbag." + (char)1);
+                            break;
+                        case 7:
+                            sendData("PRIVMSG", chan + " :" + (char)1 + @"ACTION winds up for a hefty open-handed smack to " + nameToSlap + "'s face." + (char)1);
+                            break;
+                        case 8:
+                            sendData("PRIVMSG", chan + " :" + (char)1 + @"ACTION slaps " + nameToSlap + " playfully on the butt." + (char)1);
+                            break;
+                        case 9:
+                            sendData("PRIVMSG", chan + " :" + (char)1 + @"ACTION slaps " + nameToSlap + " lazily. You can tell he's not that into it though." + (char)1);
+                            break;
+                        case 10:
+                            sendData("PRIVMSG", chan + " :" + (char)1 + @"ACTION stops to ponder the meaning of life. What does it all mean? Why do people want him to slap " + nameToSlap + "???" + (char)1);
+                            break;
+                        case 11:
+                            sendData("PRIVMSG", chan + " :" + (char)1 + @"ACTION refuses. " + nameToSlap + " would like that way too much..." + (char)1);
+                            break;
+                        case 12:
+                            sendData("PRIVMSG", chan + " :" + "Gross. I'm not touching that");
+                            break;
+                        case 13:
+                            if (IsAdmin(nickname.ToLower(), nickname)) {
+                                goto case 7;
+                            } else {
+                                sendData("PRIVMSG", chan + " :" + "Wow. " + nickname + " is a jerk, are you all seeing this?");
+                            }
+                            break;
+                        case 14:
+                            sendData("PRIVMSG", chan + " :" + "*chant* He's the F to the U, R-K-I-E-Bot, FurkieBot can slap you with just a thought.");
+                            sendData("PRIVMSG", chan + " :" + (char)1 + @"ACTION smacks " + nameToSlap + " with a resounding thud on the last note of the cheer." + (char)1);
+                            break;
+                    }
+                }
+            } else {
+                return;
+            }
+
+
+
+            if (repeatSlaps == allowedSlaps - 1) {
+                sendData("PRIVMSG", chan + " :" + (char)1 + @"ACTION slaps " + nickname + " as well, he better not be abusing .slap!" + (char)1);
+            }
         } /* Slap */
 
 
