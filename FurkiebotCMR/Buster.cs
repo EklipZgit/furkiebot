@@ -15,12 +15,17 @@ using System.Linq;
 using Newtonsoft.Json.Linq;
 using FurkiebotCMR;
 
-namespace FurkieBusterCMR
+namespace TraxBusterCMR
 {
 
-    public class FurkieBuster : IDisposable
+    public class TraxBuster : IDisposable
     {
-        private FurkieBot furkiebot;
+        
+        /**<summary>
+         * Holds the currently running instance of FurkieBot that called this instance of TraxBuster.
+         * </summary>
+         */
+        private FurkieBot furkiebot; 
         private bool exit = false;
 
         private TcpClient IRCConnection = null;
@@ -30,7 +35,7 @@ namespace FurkieBusterCMR
         private StreamWriter sw = null;
 
 
-        public FurkieBuster(IRCConfig config, FurkieBot furkiebot)
+        public TraxBuster(IRCConfig config, FurkieBot furkiebot)
         {
             this.config = config;
             this.furkiebot = furkiebot;

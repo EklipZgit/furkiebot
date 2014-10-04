@@ -28,7 +28,7 @@ using System.Linq;
 using Newtonsoft.Json.Linq;
 using System.Threading;
 using System.Xml;
-using FurkieBusterCMR;
+using TraxBusterCMR;
 
 /// <summary>
 /// The Furkiebot namespace.
@@ -94,7 +94,7 @@ namespace FurkiebotCMR {
 
         public const int MIN_MAPS = 6;
 
-        private FurkieBuster buster;
+        private TraxBuster buster;
         private Thread busterThread;
 
 
@@ -1350,7 +1350,7 @@ namespace FurkiebotCMR {
                         #region
                         if (chan == realRacingChan) { 
                             //Command is only possible in racing channel
-                            //if (cmrStatus == "open") { 
+                            if (cmrStatus == "open") { 
                                 //Command is only possible if CMR is open
                                 if (GetStatus(nickLower) == 6) { 
                                     //Comment only works if racer status is "standby"
@@ -1362,7 +1362,7 @@ namespace FurkiebotCMR {
                                 if (ComfirmMassStatus(3) && racers.Rows.Count > 1) {
                                     goto case ":.go";
                                 }
-                            //}
+                            }
                         }
                         #endregion
                         break;
@@ -1442,7 +1442,7 @@ namespace FurkiebotCMR {
                             //Command only works in racing channel
                             if (cmrStatus == "open") { 
                                 //Command only works if CMR is open
-                                if (CountEntrants() > 0) { 
+                                if (CountEntrants() > 1) { 
                                     //Command only works if there is at least 1 racer
                                     if (ComfirmMassStatus(3)) { 
                                         //Command only works if all racers have status on "ready"
@@ -2157,7 +2157,7 @@ namespace FurkiebotCMR {
 
             sendData("JOIN", realRacingChan);
             cmrStatus = "open";
-            MsgChans("Race initiated for Custom Map Race " + cmrId + ". Join " + ColourChanger(realRacingChan, "04") + " to participate.");
+            MsgChans("Race initiated for Custom Map Race " + cmrId + ". Join " + ColourChanger(realRacingChan, "04") + " to participate.");
             sendData("TOPIC", realRacingChan + " :" + ":Status: Entry Open | Game: Dustforce | Goal: Custom Map Race " + cmrId + ". Download maps at http://atlas.dustforce.com/tag/custom-map-race-" + cmrId);
             sendData("MODE", realRacingChan + " +t");
             sendData("PRIVMSG", "TRAXBUSTER" + " .join001 " + realRacingChan);
@@ -2165,7 +2165,7 @@ namespace FurkiebotCMR {
 
 
         /// <summary>
-        /// Notifies the users of the start of a CMR.
+        /// Notifies the users who asked to be notified of the start of a CMR.
         /// </summary>
         private void NotifyCmrStarting(){
             foreach(KeyValuePair<string, PlayerInfo> entry in userlist) {
@@ -2173,7 +2173,6 @@ namespace FurkiebotCMR {
                     Notice(entry.Value.ircname, "The CMR channel has opened. You asked to be notified of this event. If you wish these messages to stop, please type \".notify false\"");
                 }
             }
-
         }
 
 
@@ -2189,7 +2188,7 @@ namespace FurkiebotCMR {
             conf.port = 6667;
             conf.server = "irc2.speedrunslive.com";
             conf.pass = "ilovecalistuslol";
-            using (buster = new FurkieBuster(conf, this)) {
+            using (buster = new TraxBuster(conf, this)) {
                 buster.Connect();
                 buster.IRCWork();
             }
