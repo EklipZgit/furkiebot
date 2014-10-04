@@ -1,7 +1,7 @@
 ﻿/**
  * FurkieBot
  * Program.cs
- * @author FurkiePurkie
+ * @author Furkan Pham (Furkiepurkie)
  * @author Travis Drake (EklipZ)
  */
 
@@ -27,6 +27,7 @@ using Newtonsoft.Json;
 using System.Linq;
 using Newtonsoft.Json.Linq;
 using System.Threading;
+using System.Xml;
 using FurkieBusterCMR;
 
 /// <summary>
@@ -57,6 +58,7 @@ namespace FurkiebotCMR {
         public bool tester;
         public bool trusted;
         public bool admin;
+        public bool notify;
         public int rating;
         public int randmaprating;
         public string password;
@@ -271,7 +273,7 @@ namespace FurkiebotCMR {
             //Console.WriteLine("File: " + e.FullPath + " " + e.ChangeType);
             Console.WriteLine("\nCreatedPending: " + e.FullPath + " " + e.ChangeType + "\n");
             string fileName = Path.GetFileName(e.FullPath);
-            pendingMaps.Add(fileName);
+            //pendingMaps.Add(fileName);
             string toSay = "New map submitted for testing: \"";
 
             string[] split = fileName.Split('-');
@@ -298,7 +300,7 @@ namespace FurkiebotCMR {
             //Console.WriteLine("File: " + e.FullPath + " " + e.ChangeType);
             Console.WriteLine("\nDeletedPending: " + e.FullPath + " " + e.ChangeType + "\n");
             string fileName = Path.GetFileName(e.FullPath);
-            pendingMaps.Remove(fileName);
+            //pendingMaps.Remove(fileName);
         }
 
 
@@ -312,8 +314,8 @@ namespace FurkiebotCMR {
             //Console.WriteLine("File: {0} renamed to {1}", e.OldFullPath, e.FullPath);
             Console.WriteLine("\nCreatedAccepted: " + e.FullPath + " " + e.ChangeType + "\n");
             string fileName = Path.GetFileName(e.FullPath);
-            acceptedMaps.Add(fileName);
-            pendingMaps.Remove(fileName);
+            //acceptedMaps.Add(fileName);
+            //pendingMaps.Remove(fileName);
 
             string toSay = "Map accepted: \"";
 
@@ -340,7 +342,7 @@ namespace FurkiebotCMR {
             //Console.WriteLine("File: " + e.FullPath + " " + e.ChangeType);
             Console.WriteLine("\nDeletedAccepted: " + e.FullPath + " " + e.ChangeType + "\n");
             string fileName = Path.GetFileName(e.FullPath);
-            acceptedMaps.Remove(fileName);
+            //acceptedMaps.Remove(fileName);
 
             string toSay = "Map removed from accepted maps: \"";
 
@@ -381,10 +383,10 @@ namespace FurkiebotCMR {
         /// Outputs the current CMR's map status to the provided channel.
         /// </summary>
         /// <param name="chan">The IRC channel to output to. If empty or null, output to both main channels.</param>
-        private void OutputMapStatus(string chan) {
-            OutputPending(chan);
-            OutputAccepted(chan);
-        }
+        //private void OutputMapStatus(string chan) {
+        //    OutputPending(chan);
+        //    //OutputAccepted(chan);
+        //}
 
 
 
@@ -393,25 +395,25 @@ namespace FurkiebotCMR {
         /// Outputs the current CMR pending map status to the provided channel.
         /// </summary>
         /// <param name="chan">The channel. If empty or null, output to both main channels.</param>
-        private void OutputPending(string chan) {
-            string toSay = " :" + pendingMaps.Count + " Pending testing ";
+        //private void OutputPending(string chan) {
+        //    string toSay = " :" + pendingMaps.Count + " Pending testing ";
 
-            foreach (string s in pendingMaps) {
-                toSay += SEP + "\"";
-                string[] split = s.Split('-');
-                for (int i = 1; i < split.Length; i++) {
-                    toSay += split[i];
-                }
-                toSay += "\" by " + split[0];
-            }
+        //    foreach (string s in pendingMaps) {
+        //        toSay += SEP + "\"";
+        //        string[] split = s.Split('-');
+        //        for (int i = 1; i < split.Length; i++) {
+        //            toSay += split[i];
+        //        }
+        //        toSay += "\" by " + split[0];
+        //    }
 
-            if (chan == null || chan == "" || chan == " ") {
-                sendData("PRIVMSG", mainchannel + toSay);
-                sendData("PRIVMSG", cmrchannel + toSay);
-            } else {
-                sendData("PRIVMSG", chan + toSay);
-            }
-        }
+        //    if (chan == null || chan == "" || chan == " ") {
+        //        sendData("PRIVMSG", mainchannel + toSay);
+        //        sendData("PRIVMSG", cmrchannel + toSay);
+        //    } else {
+        //        sendData("PRIVMSG", chan + toSay);
+        //    }
+        //}
 
 
 
@@ -420,24 +422,24 @@ namespace FurkiebotCMR {
         /// Outputs the current CMR accepted map status to the provided channel.
         /// </summary>
         /// <param name="chan">The channel. If empty or null, output to both main channels.</param>
-        private void OutputAccepted(string chan) {
-            string toSay = " :" + acceptedMaps.Count + " Accepted ";
-            foreach (string s in acceptedMaps) {
-                toSay += SEP + "\"";
-                string[] split = s.Split('-');
-                for (int i = 1; i < split.Length; i++) {
-                    toSay += split[i];
-                }
-                toSay += "\" by " + split[0];
-            }
+        //private void OutputAccepted(string chan) {
+        //    string toSay = " :" + acceptedMaps.Count + " Accepted ";
+        //    foreach (string s in acceptedMaps) {
+        //        toSay += SEP + "\"";
+        //        string[] split = s.Split('-');
+        //        for (int i = 1; i < split.Length; i++) {
+        //            toSay += split[i];
+        //        }
+        //        toSay += "\" by " + split[0];
+        //    }
 
-            if (chan == null || chan == "" || chan == " ") {
-                sendData("PRIVMSG", mainchannel + toSay);
-                sendData("PRIVMSG", cmrchannel + toSay);
-            } else {
-                sendData("PRIVMSG", chan + toSay);
-            }
-        }
+        //    if (chan == null || chan == "" || chan == " ") {
+        //        sendData("PRIVMSG", mainchannel + toSay);
+        //        sendData("PRIVMSG", cmrchannel + toSay);
+        //    } else {
+        //        sendData("PRIVMSG", chan + toSay);
+        //    }
+        //}
 
 
 
@@ -1088,8 +1090,8 @@ namespace FurkiebotCMR {
                         if (!StringCompareNoCaps(chan, realRacingChan)) {
                             //FurkieBot commands for the main channel
                             sendData("PRIVMSG", chan + @" :Commands: .cmr" + SEP + ".maps" + SEP + ".startcmr" + SEP + ".ign <ircname>" + SEP + ".setign <in-game name>" + SEP + ".mappack" + SEP + ".pending" + SEP + ".accepted");
-                            sendData("PRIVMSG", chan + @" :Upload maps: http://eklipz.us.to/cmr/map.html" + SEP + "CMR info: http://eklipz.us.to/cmr" + SEP + @"Command list: https://github.com/EklipZgit/furkiebot/wiki" + SEP + "FurkieBot announce channel: #DFcmr");
-                            sendData("PRIVMSG", chan + @" :.help register" + SEP + ".help tester");
+                            sendData("PRIVMSG", chan + @" :CMR info: http://eklipz.us.to/cmr" + SEP + @"Command list: https://github.com/EklipZgit/furkiebot/wiki" + SEP + "FurkieBot announce channel: #DFcmr");
+                            sendData("PRIVMSG", chan + @" :.help register" + SEP + ".help tester" + SEP + ".help othercommands");
 
                         } else {            // FurkieBot commands for race channel
                             sendData("PRIVMSG", chan + @" Command list: " + SEP + ".enter" + SEP + ".ready" + SEP + ".setign <dustforceName>" + SEP + ".register" + SEP + ".streams" + SEP + ".setstream <URL>" + SEP + @"More commands: https://github.com/EklipZgit/furkiebot/wiki");
@@ -1161,7 +1163,8 @@ namespace FurkiebotCMR {
                                 }
                                 if (DateTime.Now > cmrday) {
                                     if (IsAdmin(nickLower, nick)) {
-                                        StartCmr(chan);
+                                        StartCmr();
+                                        NotifyCmrStarting();
                                     } else {
                                         sendData("PRIVMSG", chan + " Only an Admin can start the race for now, please contact an admin to start the race.");
                                     }
@@ -1225,22 +1228,22 @@ namespace FurkiebotCMR {
                         break;
                         #endregion
 
-                    case ":.maps": //Shows a list of currently approved maps
-                        #region
-                        goto case ":.cmrmaps";
+                    //case ":.maps": //Shows a list of currently approved maps
+                    //    #region
+                    //    goto case ":.cmrmaps";
 
-                    case ":.cmrmaps":
-                        OutputMapStatus(chan);
-                        break;
+                    //case ":.cmrmaps":
+                    //    OutputMapStatus(chan);
+                    //    break;
 
-                    case ":.pending":
-                        OutputPending(chan);
-                        break;
+                    //case ":.pending":
+                    //    OutputPending(chan);
+                    //    break;
 
-                    case ":.accepted":
-                        OutputAccepted(chan);
-                        break;
-                        #endregion
+                    //case ":.accepted":
+                    //    OutputAccepted(chan);
+                    //    break;
+                        //#endregion
 
                     case ":.entrants": //Shows a list of the users currently in a race
                         #region
@@ -1621,9 +1624,12 @@ namespace FurkiebotCMR {
                                 if (!IsIdentified(nickLower, nick)) {
                                     NoticeNotIdentified(nick);
                                 }
-                                sendData("PRIVMSG", chan + " :Tester Commands:" + SEP + ".accept <mapAuthor>-<mapName>" + SEP + ".unaccept <mapAuthor>-<mapName>");
+                                sendData("PRIVMSG", chan + " :Tester Commands:" + SEP + "Test maps at http://eklipz.us.to/maptest.php" + SEP + "To accept via IRC \".accept <mapAuthor>-<mapName>\"" + SEP + "\".unaccept <mapAuthor>-<mapName>\"");
                                 sendData("PRIVMSG", chan + " :.settester <trueOrFalse> -  sets you as a DEDICATED tester for the next CMR. This is not undoable.");
                                 sendData("PRIVMSG", chan + " :To be a map tester you must currently be a trusted community member. Ask a FurkieBot administrator if you cannot use .settester and believe you should be able to.");
+                                break;
+                            case "othercommands":
+                                sendData("PRIVMSG", chan + " :Other Commands:" + SEP + "\".setnotify <trueORfalse>\" to be notified when the CMR race channel opens" + SEP + "\".slap <name>\" is a useless command to slap people");
                                 break;
                         }
 
@@ -1664,6 +1670,30 @@ namespace FurkiebotCMR {
 
                         #endregion
                         break;
+                    case ":.setnotify":
+                        goto case ":.notify";
+                    case ":.notify":
+                        #region
+
+                        if (IsRegistered(nickLower)) {
+                            if (IsIdentified(nickLower, nick)) {
+                                if (StringCompareNoCaps(parameter, "on") || StringCompareNoCaps(parameter, "true")) {
+                                    setUserNotify(nickLower, true);
+                                    Msg(chan, "You will be notified via IRC when the CMR channel opens.");
+                                } else if (StringCompareNoCaps(parameter, "off") || StringCompareNoCaps(parameter, "false")) {
+                                    setUserNotify(nickLower, false);
+                                    Msg(chan, "You will NOT be notified via IRC when the CMR channel opens.");
+                                } else {
+                                    sendData("PRIVMSG", chan + " :" + "Syntax is \".notify <false/true>\"");
+                                    break;
+                                }
+                            } else { NoticeNotIdentified(nick); }
+                        } else { NoticeNotRegistered(nick); }
+                        #endregion
+                        break;
+                                
+                                
+
 
                     case ":.comment": //Adds a comment after a racer is done
                         #region
@@ -2109,23 +2139,35 @@ namespace FurkiebotCMR {
             return shouldRun;
         }
 
-        private void StartCmr(string chan) {
+        private void StartCmr() {
             realRacingChan = "";
             dummyRacingChan += RandomCharGenerator(5, 1);
             realRacingChan = dummyRacingChan;
 
 
-            busterThread = new Thread(() => StartTraxBuster(chan));
+            busterThread = new Thread(() => StartTraxBuster(realRacingChan));
             busterThread.Start();
 
             sendData("JOIN", realRacingChan);
             cmrStatus = "open";
-            sendData("PRIVMSG", chan + " :" + "Race initiated for Custom Map Race " + cmrId + ". Join " + ColourChanger(realRacingChan, "04") + " to participate.");
+            MsgChans("Race initiated for Custom Map Race " + cmrId + ". Join " + ColourChanger(realRacingChan, "04") + " to participate.");
             sendData("TOPIC", realRacingChan + " :" + ":Status: Entry Open | Game: Dustforce | Goal: Custom Map Race " + cmrId + ". Download maps at http://atlas.dustforce.com/tag/custom-map-race-" + cmrId);
             sendData("MODE", realRacingChan + " +t");
             sendData("PRIVMSG", "TRAXBUSTER" + " .join001 " + realRacingChan);
         }
 
+
+        /// <summary>
+        /// Notifies the users of the start of a CMR.
+        /// </summary>
+        private void NotifyCmrStarting(){
+            foreach(KeyValuePair<string, PlayerInfo> entry in userlist) {
+                if ( entry.Value.notify == true ) {
+                    Notice(entry.Value.ircname, "The CMR channel has opened. You asked to be notified of this event. If you wish these messages to stop, please type \".notify false\"");
+                }
+            }
+
+        }
 
 
 
@@ -2470,7 +2512,7 @@ namespace FurkiebotCMR {
         /// Serializes the user data to disk.
         /// </summary>
         private void WriteUsers() {
-            string json = JsonConvert.SerializeObject(userlist, Formatting.Indented);
+            string json = JsonConvert.SerializeObject(userlist, Newtonsoft.Json.Formatting.Indented);
 
             File.WriteAllText(DATA_PATH + @"Userlist\userlistmap.json", json); // !! FILEPATH !!
         }
@@ -2505,8 +2547,24 @@ namespace FurkiebotCMR {
 
             WriteUsers();
         }
+        
+        
+        /// <summary>
+        /// Sets a user irc notify on/off
+        /// </summary>
+        /// <param name="ircuser">The ircuser whose name to set.</param>
+        /// <param name="option">On or Off</param>
+        private void setUserNotify(string ircuser, bool option) {
+            string ircLower = ircuser.ToLower();
+            PlayerInfo temp = new PlayerInfo();
+            userlist.TryGetValue(ircLower, out temp);
+            string oldoption = (temp.notify ? "true" : "false");
+            
+            temp.notify = option;
+            userlist.Add(ircLower, temp);
 
-
+            WriteUsers();
+        }
 
 
 
@@ -3166,7 +3224,7 @@ namespace FurkiebotCMR {
                 }
                 dt.AcceptChanges();
 
-                string json2 = JsonConvert.SerializeObject(ds, Formatting.Indented);
+                string json2 = JsonConvert.SerializeObject(ds, Newtonsoft.Json.Formatting.Indented);
                 System.IO.File.WriteAllText(DATA_PATH + @"CMR Data\Maps\CMR" + cmrid + "Maps.json", json); // !! FILEPATH !!
             }
 
@@ -3184,7 +3242,7 @@ namespace FurkiebotCMR {
 
             ds.AcceptChanges();
 
-            string json = JsonConvert.SerializeObject(ds, Formatting.Indented);
+            string json = JsonConvert.SerializeObject(ds, Newtonsoft.Json.Formatting.Indented);
 
             System.IO.File.WriteAllText(DATA_PATH + @"CMR Data\Maps\CMR" + cmrid + "Maps.json", json); // !! FILEPATH !!
         }
@@ -3205,7 +3263,7 @@ namespace FurkiebotCMR {
 
             ds.AcceptChanges();
 
-            string json = JsonConvert.SerializeObject(ds, Formatting.Indented);
+            string json = JsonConvert.SerializeObject(ds, Newtonsoft.Json.Formatting.Indented);
 
             System.IO.File.WriteAllText(DATA_PATH + @"CMR Data\Maps\CMR" + cmrid + "Maps.json", json); // !! FILEPATH !!
         }
@@ -3286,7 +3344,7 @@ namespace FurkiebotCMR {
             StringWriter sw = new StringWriter(sb);
 
             using (JsonWriter writer = new JsonTextWriter(sw)) {
-                writer.Formatting = Formatting.Indented;
+                writer.Formatting = Newtonsoft.Json.Formatting.Indented;
 
                 writer.WriteStartObject();
 
@@ -3692,7 +3750,6 @@ namespace FurkiebotCMR {
 
             return (expectedHashString == finalHashString);
         }
-
 
 
     } /* IRCBot */
