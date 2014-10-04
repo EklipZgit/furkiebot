@@ -13,9 +13,9 @@
 			echo '<tr class="pendingrow">';
 			echo '<td class="pendingname">' . $value['author'] . '</td>';
 			echo '<td class="pendingmap">' . $value['name'] . '</td>';
-			echo '<td class="pendingdownload"><a href="downloadmap.php?map=' . urlencode($value['name']) . '">Download</a></td>';
-			echo '<td class="pendinglink"><a href="accept.php?map=' . urlencode($value['name']) . '">Accept this map</a></td>';
-			echo '<td class="pendinglink"><a href="deny.php?map=' . urlencode($value['name']) . '">Deny this map</a></td>';
+			echo '<td class="pendingdownload"><a href="downloadmap.php?map=' . urlencode($value['author'] . "-" . $value['name']) . '">Download</a></td>';
+			echo '<td class="pendinglink"><a href="accept.php?map=' . urlencode($value['author'] . "-" . $value['name']) . '">Accept this map</a></td>';
+			echo '<td class="pendinglink"><a href="deny.php?map=' . urlencode($value['author'] . "-" . $value['name']) . '">Deny this map</a></td>';
 			echo '</tr>';
 		}
 	}
@@ -34,8 +34,8 @@
 			echo '<td class="pendingname">' . $value['author'] . '</td>';
 			echo '<td class="pendingmap">' . $value['name'] . '</td>';
 			echo '<td class="pendingmap">' . $value['acceptedBy'] . '</td>';
-			echo '<td class="pendingdownload"><a href="downloadmap.php?map=' . urlencode($value['name']) . '">Download</a></td>';
-			echo '<td class="pendinglink"><a href="unaccept.php?map=' . urlencode($value['name']) . '">Unaccept this map</a></td>';
+			echo '<td class="pendingdownload"><a href="downloadmap.php?map=' . urlencode($value['author'] . "-" . $value['name']) . '">Download</a></td>';
+			echo '<td class="pendinglink"><a href="unaccept.php?map=' . urlencode($value['author'] . "-" . $value['name']) . '">Unaccept this map</a></td>';
 			echo '</tr>';
 		}
 	}

@@ -17,9 +17,8 @@ if (isset($_SESSION['loggedIn'])) {
 			echo "ERROR. You need to submit a map along with an actual name.";
 		} else {
 			$maps = getMaps();
-
-			$filename = $_POST["mapname"];
-			$mapname = preg_replace('/[\x00-\x1F\x80-\xFF]/', '', $filename); //REGEX's OUT CONTROL CODES AND WHATNOT.
+			$filename = $_SESSION['usernameCase'] . "-" . $_POST["mapname"];
+			$safefile = preg_replace('/[\x00-\x1F\x80-\xFF]/', '', $filename); //REGEX's OUT CONTROL CODES AND WHATNOT.
 			
 			$mapnameLower = strtolower($mapname);
 			$mapper = $_SESSION['usernameCase'];
