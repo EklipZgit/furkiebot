@@ -15,7 +15,6 @@ if (isset($_SESSION['loggedIn'])) {
 			echo "screenshot this to EklipZ in #DFcmr";
 		} else {
 			$maps = getMaps();
-
 			$filename = $_SESSION['usernameCase'] . "-" . $_POST["mapname"];
 			$safefile = preg_replace('/[\x00-\x1F\x80-\xFF]/', '', $filename); //REGEX's OUT CONTROL CODES AND WHATNOT.
 			
