@@ -9,5 +9,19 @@
 
 
 Feature request
+	Weekly custom map category, ranks you on your IL positions on a randomly selected set of custom maps.
+	
+
+
+
+
+
+
+
+
+
+
+COMPLETED
 	Add yourself to a list of people who are nickflashed when a race channel opens up.
+	
 	

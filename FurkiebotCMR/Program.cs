@@ -1271,6 +1271,8 @@ namespace FurkiebotCMR {
                         OutputPending(chan);
                         break;
 
+                    case ":.approved":
+                        goto case ":.accepted";
                     case ":.accepted":
                         OutputAccepted(chan);
                         break;
