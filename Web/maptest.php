@@ -54,6 +54,13 @@ if (isLoggedIn()) {
 			width: 200px;
 			padding: 5px;	
 		}
+		.well {
+			width: 700px;
+			text-align: justify;
+		}
+		li {
+			padding-bottom: 15px;
+		}
 
 	</style>
 </head>
@@ -74,11 +81,15 @@ if (isLoggedIn()) {
 			$username = $_SESSION['username'];
 			if (array_key_exists($username, $userarray)) {
 				$userData = $userarray[$username];
-				if ($_SESSION['trusted'] == 1) {
+				if ($userData['trusted'] == 1) {
 					//echo "user is trusted<br>";
-					if ($_SESSION['tester'] == 1) { //THIS GUY IS A DEDICATED CMR TESTER???
+					if ($userData['tester'] == 1) { //THIS GUY IS A DEDICATED CMR TESTER???
 						//echo "user is tester<br><br><br>";
 						include "../WebInclude/testmenu.php";
+						
+						echo '<br><br><div class="well">';
+						include "../WebInclude/maprules.php";
+						echo '</div>';
 						//do shit
 					} else { //THIS GUY IS NOT ALLOWED TO DEDI-CMR TEST.
 						echo "user is not tester.<br><br>This page will allow you to set yourself to be a tester in the future, probably. Once I work out PHP communication with FurkieBot.<br>";
