@@ -493,12 +493,12 @@ namespace FurkiebotCMR {
                         if (tocompare[key].accepted == false && data.accepted == true) { // map has been approved.
                             string message = "Map approved: " + data.name + " by " + data.author;
                             MsgChans(message);
-                            MsgTesters(message + ". http://eklipz.us.to/cmr/maptest.php");
+                            //NoticeTesters(message + ". http://eklipz.us.to/cmr/maptest.php");
                             notifyReloadMaps = true;
                         } else if (tocompare[key].accepted == true && data.accepted == false) {  // map has been unapproved.
                             string message = "Map removed from approved map list: " + data.name + " by " + data.author;
                             MsgChans(message);
-                            MsgTesters(message + ". You may approve it at http://eklipz.us.to/cmr/maptest.php");
+                            NoticeTesters(message + ". You may approve it at http://eklipz.us.to/cmr/maptest.php");
                             notifyReloadMaps = true;
                         }
                     } else { //Map is newly submitted
@@ -909,6 +909,22 @@ namespace FurkiebotCMR {
                 //Console.WriteLine("\n\n\nTester: " + tester + " ");
                 //Console.WriteLine("is identified? " + identified + ".\n\n\n");
                 Msg(tester.Trim(), toSay);
+            }
+        }
+
+
+
+
+        /// <summary>
+        /// Sends a notice to all testers.
+        /// </summary>
+        /// <param name="toSay">The message.</param>
+        private void NoticeTesters(string toSay) {
+            List<string> testers = GetTesters();
+            foreach (string tester in testers) {
+                //Console.WriteLine("\n\n\nTester: " + tester + " ");
+                //Console.WriteLine("is identified? " + identified + ".\n\n\n");
+                Notice(tester.Trim(), toSay);
             }
         }
 
@@ -1933,7 +1949,7 @@ namespace FurkiebotCMR {
                             if (IsTrusted(nickLower, nick)) {//trusted
                                 if (parameter.ToLower() == "true") {
                                     setTester(nickLower, parameter);
-                                    Notice(nick, "Your tester status set to true.");
+                                    Notice(nick, "Your tester status set to true. visit http://eklipz.us.to/cmr/maptest.php to review the rules and test maps.");
                                 } else if (paramLower == "false") {
 
                                     if (IsAdmin(nickLower, nick)) { //admin wants to set himself to not-tester
