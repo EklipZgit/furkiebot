@@ -18,7 +18,7 @@ if (isset($_SESSION['loggedIn'])) {
 		} else {
 			$maps = getMaps();
 			$filename = $_SESSION['usernameCase'] . "-" . $_POST["mapname"];
-			$safefile = preg_replace('/[\x00-\x1F\x80-\xFF]/', '', $filename); //REGEX's OUT CONTROL CODES AND WHATNOT.
+			$mapname = preg_replace('/[\x00-\x1F\x80-\xFF]/', '', $filename); //REGEX's OUT CONTROL CODES AND WHATNOT.
 			
 			$mapnameLower = strtolower($mapname);
 			$mapper = $_SESSION['usernameCase'];
