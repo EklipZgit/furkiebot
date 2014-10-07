@@ -37,8 +37,13 @@ if (isLoggedIn()) {
 	<body>
 		<div class="skinny">
 			<?php displayNavbar("Upload map"); ?>
-			<b>Upload a map!</b>
+			<?php include "../WebInclude/displaymessages.php"; ?>
+
 			<div id="main">
+				<h3>
+					<b>Upload a map!</b>
+				</h3>
+
 				<form action="mapsubmit.php" method="post" enctype="multipart/form-data">
 					<table>
 						<tr>
@@ -83,12 +88,12 @@ if (isLoggedIn()) {
 	</html>	
 
 	<?php 
+	session_write_close();
 } else {
 	$_SESSION['redirect'] = "http://eklipz.us.to/cmr/map.php";
 	$_SESSION['warning'] = "You need to log in before uploading maps.";
 	session_write_close();
 	header( 'Location: http://eklipz.us.to/cmr/login.php' );
 }
-session_write_close();
 ?>
 

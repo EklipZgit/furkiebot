@@ -5,23 +5,27 @@
 	
 	session_start();
 	if (isLoggedIn()) {
-		$cmrID = getCMRID();
-		$maps = getMaps();
-		$mapname = urldecode($_GET['map']);
-		$nameLower = strtolower($mapname);
-		$mappath = 'C:\\CMR\\Maps\\' . $cmrID . '\\' . $mapname;
+		if (isTester() || isAdmin()) {
+			$cmrID = getCMRID();
+			$maps = getMaps();
+			$mapname = urldecode($_GET['map']);
+			$nameLower = strtolower($mapname);
+			$mappath = 'C:\\CMR\\Maps\\' . $cmrID . '\\' . $mapname;
 
-		if (array_key_exists($nameLower, $maps)) {
-			$maps[$nameLower]['accepted'] = false;
-			$maps[$nameLower]['acceptedBy'] = "";
-			writeMaps($maps);
-			
-			$_SESSION['message'] = "You successfully un-accepted " . $mapname;
+			if (array_key_exists($nameLower, $maps)) {
+				$maps[$nameLower]->accepted = false;
+				$maps[$nameLower]->acceptedBy = "";
+				writeMaps($maps);
+				
+				$_SESSION['message'] = "You successfully un-accepted " . $mapname;
+			} else {
+				$_SESSION['warning'] = "error, you tried to un-accept a file that doesnt exist.";
+			}
+			session_write_close();
+			header('Location: http://eklipz.us.to/cmr/maptest.php');
 		} else {
-			$_SESSION['warning'] = "error, you tried to un-accept a file that doesnt exist.";
+			include "../WebInclude/testeroption.php";
 		}
-		session_write_close();
-		header('Location: http://eklipz.us.to/cmr/maptest.php');
 	} else {
 		$_SESSION['redirect'] = "http://eklipz.us.to/cmr/maptest.php";
 		$_SESSION['warning'] = "You need to log in before testing maps.";

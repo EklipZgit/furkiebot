@@ -1,11 +1,10 @@
-.setign someignregisteredbyothernick = crash?
-
 Make .deletemap command
-Make .unaccept doable by admins even if not testers.
 Make .acceptoverride command that admins can perform to force accept a map w/o being tester.
 .startcmr and .cmr dont use correct map count?
 when race is open, .cmr should list race channel.
-download link on accepted maps currently not working
+download link on accepted maps currently not working (still after new system?)
+DQ's
+
 
 
 
@@ -18,3 +17,11 @@ download link on accepted maps currently not working
 
 Randmap race stuff.
 etc. 
+
+
+
+
+DONE
+Fix IGN dupe bugs.
+Add .removeign
+Make .unaccept doable by admins even if not testers.
