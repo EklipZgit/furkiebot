@@ -44,22 +44,27 @@
 		}
 	} 
 
-
-
-	function getMaps() {
-		$mapfile = "C:\\CMR\\Maps\\" . getCMRID() . "\\maps.json";
-		if (file_exists($mapfile)) {
-			$filestring = file_get_contents($mapfile);
-			return json_decode($filestring, true);
-		} else {
-			return array();
+function getMaps() {
+	$mapfile = "C:\\CMR\\Maps\\" . getCMRID() . "\\maps.json";
+	if (file_exists($mapfile)) {
+		$filestring = file_get_contents($mapfile);
+		$maps = json_decode($filestring, true);
+		$mapsNew = array();
+		foreach($maps as $key => $value) {
+			$mapsNew[$key] = new MapData($value);
 		}
+		return $mapsNew;
+	} else {
+		return array();
 	}
+}
 
-	function writeMaps($maps) {
-		$mapfile = "C:\\CMR\\Maps\\" . getCMRID() . "\\maps.json";
-		$json = json_encode($maps, 128 + 16 + 64);	//128 == JSON_PRETTY_PRINT, 16 == FORCE OBJECT, 64 is UNESCAPED /'s
-		$file = fopen($mapfile, 'w');
-		fwrite($file, $json);
-	}
+
+function writeMaps($maps) {
+	$mapfile = "C:\\CMR\\Maps\\" . getCMRID() . "\\maps.json";
+	$json = json_encode($maps, 128 + 16 + 64);	//128 == JSON_PRETTY_PRINT, 16 == FORCE OBJECT, 64 is UNESCAPED /'s
+	$file = fopen($mapfile, 'w');
+	fwrite($file, $json);
+}
+
 ?>
