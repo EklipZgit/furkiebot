@@ -3802,7 +3802,7 @@ namespace FurkiebotCMR {
             dt.Rows.Add("Lawatson", 0, 26, 30, 0, 0);
             dt.Rows.Add("Virgate", 0, 29, 30, 15, 0);
             dt.Rows.Add("Ravencoff", 0, 34, 40, 12, 0);
-            dt.Rows.Add("Marksel", 0, 45, 30, 0, 0);
+            dt.Rows.Add("Lightningy", 0, 45, 30, 0, 0); // Please, anybody but Marksel!
 
             decimal maxRating = 50M;
             decimal range = maxRating / (decimal)dt.Rows.Count;
