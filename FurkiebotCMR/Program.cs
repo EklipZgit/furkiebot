@@ -2519,7 +2519,7 @@ namespace FurkiebotCMR {
             if (nickname.ToLower() != lastSlapper.ToLower()) { //reset the slap limit because someone else slapped.
                 lastSlapper = nickname;
                 repeatSlaps = 0;
-            } else {
+            } else {    //increment slap count from same user.
                 repeatSlaps++;
             }
 
@@ -2534,14 +2534,21 @@ namespace FurkiebotCMR {
 
                 if (nameToSlap.ToLower() == "furkiebot") {      //they told furkiebot to slap himself
                     nameToSlap = nickname;
+
                 } else if (nameToSlap.ToLower() == "glados") {      //they told furkiebot to slap GLaDOS
                     Msg(chan, "Why would I slap my true love?");
                     Msg(chan, "" + (char)1 + @"ACTION smacks " + nickname + ". " + (char)1 + "Why would you even suggest that, you heartless shell of a person?");
-                } else if (nameToSlap == "me" || nickname.ToLower() == nameToSlap.ToLower()) {
+
+                } else if (nameToSlap == "me" || nickname.ToLower() == nameToSlap.ToLower()) {  //person is trying to slap themselves.
                     Msg(chan, "" + (char)1 + @"ACTION uses " + nickname + "'s own hands to slap himself. " + (char)1 + "STOP HITTING YOURSELF, STOP HITTING YOURSELF!");
-                } else if (IsAdmin(nameToSlap.ToLower(), nickname)) {
+
+                } else if (IsAdmin(nameToSlap.ToLower(), nickname)) {   //trying to slap an admin
                     Msg(chan, "" + (char)1 + @"ACTION slaps " + nickname + ". " + (char)1 + "Don't be like that!");
-                } else {
+
+
+
+                } else {    //proceed with normal slap handling.
+
                     switch (choice) {
                         case 0:
                             Msg(chan, "" + (char)1 + @"ACTION slaps " + nameToSlap + " with " + nickname + "'s favorite game console." + (char)1);
