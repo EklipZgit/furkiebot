@@ -100,7 +100,7 @@ namespace FurkiebotCMR {
         public const string DATA_PATH = @"C:\CMR\Data\";
         public const int MAX_MSG_LENGTH = 450;
 
-        public const int MIN_MAPS = 6;
+        public const int MIN_MAPS = 7;
 
         private TraxBuster buster;
         private Thread busterThread;
@@ -2506,6 +2506,9 @@ namespace FurkiebotCMR {
         /// <param name="chan">The channel.</param>
         /// <param name="nameToSlap">The parameter.</param>
         private void Slap(string nickname, string chan, string nameToSlap) {
+            if (nameToSlap.ToLower() == "furkiebot") {
+                nameToSlap = nickname;
+            }
             int allowedSlaps = 3;
             if (nickname.ToLower() != lastSlapper.ToLower()) {
                 lastSlapper = nickname;
