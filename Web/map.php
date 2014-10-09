@@ -37,8 +37,13 @@ if (isLoggedIn()) {
 	<body>
 		<div class="skinny">
 			<?php displayNavbar("Upload map"); ?>
-			<b>Upload a map!</b>
+			<?php include "../WebInclude/displaymessages.php"; ?>
+
 			<div id="main">
+				<h3>
+					<b>Upload a map!</b>
+				</h3>
+
 				<form action="mapsubmit.php" method="post" enctype="multipart/form-data">
 					<table>
 						<tr>
@@ -47,7 +52,7 @@ if (isLoggedIn()) {
 						</tr>
 						<tr>
 							<td><label for="mapname">Map Name:</label></td>
-							<td><input type="text" name="mapname" id="mapname"></td>
+							<td><input type="text" name="mapname" id="mapname" required></td>
 						</tr>
 						<tr>
 							<td>&nbsp</td>
@@ -70,22 +75,8 @@ if (isLoggedIn()) {
 
 
 
-				<b>Temporary rules for maps:</b><br>
-				A map must have basic playability (decent camera, ensure it is SSable, visible color scheme, map contrasts with player and dust color, etc).<br>
-				Maps may not be harder than Gold Key levels.<br>
-				Maps may not contain blind drops where you fall into a place that requires precise input.<br>
-				&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp(As a rule of thumb, if you die more than once there because you werent prepared, its not ok).<br>
-				The goal flag should be properly linked to the end enemies. <br>
-				&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbspThe enemies linked to the goal flag should be relatively obvious so that racers do not accidentally end the map early.<br>
-				Maps may not use a zoom level over 1400, due to lag experienced by many players. <br> 
-				&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbspWhether you lag or not, the camera must be less zoomed out than Abyss. Also, no over-use of props.<br>
-				No slopes that lead directly into spikes.<br> 
-				Maps must have reasonable checkpoint intervals. (Checkpoints at least every 15 seconds of gameplay is a good rule of thumb, but can be waived for shorter maps).<br>
-				If a map is character specific, it must include that character's abbreviation (Man, Girl, Kid, Worth) at the start of the map name. <br>
-				&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbspThis <b>includes</b> when you publish it on atlas for the race. 
-				<br><br>
-				MAPS MAY NOT BE DENIED BASED ON "ENJOYABILITY" OF THE MAP OR ANY OTHER SUBJECTIVE FACTORS.<br>
-				PROVIDED IT MEETS THE ABOVE REQUIREMENTS, A MAP IS ALLOWED.<br>
+				<?php include "../WebInclude/maprules.php"; ?>
+				
 				<br>
 				With that said, here are a few tips for keeping racers happy.<br>
 				Place your checkpoint flags flat on the ground. Spawning in the air sucks.<br>
@@ -97,12 +88,12 @@ if (isLoggedIn()) {
 	</html>	
 
 	<?php 
+	session_write_close();
 } else {
 	$_SESSION['redirect'] = "http://eklipz.us.to/cmr/map.php";
 	$_SESSION['warning'] = "You need to log in before uploading maps.";
 	session_write_close();
 	header( 'Location: http://eklipz.us.to/cmr/login.php' );
 }
-session_write_close();
 ?>
 
