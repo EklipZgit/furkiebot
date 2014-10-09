@@ -2665,19 +2665,6 @@ namespace FurkiebotCMR {
 
 
 
-
-
-
-
-                    // Look Ma! EklipZ style empty line spam!
-
-
-
-
-
-
-
-
                 } else {    //proceed with normal slap handling.
 
                     switch (choice) {
