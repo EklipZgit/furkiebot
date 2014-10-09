@@ -86,15 +86,16 @@ namespace FurkiebotCMR {
     public class FurkieBot : IDisposable {
         public static string SEP = ColourChanger(" | ", "07"); //The orange | seperator also used by GLaDOS
         public const string MAPS_PATH = @"C:\CMR\Maps\";
+        public const char ACT = (char)1;
 
 
         //public const string BOT_NAME = "FurkieBot";
         //public const string MAIN_CHAN = "#dustforce";
         //public const string CMR_CHAN = "#DFcmr";
 
-        public const string BOT_NAME = "FurkieBot";
-        public const string MAIN_CHAN = "#dustforce";
-        public const string CMR_CHAN = "#DFcmr";
+        public const string BOT_NAME = "FurkieBot_";
+        public const string MAIN_CHAN = "#dustforcee";
+        public const string CMR_CHAN = "#DFcmrr";
 
 
         public const string DATA_PATH = @"C:\CMR\Data\";
@@ -108,6 +109,8 @@ namespace FurkiebotCMR {
 
         private string lastSlapper = "";
         private int repeatSlaps = 0;
+        private string lastPastaer = "";
+        private int repeatPastas = 0;
 
         /// <summary>
         /// A flag that is set when FurkieBot itself modified the map file, so that the change handler knows not to reload anything.
@@ -673,12 +676,14 @@ namespace FurkiebotCMR {
             } else {
                 if (param.Length > MAX_MSG_LENGTH) //Makes sure to send multiple messages in case a message is too long for irc
                 {
+                    Console.WriteLine("TOO LONG, param = \"" + param + "\"");
                     string channel = "";
-                    if (param[0] == '#') {
+                    param = param.Trim();
+                    //if (param[0] == '#') {   //if message being sent to a channel, not a user
                         channel = param.Substring(0, param.IndexOf(" ")) + " ";
 
                         param = param.Remove(0, channel.Length);
-                    }
+                    //}
 
                     string ss = param;
                     int size = ss.Length / MAX_MSG_LENGTH;
@@ -1096,9 +1101,11 @@ namespace FurkiebotCMR {
             string op = input[1];
             string chan = "";
             if (input.Length > 2) {
-                chan = input[2];
+                chan = input[2].Trim();
             }
-
+            if (chan.ToLower() == BOT_NAME.ToLower()) { //allows furkiebot to consider PM's as a "channel"
+                chan = nick;
+            }
 
 
 
@@ -1733,6 +1740,13 @@ namespace FurkiebotCMR {
                     case ":.molly":
                         Msg(chan, "༼ つ ◕_◕ ༽つMOLLY ༼ つ ◕_◕ ༽つ");
                         break;
+                    case ":.pastas":
+                    case ":.pasta":
+                        PastaNoParam(nick, chan);
+                        break;
+                    case ":.test":
+                        Msg(chan, "testing newline \n testing 2ndline");
+                        break;
 
                 }
             }
@@ -2245,7 +2259,10 @@ namespace FurkiebotCMR {
 
                     //case ":.test":
                     //    break;
-
+                    case ":.pastas":
+                    case ":.pasta": //pasta with parameters
+                        PastaParam(nick, chan, parameter);
+                        break;
                     #region .slap
                     case ":.slap": //A stupid command nobody asked for
                         Slap(nick, chan, parameter);
@@ -2507,6 +2524,104 @@ namespace FurkiebotCMR {
 
 
 
+        private void PastaParam(string nick, string chan, string target) {
+            int allowedPastas = 2;
+            if (nick.ToLower() != lastPastaer.ToLower()) { //reset the slap limit because someone else slapped.
+                lastPastaer = nick;
+                repeatPastas = 0;
+            } else {    //increment slap count from same user.
+                repeatPastas++;
+            }
+
+
+            if (userlist.ContainsKey(target.ToLower())) {
+                target = userlist[target.ToLower()].ircname;
+            }
+
+
+            if (repeatPastas < allowedPastas) {
+                string pastafile = "";
+                if (File.Exists("ParamPastas.txt")) {
+                    pastafile = "ParamPastas.txt";
+                } else if (File.Exists("..\\ParamPastas.txt")) {
+                    pastafile = "..\\ParamPastas.txt";
+                } else if (File.Exists("..\\..\\ParamPastas.txt")) {
+                    pastafile = "..\\..\\ParamPastas.txt";
+                } else if (File.Exists("..\\..\\..\\ParamPastas.txt")) {
+                    pastafile = "..\\..\\..\\ParamPastas.txt";
+                } else if (File.Exists("..\\..\\..\\..\\ParamPastas.txt")) {
+                    pastafile = "..\\..\\..\\..\\ParamPastas.txt";
+                } else {
+                    Console.WriteLine("ParamPastas.txt not found!");
+                    return;
+                }
+                string[] lines = File.ReadAllLines(pastafile);
+
+                Random r = new Random();
+                int choice = 1 + r.Next(lines.Length - 1);
+                while (lines[choice - 1].Trim() != "") {
+                    choice--;
+                    if (choice == 0) {
+                        choice = 1 + r.Next(lines.Length - 1);
+                    }
+                }
+                while (choice < lines.Length && lines[choice].Trim() != "") {
+                    lines[choice] = lines[choice].Replace("[S]", target).Replace("[TODAY]", DateTime.Now.ToString("M/d/yyyy")).Replace("[N]", nick);
+                    Msg(chan, lines[choice]);
+                    choice++;
+                }
+            }
+        }
+
+
+
+
+        private void PastaNoParam(string nick, string chan) {
+            int allowedPastas = 2;
+            if (nick.ToLower() != lastPastaer.ToLower()) { //reset the slap limit because someone else slapped.
+                lastPastaer = nick;
+                repeatPastas = 0;
+            } else {    //increment slap count from same user.
+                repeatPastas++;
+            }
+
+
+            if (repeatPastas < allowedPastas) {
+                string pastafile = "";
+                if (File.Exists("Pastas.txt")) {
+                    pastafile = "Pastas.txt";
+                } else if (File.Exists("..\\Pastas.txt")) {
+                    pastafile = "..\\Pastas.txt";
+                } else if (File.Exists("..\\..\\Pastas.txt")) {
+                    pastafile = "..\\..\\Pastas.txt";
+                } else if (File.Exists("..\\..\\..\\Pastas.txt")) {
+                    pastafile = "..\\..\\..\\Pastas.txt";
+                } else if (File.Exists("..\\..\\..\\..\\Pastas.txt")) {
+                    pastafile = "..\\..\\..\\..\\Pastas.txt";
+                } else {
+                    Console.WriteLine("Pastas.txt not found!");
+                    return;
+                }
+                string[] lines = File.ReadAllLines(pastafile);
+
+                Random r = new Random();
+                int choice = 1 + r.Next(lines.Length - 1);
+                while (lines[choice - 1].Trim() != "") {
+                    choice--;
+                    if (choice == 0) {
+                        choice = 1 + r.Next(lines.Length - 1);
+                    }
+                }
+                while (choice < lines.Length && lines[choice].Trim() != "") {
+                    Msg(chan, lines[choice].Replace("[TODAY]", DateTime.Now.ToString("M/d/yyyy")).Replace("[N]", nick));
+                    choice++;
+                }
+            }
+        }
+
+
+
+
         /// <summary>
         /// Slaps the specified nickname.
         /// </summary>
@@ -2522,7 +2637,7 @@ namespace FurkiebotCMR {
             } else {    //increment slap count from same user.
                 repeatSlaps++;
             }
-
+            
             if (repeatSlaps < allowedSlaps) {
                 Random r = new Random();
                 int choice = r.Next(18);
@@ -2536,14 +2651,14 @@ namespace FurkiebotCMR {
                     nameToSlap = nickname;
 
                 } else if (nameToSlap.ToLower() == "glados") {      //they told furkiebot to slap GLaDOS
-                    Msg(chan, "Why would I slap my true love?");
-                    Msg(chan, "" + (char)1 + @"ACTION smacks " + nickname + ". " + (char)1 + "Why would you even suggest that, you heartless shell of a person?");
+                    Msg(chan, ACT + @"ACTION angrily beats " + nickname + " with a frozen drumstick." + ACT);
+                    Msg(chan, "Why would you even suggest that, you heartless shell of a person?");
 
                 } else if (nameToSlap == "me" || nickname.ToLower() == nameToSlap.ToLower()) {  //person is trying to slap themselves.
-                    Msg(chan, "" + (char)1 + @"ACTION uses " + nickname + "'s own hands to slap himself. " + (char)1 + "STOP HITTING YOURSELF, STOP HITTING YOURSELF!");
+                    Msg(chan, ACT + @"ACTION uses " + nickname + "'s own hands to slap himself. \"STOP HITTING YOURSELF, STOP HITTING YOURSELF!\"" + ACT);
 
                 } else if (IsAdmin(nameToSlap.ToLower(), nickname)) {   //trying to slap an admin
-                    Msg(chan, "" + (char)1 + @"ACTION slaps " + nickname + ". " + (char)1 + "Don't be like that!");
+                    Msg(chan, ACT + @"ACTION slaps " + nickname + ". Don't be like that!" + ACT);
 
 
 
@@ -2551,7 +2666,7 @@ namespace FurkiebotCMR {
 
                     switch (choice) {
                         case 0:
-                            Msg(chan, "" + (char)1 + @"ACTION slaps " + nameToSlap + " with " + nickname + "'s favorite game console." + (char)1);
+                            Msg(chan, ACT + @"ACTION slaps " + nameToSlap + " with " + nickname + "'s favorite game console." + ACT);
                             break;
                         case 1:
                             if (IsAdmin(nickname.ToLower(), nickname)) {
@@ -2562,14 +2677,14 @@ namespace FurkiebotCMR {
 
                             break;
                         case 2:
-                            Msg(chan, "" + (char)1 + @"ACTION slaps " + nameToSlap + " around, just a little." + (char)1);
+                            Msg(chan, ACT + @"ACTION slaps " + nameToSlap + " around, just a little." + ACT);
                             break;
                         case 3:
-                            Msg(chan, "" + (char)1 + @"ACTION slaps " + nameToSlap + " with vigor." + (char)1);
+                            Msg(chan, ACT + @"ACTION slaps " + nameToSlap + " with vigor." + ACT);
                             break;
                         case 4:
                             if (IsAdmin(nickname.ToLower(), nickname)) {
-                                Msg(chan, "" + (char)1 + @"ACTION slaps " + nameToSlap + " with his cold, metal bot-hand" + (char)1);
+                                Msg(chan, ACT + @"ACTION slaps " + nameToSlap + " with his cold, metal bot-hand" + ACT);
                             } else {
                                 Msg(chan, "Only cool people are allowed to .slap people. Go slap yourself, " + nickname + ".");
                             }
@@ -2578,26 +2693,26 @@ namespace FurkiebotCMR {
                             if (IsAdmin(nickname.ToLower(), nickname)) {
                                 goto case 6;
                             } else {
-                                Msg(chan, "" + (char)1 + @"ACTION slaps " + nickname + ". BE NICE." + (char)1);
+                                Msg(chan, ACT + @"ACTION slaps " + nickname + ". BE NICE." + ACT);
                             }
                             break;
                         case 6:
-                            Msg(chan, "" + (char)1 + @"ACTION slaps " + nameToSlap + " around with a trashbag." + (char)1);
+                            Msg(chan, ACT + @"ACTION slaps " + nameToSlap + " around with a trashbag." + ACT);
                             break;
                         case 7:
-                            Msg(chan, "" + (char)1 + @"ACTION winds up for a hefty open-handed smack to " + nameToSlap + "'s face." + (char)1);
+                            Msg(chan, ACT + @"ACTION winds up for a hefty open-handed smack to " + nameToSlap + "'s face." + ACT);
                             break;
                         case 8:
-                            Msg(chan, "" + (char)1 + @"ACTION slaps " + nameToSlap + " playfully on the butt." + (char)1);
+                            Msg(chan, ACT + @"ACTION slaps " + nameToSlap + " playfully on the butt." + ACT);
                             break;
                         case 9:
-                            Msg(chan, "" + (char)1 + @"ACTION slaps " + nameToSlap + " lazily. You can tell he's not that into it though." + (char)1);
+                            Msg(chan, ACT + @"ACTION slaps " + nameToSlap + " lazily. You can tell he's not that into it though." + ACT);
                             break;
                         case 10:
-                            Msg(chan, "" + (char)1 + @"ACTION stops to ponder the meaning of life. What does it all mean? Why do people want him to slap " + nameToSlap + "???" + (char)1);
+                            Msg(chan, ACT + @"ACTION stops to ponder the meaning of life. What does it all mean? Why do people want him to slap " + nameToSlap + "???" + ACT);
                             break;
                         case 11:
-                            Msg(chan, "" + (char)1 + @"ACTION refuses. " + nameToSlap + " would like that way too much..." + (char)1);
+                            Msg(chan, ACT + @"ACTION refuses. " + nameToSlap + " would like that way too much..." + ACT);
                             break;
                         case 12:
                             Msg(chan, "Gross. I'm not touching that");
@@ -2610,18 +2725,18 @@ namespace FurkiebotCMR {
                             }
                             break;
                         case 14:
-                            Msg(chan, "" + (char)1 + "ACTION chants: \"He's the F to the U, R-K-I-E-Bot, FurkieBot can slap you with just a thought.\"");
-                            Msg(chan, "" + (char)1 + @"ACTION smacks " + nameToSlap + " with a resounding thud on the last note of the cheer." + (char)1);
+                            Msg(chan, ACT + "ACTION chants: \"He's the F to the U, R-K-I-E-Bot, FurkieBot can slap you with just a thought.\"");
+                            Msg(chan, ACT + @"ACTION smacks " + nameToSlap + " with a resounding thud on the last note of the cheer." + ACT);
                             break;
                         case 15:
-                            Msg(chan, "" + (char)1 + @"ACTION ༼ つ ◕_◕ ༽つMOLLY ༼ つ ◕_◕ ༽つ" + (char)1);
+                            Msg(chan, ACT + @"ACTION ༼ つ ◕_◕ ༽つMOLLY ༼ つ ◕_◕ ༽つ" + ACT);
                             break;
                         case 16:
                             Msg(chan, "You do not have sufficient permissions to perform this action. You may need to run the program again with administrative rights.");
                             break;
                         case 17:
                             Msg(chan, nameToSlap + ", I THOUGHT YOU LOVED ME!");
-                            Msg(chan, "" + (char)1 + @"ACTION smacks " + nameToSlap + " while sobbing uncontrollably." + (char)1);
+                            Msg(chan, ACT + @"ACTION smacks " + nameToSlap + " while sobbing uncontrollably." + ACT);
                             break;
                     }
                 }
@@ -2632,7 +2747,7 @@ namespace FurkiebotCMR {
 
 
             if (repeatSlaps == allowedSlaps - 1) {
-                Msg(chan, "" + (char)1 + @"ACTION slaps " + nickname + " as well, he better not be abusing .slap!" + (char)1);
+                Msg(chan, ACT + @"ACTION slaps " + nickname + " as well, he better not be abusing .slap!" + ACT);
             }
         } /* Slap */
 
