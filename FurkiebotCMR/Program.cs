@@ -93,9 +93,9 @@ namespace FurkiebotCMR {
         //public const string MAIN_CHAN = "#dustforce";
         //public const string CMR_CHAN = "#DFcmr";
 
-        public const string BOT_NAME = "FurkieBot_";
-        public const string MAIN_CHAN = "#dustforcee";
-        public const string CMR_CHAN = "#DFcmrr";
+        public const string BOT_NAME = "FurkieBot";
+        public const string MAIN_CHAN = "#dustforce";
+        public const string CMR_CHAN = "#DFcmr";
 
 
         public const string DATA_PATH = @"C:\CMR\Data\";
@@ -107,16 +107,40 @@ namespace FurkiebotCMR {
         private Thread busterThread;
 
 
+        /// <summary>
+        /// The last slapper
+        /// </summary>
         private string lastSlapper = "";
+        /// <summary>
+        /// The number of times the last slap requester has requested a slap in a row.
+        /// </summary>
         private int repeatSlaps = 0;
+
+        /// <summary>
+        /// The last person to request a pasta
+        /// </summary>
         private string lastPastaer = "";
+        /// <summary>
+        /// The number of times the last pasta requester has requested a pasta in a row.
+        /// </summary>
         private int repeatPastas = 0;
+
+
+        /// <summary>
+        /// How often for furkiebot to harass people for talking about him like he's not there.
+        /// </summary>
+        private const int MENTION_EVERY = 12;
+        /// <summary>
+        /// The number of times furkiebots name has been mentioned in chat.
+        /// </summary>
+        private int furkiebotMentionCount = 0;
+
+
 
         /// <summary>
         /// A flag that is set when FurkieBot itself modified the map file, so that the change handler knows not to reload anything.
         /// </summary>
         private bool ignoreChangedMaps = false;
-
 
         /// <summary>
         /// Notifies FurkieBot to reload the map data. This avoid Threading issues by ensuring critical data is only modified by the core FurkieBot thread.
@@ -143,9 +167,15 @@ namespace FurkiebotCMR {
         public readonly object _whoisLock = new Object();
 
 
+        /// <summary>
+        /// Locks multithreading down for the map update checking sections, so that the maplist cannot be used at the same time it is being updated.
+        /// </summary>
         public readonly object _updatingMapsLock = new Object();
 
 
+        /// <summary>
+        /// Locks multithreading down for the userlist update checking sections, so that the userlist cannot be used at the same time it is being updated.
+        /// </summary>
         public readonly object _updatingUserlistLock = new Object();
 
 
@@ -1217,7 +1247,20 @@ namespace FurkiebotCMR {
 
 
 
+            if (input.Length > 3 && (input[3].Contains("furkiebot") || input[3].Contains("Furkiebot") || input[3].Contains("FurkieBot"))) {
+                furkiebotMentionCount++;
+            } else if (input.Length > 4 && (input[4].Contains("furkiebot") || input[4].Contains("Furkiebot") || input[4].Contains("FurkieBot"))) {
+                furkiebotMentionCount++;
+            } else if (input.Length > 5 && (input[5].Contains("furkiebot") || input[5].Contains("Furkiebot") || input[5].Contains("FurkieBot"))) {
+                furkiebotMentionCount++;
+            }
 
+
+            if (furkiebotMentionCount > MENTION_EVERY) {
+                furkiebotMentionCount = 0;
+                Msg(chan, "DONT TALK ABOUT ME LIKE I'M NOT HERE!");
+            }
+            
 
 
 
