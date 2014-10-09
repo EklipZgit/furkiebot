@@ -2660,6 +2660,22 @@ namespace FurkiebotCMR {
                 } else if (IsAdmin(nameToSlap.ToLower(), nickname)) {   //trying to slap an admin
                     Msg(chan, ACT + @"ACTION slaps " + nickname + ". Don't be like that!" + ACT);
 
+                } else if (nameToSlap.ToLower() == "jerseymilker") {
+                    Msg(chan, ACT + @"ACTION slaps " + nickname + ". We all know JerseyMilker is slow as hell... No need to bully him because of it!" + ACT);
+
+
+
+
+
+
+
+                    // Look Ma! EklipZ style empty line spam!
+
+
+
+
+
+
 
 
                 } else {    //proceed with normal slap handling.
