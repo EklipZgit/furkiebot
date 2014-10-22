@@ -2,7 +2,9 @@ Make .acceptoverride command that admins can perform to force accept a map w/o b
 .startcmr and .cmr dont use correct map count?
 when race is open, .cmr should list race channel.
 DQ's
+Traxbuster stuff. Auto add maps from atlas.
 
+Fix so that pastas / etc can only be used on the first word in a parameter (no paragraphs as pasta names, etc)
 
 
 

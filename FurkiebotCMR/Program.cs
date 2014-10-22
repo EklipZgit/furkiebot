@@ -87,6 +87,7 @@ namespace FurkiebotCMR {
         public static string SEP = ColourChanger(" | ", "07"); //The orange | seperator also used by GLaDOS
         public const string MAPS_PATH = @"C:\CMR\Maps\";
         public const char ACT = (char)1;
+        public const string MOLLY = "༼ つ ◕_◕ ༽つ MOLLY ༼ つ ◕_◕ ༽つ";
 
 
         //public const string BOT_NAME = "FurkieBot";
@@ -1244,25 +1245,10 @@ namespace FurkiebotCMR {
 
 
 
+            CheckInput(chan, nick, input, data);
 
-
-
-            if (input.Length > 3 && (input[3].Contains("furkiebot") || input[3].Contains("Furkiebot") || input[3].Contains("FurkieBot"))) {
-                furkiebotMentionCount++;
-            } else if (input.Length > 4 && (input[4].Contains("furkiebot") || input[4].Contains("Furkiebot") || input[4].Contains("FurkieBot"))) {
-                furkiebotMentionCount++;
-            } else if (input.Length > 5 && (input[5].Contains("furkiebot") || input[5].Contains("Furkiebot") || input[5].Contains("FurkieBot"))) {
-                furkiebotMentionCount++;
-            }
-
-
-            if (furkiebotMentionCount > MENTION_EVERY) {
-                furkiebotMentionCount = 0;
-                Msg(chan, "DONT TALK ABOUT ME LIKE I'M NOT HERE!");
-            }
+               
             
-
-
 
             string command = ""; //grab the command sent
 
@@ -1721,11 +1707,13 @@ namespace FurkiebotCMR {
                         if (!hype) {
                             Msg(chan, "GET HYPE!!!!!");
                             hype = true;
+                        } else {
+                            Msg(chan, "THE HYPE IS REAL!");
                         }
                         break;
                     case ":.unhype":
                         if (hype) {
-                            Msg(chan, "Aww :c hype is kill");
+                            Msg(chan, "Aww :c");
                             hype = false;
                         }
                         break;
@@ -1743,10 +1731,10 @@ namespace FurkiebotCMR {
                         break;
                     #region PING
                     case ":.ping":
-                        Msg(chan, "PONG");
+                        Msg(chan, "pong");
                         break;
                     case ":.pong":
-                        Msg(chan, "PING");
+                        Msg(chan, "ping");
                         break;
                     #endregion
                     case ":.updatebot": //doesn't actually update anything, just shuts down Furkiebot with a fancy update message, I always whisper this because it would look stupid to type a command like this in channel lol
@@ -1781,12 +1769,12 @@ namespace FurkiebotCMR {
                         Msg(chan, trustedList);
                         break;
                     case ":.molly":
-                        Msg(chan, "༼ つ ◕_◕ ༽つMOLLY ༼ つ ◕_◕ ༽つ");
+                        Msg(chan, MOLLY);
                         break;
-                    case ":.pastas":
-                    case ":.pasta":
-                        PastaNoParam(nick, chan);
-                        break;
+                    //case ":.pastas":
+                    //case ":.pasta":
+                    //    PastaNoParam(nick, chan);
+                    //    break;
                     case ":.test":
                         Msg(chan, "testing newline \n testing 2ndline");
                         break;
@@ -1799,7 +1787,7 @@ namespace FurkiebotCMR {
 
 
 
-
+            
 
 
             string parameter = "";
@@ -2042,7 +2030,7 @@ namespace FurkiebotCMR {
                         Console.WriteLine("Nickname: \t" + nick);
                         if (IsAdmin(nickLower, nick)) {
                             Console.WriteLine("chan: \t" + chan);
-                            if (chan == realRacingChan || StringCompareNoCaps(chan, BOT_NAME)) //Command only works in racing channel
+                            if (chan == realRacingChan || StringCompareNoCaps(chan, nick)) //Command only works in racing channel
                                 {
                                 Console.WriteLine("CMR status: \t" + cmrStatus);
                                 if (cmrStatus == "racing") //Command only works if CMR is open
@@ -2282,14 +2270,16 @@ namespace FurkiebotCMR {
                         break;
 
                     case ":.saydf": //Can be used to broadcast a message to the mainchannel by whispering this command to FurkieBot
-                        if (IsAdmin(nickLower, nick) && op == "PRIVMSG" && StringCompareNoCaps(chan, BOT_NAME)) {
+                        Console.WriteLine("In .saydf  Op: " + op + ", chan: " + chan);
+                        if (IsAdmin(nickLower, nick) && op == "PRIVMSG" && StringCompareNoCaps(chan, nick)) {
+                            Console.WriteLine("Inside the .saydf if ????");
                             Msg(mainchannel, parameter);
                             Msg(cmrchannel, parameter);
                         }
                         break;
 
                     case ":.sayracechan": //Can be used to broadcast a message to the racechannel by whispering this command to FurkieBot
-                        if (IsAdmin(nickLower, nick) && op == "PRIVMSG" && StringCompareNoCaps(chan, BOT_NAME)) {
+                        if (IsAdmin(nickLower, nick) && op == "PRIVMSG" && StringCompareNoCaps(chan, nick)) {
                             Msg(realRacingChan, parameter);
                         }
                         break;
@@ -2302,10 +2292,10 @@ namespace FurkiebotCMR {
 
                     //case ":.test":
                     //    break;
-                    case ":.pastas":
-                    case ":.pasta": //pasta with parameters
-                        PastaParam(nick, chan, parameter);
-                        break;
+                    //case ":.pastas":
+                    //case ":.pasta": //pasta with parameters
+                    //    PastaParam(nick, chan, parameter);
+                    //    break;
                     #region .slap
                     case ":.slap": //A stupid command nobody asked for
                         Slap(nick, chan, parameter);
@@ -2320,6 +2310,25 @@ namespace FurkiebotCMR {
                 }
             }
             return shouldRun;
+        }
+
+        private void CheckInput(string chan, string nick, string[] input, string data) {
+            //FurkieBot responding to people talking about him
+            if ((input.Length > 3 && (input[3].ToLower().Contains("furkiebot"))) || (input.Length > 4 && (input[4].ToLower().Contains("furkiebot"))) || (input.Length > 5 && (input[5].ToLower().Contains("furkiebot")))) 
+            {
+                furkiebotMentionCount++;
+            }
+            if (furkiebotMentionCount > MENTION_EVERY) {
+                furkiebotMentionCount = 0;
+                Msg(chan, "DONT TALK ABOUT ME LIKE I'M NOT HERE!");
+            }
+
+
+
+            ////FurkieBot responding to molly mentions
+            //if (input.Length > 4 && (input[4].ToLower().Contains("molly"))) {
+            //    Msg(chan, MOLLY);
+            //}
         }
 
         private void StartCmr() {
@@ -2698,7 +2707,7 @@ namespace FurkiebotCMR {
                     Msg(chan, "Why would you even suggest that, you heartless shell of a person?");
 
                 } else if (nameToSlap == "me" || nickname.ToLower() == nameToSlap.ToLower()) {  //person is trying to slap themselves.
-                    Msg(chan, ACT + @"ACTION uses " + nickname + "'s own hands to slap himself. \"STOP HITTING YOURSELF, STOP HITTING YOURSELF!\"" + ACT);
+                    Msg(chan, ACT + @"ACTION uses " + nickname + "'s own hands to slap them. \"STOP HITTING YOURSELF, STOP HITTING YOURSELF!\"" + ACT);
 
                 } else if (IsAdmin(nameToSlap.ToLower(), nickname)) {   //trying to slap an admin
                     Msg(chan, ACT + @"ACTION slaps " + nickname + ". Don't be like that!" + ACT);
@@ -2709,7 +2718,6 @@ namespace FurkiebotCMR {
 
 
                 } else {    //proceed with normal slap handling.
-
                     switch (choice) {
                         case 0:
                             Msg(chan, ACT + @"ACTION slaps " + nameToSlap + " with " + nickname + "'s favorite game console." + ACT);
@@ -2730,7 +2738,7 @@ namespace FurkiebotCMR {
                             break;
                         case 4:
                             if (IsAdmin(nickname.ToLower(), nickname)) {
-                                Msg(chan, ACT + @"ACTION slaps " + nameToSlap + " with his cold, metal bot-hand" + ACT);
+                                Msg(chan, ACT + @"ACTION slaps " + nameToSlap + " with his cold, metal bot-hand." + ACT);
                             } else {
                                 Msg(chan, "Only cool people are allowed to .slap people. Go slap yourself, " + nickname + ".");
                             }
@@ -2749,7 +2757,7 @@ namespace FurkiebotCMR {
                             Msg(chan, ACT + @"ACTION winds up for a hefty open-handed smack to " + nameToSlap + "'s face." + ACT);
                             break;
                         case 8:
-                            Msg(chan, ACT + @"ACTION slaps " + nameToSlap + " playfully on the butt." + ACT);
+                            Msg(chan, ACT + @"ACTION smacks " + nameToSlap + " playfully on the butt." + ACT);
                             break;
                         case 9:
                             Msg(chan, ACT + @"ACTION slaps " + nameToSlap + " lazily. You can tell he's not that into it though." + ACT);
@@ -2761,7 +2769,7 @@ namespace FurkiebotCMR {
                             Msg(chan, ACT + @"ACTION refuses. " + nameToSlap + " would like that way too much..." + ACT);
                             break;
                         case 12:
-                            Msg(chan, "Gross. I'm not touching that");
+                            Msg(chan, "Gross. I'm not touching that.");
                             break;
                         case 13:
                             if (IsAdmin(nickname.ToLower(), nickname)) {
@@ -2771,11 +2779,11 @@ namespace FurkiebotCMR {
                             }
                             break;
                         case 14:
-                            Msg(chan, ACT + "ACTION chants: \"He's the F to the U, R-K-I-E-Bot, FurkieBot can slap you with just a thought.\"");
+                            Msg(chan, ACT + "ACTION chants: \"He's the F to the U, R-K-I-E-Bot, FurkieBot can slap you with just a thought.\"" + ACT);
                             Msg(chan, ACT + @"ACTION smacks " + nameToSlap + " with a resounding thud on the last note of the cheer." + ACT);
                             break;
                         case 15:
-                            Msg(chan, ACT + @"ACTION ༼ つ ◕_◕ ༽つMOLLY ༼ つ ◕_◕ ༽つ" + ACT);
+                            Msg(chan, MOLLY);
                             break;
                         case 16:
                             Msg(chan, "You do not have sufficient permissions to perform this action. You may need to run the program again with administrative rights.");
@@ -2790,10 +2798,8 @@ namespace FurkiebotCMR {
                 return;
             }
 
-
-
             if (repeatSlaps == allowedSlaps - 1) {
-                Msg(chan, ACT + @"ACTION slaps " + nickname + " as well, he better not be abusing .slap!" + ACT);
+                Msg(chan, ACT + @"ACTION slaps " + nickname + " as well, they better not be abusing .slap!" + ACT);
             }
         } /* Slap */
 
