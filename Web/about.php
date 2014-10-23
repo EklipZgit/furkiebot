@@ -69,7 +69,7 @@
 			<h3 class="ml">Maps</h3>
 			<p class="ml">
 				<li class="ml">
-				Anybody can make a CMR map! By making maps for the CMR, you get the advantage of knowing the maps you made ahead of time for the race! <b><a href="testing.php">You must first read the Map Making rules carefully</a></b>, however. Your map will not be accepted if you do not follow the rules!
+				Anybody can make a CMR map! By making maps for the CMR, you get the advantage of knowing the maps you made ahead of time for the race! <b><a href="tester.php">You must first read the Map Making rules carefully</a></b>, however. Your map will not be accepted if you do not follow the rules!
 				</li>
 
 				<li class="ml">
