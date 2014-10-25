@@ -1326,7 +1326,7 @@ namespace FurkiebotCMR {
                                         + ColourChanger(nextCmrD + " days, "
                                         + nextCmrH + " hours, "
                                         + nextCmrM + " minutes and "
-                                        + nextCmrS + " seconds", "03") + ". The actual " + BoldText("starts") + " " + ColourChanger("30 minutes","04") + " after this.");
+                                        + nextCmrS + " seconds", "03") + ". The race " + BoldText("starts") + " " + ColourChanger("30 minutes","04") + " after initiating.");
                                 }
                                 if (DateTime.Now > cmrday) {
                                     if (IsAdmin(nickLower, nick)) {
