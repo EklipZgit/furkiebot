@@ -1322,11 +1322,11 @@ namespace FurkiebotCMR {
                                     Msg(chan, "I get it, I can start a racechannel very soon. Jeez, stop spamming already (??;)");
                                 }
                                 if (DateTime.Now < cmrday && DateTime.Now < stopTheSpam) {
-                                    Msg(chan, "We have enough maps to start Custom Map Race " + cmrId + ", race can be initiated in "
+                                    Msg(chan, "We have enough maps to start Custom Map Race " + cmrId + ", race can be " + BoldText("initiated") + " in "
                                         + ColourChanger(nextCmrD + " days, "
                                         + nextCmrH + " hours, "
                                         + nextCmrM + " minutes and "
-                                        + nextCmrS + " seconds", "03") + ".");
+                                        + nextCmrS + " seconds", "03") + ". The actual " + BoldText("starts") + " " + ColourChanger("30 minutes","04") + " after this.");
                                 }
                                 if (DateTime.Now > cmrday) {
                                     if (IsAdmin(nickLower, nick)) {
