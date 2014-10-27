@@ -1,4 +1,4 @@
-**This Saturday, October 11th at [6:30 pm GMT (Local Time?)](http://www.timebie.com/std/gmt.php?q=18.5) we will be hosting the 39th Dustforce Custom Map Race!**
+**This Saturday, November 1st at [6:30 pm GMT (Local Time?)](http://www.timebie.com/std/gmt.php?q=18.5) we will be hosting the 40th Dustforce Custom Map Race!**
 
 |Rank|Name|Time|Comment|Rating
 |:-|:-|:-|:-|:-|
@@ -31,9 +31,8 @@ Hope to see you all there!
 
 -----
 
-Approved maps (0 / 7+): 
+To see the Approved Maps list: Join [IRC](http://client01.chat.mibbit.com/#dustforce@irc2.speedrunslive.com) and type ".maps".
 
-Join [IRC](http://client01.chat.mibbit.com/#dustforce@irc2.speedrunslive.com). and type ".maps" to see the list of maps.
 ------
 Previous CMR Threads:
 
@@ -53,3 +52,4 @@ Previous CMR Threads:
 * [CMR #36](http://redd.it/2gp5yq)
 * [CMR #37](http://redd.it/2h9hbs)
 * [CMR #38](http://redd.it/2hnatn)
+* [CMR #39](http://redd.it/2ib860)
