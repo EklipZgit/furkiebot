@@ -29,6 +29,7 @@ using Newtonsoft.Json.Linq;
 using System.Threading;
 using System.Xml;
 using TraxBusterCMR;
+using AtlasTools;
 
 /// <summary>
 /// The Furkiebot namespace.
@@ -94,18 +95,24 @@ namespace FurkiebotCMR {
         //public const string MAIN_CHAN = "#dustforce";
         //public const string CMR_CHAN = "#DFcmr";
 
-        public const string BOT_NAME = "FurkieBot";
-        public const string MAIN_CHAN = "#dustforce";
-        public const string CMR_CHAN = "#DFcmr";
+        public const string BOT_NAME = "FurkieBot_";
+        public const string MAIN_CHAN = "#dustforcee";
+        public const string CMR_CHAN = "#DFcmrr";
 
 
         public const string DATA_PATH = @"C:\CMR\Data\";
+        public const string PASS_PATH = @"C:\CMR\Data\Password.txt";
         public const int MAX_MSG_LENGTH = 450;
 
         public const int MIN_MAPS = 7;
 
         private TraxBuster buster;
         private Thread busterThread;
+
+        private AtlasChecker checker;
+
+        private int acceptedCount;
+        private int pendingCount;
 
 
         /// <summary>
@@ -165,11 +172,12 @@ namespace FurkiebotCMR {
         /// <summary>
         /// Locks multithreading down for the Whois checking sections, so that no threads can be waiting on whois's at once.
         /// </summary>
-        public readonly object _whoisLock = new Object();
+        private readonly object _whoisLock = new Object();
 
 
         /// <summary>
         /// Locks multithreading down for the map update checking sections, so that the maplist cannot be used at the same time it is being updated.
+        /// Public so that outside sources who alter maps and then set externally can lock this.
         /// </summary>
         public readonly object _updatingMapsLock = new Object();
 
@@ -177,7 +185,10 @@ namespace FurkiebotCMR {
         /// <summary>
         /// Locks multithreading down for the userlist update checking sections, so that the userlist cannot be used at the same time it is being updated.
         /// </summary>
-        public readonly object _updatingUserlistLock = new Object();
+        private readonly object _updatingUserlistLock = new Object();
+
+
+        private readonly object _sendingMessageLock = new Object();
 
 
 
@@ -231,15 +242,6 @@ namespace FurkiebotCMR {
 
 
 
-        //prints a string to console.
-        public static void p(string toPrint) {
-            Console.WriteLine(toPrint);
-        }
-
-
-
-
-
 
         /// <summary>
         /// Initializes a new instance of the <see cref="FurkieBot"/> class.
@@ -286,8 +288,8 @@ namespace FurkiebotCMR {
             countdown = new Stopwatch(); //Timer used to countdown a race
 
 
-            cmrtime = new TimeSpan(10, 30, 0); //At what time (local) it is possible to start a CMR, 8:30pm equals 6:30pm GMT for me  EDIT now 10:30 AM PST for 6:30 GMT
-            cmrtimeString = @"10:30:00"; //make sure this equals the time on TimeSpan cmrtime
+            cmrtime = new TimeSpan(10, 30, 0); //At what time (local) it is possible to start a CMR, 8:30pm equals 6:30pm GMT for me  EDIT now 11:30 AM PST for 6:30 GMT
+            cmrtimeString = @"11:30:00"; //make sure this equals the time on TimeSpan cmrtime
 
 
 
@@ -337,6 +339,69 @@ namespace FurkiebotCMR {
             mapsWatcher.EnableRaisingEvents = true;
             userlistWatcher.EnableRaisingEvents = true;
         }
+
+
+
+
+        /// <summary>
+        /// Messages the racechan. Intended to be called by outside classes and threads to cause FurkieBot to notify the race channel about specific things.
+        /// </summary>
+        /// <param name="message">The message for the race channel</param>
+        public void MessageRacechan(string message) {
+            sendData("PRIVMSG", " " + realRacingChan + " :" + message);
+        }
+
+
+
+
+        public Dictionary<string, MapData> GetMaps() {
+            if (this.mapsTemp != null) {
+                return new Dictionary<string, MapData>(this.mapsTemp);
+            } else {
+                return new Dictionary<string, MapData>(this.maps);
+            }
+        }
+
+
+        public void SetMaps(Dictionary<string, MapData> maps) {
+            lock (_updatingMapsLock) {
+                if (this.mapsTemp != null) {
+                    this.mapsTemp = maps;
+                } else {
+                    this.maps = maps;
+                }
+                WriteMaps(maps, cmrId);
+            }
+        }
+
+
+
+        public Dictionary<string, PlayerInfo> GetUsers() {
+            return new Dictionary<string, PlayerInfo>(this.userlist);
+        }
+
+
+        public void SetUsers(Dictionary<string, PlayerInfo> users) {
+            lock (_updatingUserlistLock) {
+                this.userlist = users;
+                WriteUsers();
+            }
+        }
+
+
+        public int PendingCount {
+            get {
+                return pendingCount;
+            }
+        }
+
+
+        public int AcceptedCount {
+            get {
+                return acceptedCount;
+            }
+        }
+
 
 
         /// <summary>
@@ -419,12 +484,14 @@ namespace FurkiebotCMR {
             int pendingcount = 0;
             foreach (KeyValuePair<string, MapData> entry in maps) {
                 if (entry.Value.accepted == false) {
-                    mapString += SEP + "\"";
-                    mapString += entry.Value.name;
-                    mapString += "\"";
+                    mapString += "\"" + entry.Value.name + "\"";
+                    mapString += SEP;
                     pendingcount++;
                     //toSay += "\" by " + entry.Value.author;       // TODO comment back in if we want authors in maplist.
                 }
+            }
+            if (pendingcount > 0) {
+                mapString = mapString.Substring(0, mapString.Length - SEP.Length);
             }
 
             toSay += pendingcount + " maps pending: " + mapString;
@@ -449,12 +516,15 @@ namespace FurkiebotCMR {
             int acceptedcount = 0;
             foreach (KeyValuePair<string, MapData> entry in maps) {
                 if (entry.Value.accepted == true) {
-                    mapString += SEP + "\"";
-                    mapString += entry.Value.name;
-                    mapString += "\"";
+                    mapString += "\"" + entry.Value.name + "\"";
+                    mapString += SEP;
                     acceptedcount++;
-                //toSay += "\" by " + entry.Value.author;       // TODO comment back in if we want authors in maplist.
+                    //toSay += "\" by " + entry.Value.author;       // TODO comment back in if we want authors in maplist.
                 }
+            }
+
+            if (acceptedcount > 0) {
+                mapString = mapString.Substring(0, mapString.Length - SEP.Length);
             }
 
             toSay += acceptedcount + " maps accepted: " + mapString;
@@ -521,8 +591,14 @@ namespace FurkiebotCMR {
         private Dictionary<string, MapData> getMaps(int cmrid) {
             lock (_updatingMapsLock) {
                 string mapsJsonPath = MAPS_PATH + cmrid + @"\maps.json";
+                int limit = 100;
+                int cur = 0;
                 if (File.Exists(mapsJsonPath)) {
-                    while (true) {
+                    while (true) { // loop waiting for file unlock
+                        cur++;
+                        if (cur > limit) {
+                            throw new Exception("Looped too long trying to load maps. Map file locked for too long?");
+                        }
                         try {
                             Console.WriteLine("Trying to load map file.");
                             string[] mapsarray = File.ReadAllLines(mapsJsonPath);
@@ -560,7 +636,8 @@ namespace FurkiebotCMR {
         /// </summary>
         private void SyncOtherTables() {
             dustforcelist = new Dictionary<string, PlayerInfo>();
-            foreach (KeyValuePair<string, PlayerInfo> entry in userlist) {
+            Dictionary<string, PlayerInfo> temp = (userlistTemp == null ? userlist : userlistTemp);
+            foreach (KeyValuePair<string, PlayerInfo> entry in temp) {
                 if (!dustforcelist.ContainsKey(entry.Value.dustforcename)) {
                     dustforcelist.Add(entry.Value.dustforcename, entry.Value);
                 }
@@ -602,24 +679,35 @@ namespace FurkiebotCMR {
                     Dictionary<string, MapData> tocheck = getMaps(cmrId);
                     Dictionary<string, MapData> tocompare = maps;
 
-                    if (mapsTemp != null) { tocompare = mapsTemp; }
-
+                    if (mapsTemp != null) { tocompare = mapsTemp; } //in case we stored map changes in between furkiebot loop executions.
+                    acceptedCount = 0;
+                    pendingCount = 0;
                     foreach (KeyValuePair<string, MapData> entry in tocheck) {     // Notifies IRC about any state changes that have happened.
                         string key = entry.Key;
                         MapData data = entry.Value;
+                        if (entry.Value.accepted) {
+                            acceptedCount++;
+                        } else {
+                            pendingCount++;
+                        }
                         if (tocompare.ContainsKey(key)) {
                             if (tocompare[key].accepted == false && data.accepted == true) { // map has been approved.
+                                acceptedCount++;
+                                pendingCount--;
                                 string message = "Map approved: " + data.name + " by " + data.author;
                                 MsgChans(message);
                                 //NoticeTesters(message + ". http://eklipz.us.to/cmr/maptest.php");
                                 notifyReloadMaps = true;
                             } else if (tocompare[key].accepted == true && data.accepted == false) {  // map has been unapproved.
-                                string message = "Map removed from approved map list: " + data.name + " by " + data.author;
+                                pendingCount++;
+                                acceptedCount--;
+                                string message = "Map removed from approved map list: " + data.name + " by " + data.author + ", pending re-approval";
                                 MsgChans(message);
-                                NoticeTesters(message + ". You may approve it at http://eklipz.us.to/cmr/maptest.php");
+                                MsgTesters(message + ". You may approve it at http://eklipz.us.to/cmr/maptest.php");
                                 notifyReloadMaps = true;
                             }
                         } else { //Map is newly submitted
+                            pendingCount++;
                             string message = "New map submitted for testing: " + data.name + " by " + data.author;
                             MsgChans(message);
                             string safename = data.name.Replace(" ", "%20");
@@ -627,9 +715,10 @@ namespace FurkiebotCMR {
                             notifyReloadMaps = true;
                         }
                     }
-
-                    mapsTemp = tocheck; // update the maps list to the new one.
-                    Console.WriteLine("\nReloaded the map file.\n");
+                    if (notifyReloadMaps) {
+                        mapsTemp = tocheck; // update the maps list to the new one.
+                        Console.WriteLine("\nReloaded the map file.\n");
+                    }
                 } else {
                     Console.WriteLine("\n\n\nmaps is null. The fuck?\n\n");
                     maps = getMaps(cmrId);
@@ -660,9 +749,6 @@ namespace FurkiebotCMR {
                 }
             }
         }
-
-
-
 
 
 
@@ -700,52 +786,54 @@ namespace FurkiebotCMR {
         /// <param name="cmd">The command.</param>
         /// <param name="param">The parameter.</param>
         public void sendData(string cmd, string param) {
-            if (param == null) {
-                sw.WriteLine(cmd);
-                sw.Flush();
-                Console.WriteLine(cmd);
-            } else {
-                if (param.Length > MAX_MSG_LENGTH) //Makes sure to send multiple messages in case a message is too long for irc
+            lock (_sendingMessageLock) {
+                if (param == null) {
+                    sw.WriteLine(cmd);
+                    sw.Flush();
+                    Console.WriteLine(cmd);
+                } else {
+                    if (param.Length > MAX_MSG_LENGTH) //Makes sure to send multiple messages in case a message is too long for irc
                 {
-                    Console.WriteLine("TOO LONG, param = \"" + param + "\"");
-                    string channel = "";
-                    param = param.Trim();
-                    //if (param[0] == '#') {   //if message being sent to a channel, not a user
+                        Console.WriteLine("TOO LONG, param = \"" + param + "\"");
+                        string channel = "";
+                        param = param.Trim();
+                        //if (param[0] == '#') {   //if message being sent to a channel, not a user
                         channel = param.Substring(0, param.IndexOf(" ")) + " ";
 
                         param = param.Remove(0, channel.Length);
-                    //}
+                        //}
 
-                    string ss = param;
-                    int size = ss.Length / MAX_MSG_LENGTH;
-                    string[] newParam = new string[size + 1];
+                        string ss = param;
+                        int size = ss.Length / MAX_MSG_LENGTH;
+                        string[] newParam = new string[size + 1];
 
-                    for (int i = 0; i < size + 1; i++) {
-                        newParam[i] = ss.Substring(0, Math.Min(ss.Length, MAX_MSG_LENGTH - 50));
+                        for (int i = 0; i < size + 1; i++) {
+                            newParam[i] = ss.Substring(0, Math.Min(ss.Length, MAX_MSG_LENGTH - 50));
 
-                        if (i != size)
-                            ss = ss.Remove(0, MAX_MSG_LENGTH - 50);
+                            if (i != size)
+                                ss = ss.Remove(0, MAX_MSG_LENGTH - 50);
 
-                        if (i != 0) {
-                            string lastword = newParam[i - 1].Substring(newParam[i - 1].LastIndexOf(' ') + 1);
-                            string firstword = newParam[i].Substring(0, newParam[i].IndexOf(" "));
+                            if (i != 0) {
+                                string lastword = newParam[i - 1].Substring(newParam[i - 1].LastIndexOf(' ') + 1);
+                                string firstword = newParam[i].Substring(0, newParam[i].IndexOf(" "));
 
-                            if (lastword != "" && firstword != "") {
-                                newParam[i] = newParam[i].Insert(0, lastword);
-                                newParam[i - 1] = newParam[i - 1].Remove(MAX_MSG_LENGTH - 50 - (lastword.Length + 1), lastword.Length + 1);
+                                if (lastword != "" && firstword != "") {
+                                    newParam[i] = newParam[i].Insert(0, lastword);
+                                    newParam[i - 1] = newParam[i - 1].Remove(MAX_MSG_LENGTH - 50 - (lastword.Length + 1), lastword.Length + 1);
+                                }
+
                             }
-
                         }
-                    }
-                    for (int i = 0; i < size + 1; i++) {
-                        sw.WriteLine(cmd + " " + channel + newParam[i]);
+                        for (int i = 0; i < size + 1; i++) {
+                            sw.WriteLine(cmd + " " + channel + newParam[i]);
+                            sw.Flush();
+                            Console.WriteLine(cmd + " " + channel + newParam[i]);
+                        }
+                    } else {
+                        sw.WriteLine(cmd + " " + param);
                         sw.Flush();
-                        Console.WriteLine(cmd + " " + channel + newParam[i]);
+                        Console.WriteLine(cmd + " " + param);
                     }
-                } else {
-                    sw.WriteLine(cmd + " " + param);
-                    sw.Flush();
-                    Console.WriteLine(cmd + " " + param);
                 }
             }
         }  /* sendData() */
@@ -1290,8 +1378,9 @@ namespace FurkiebotCMR {
                     case ":.startcmr+": // Used for testing purposes, forces the start of a race without having to worry about the date and time, make sure to use this command when mainchannel is NOT #dustforce
                         if (IsAdmin(nickLower, nick)) {
                             cmrtime = DateTime.Now.TimeOfDay;
+                            goto case ":.startcmr";
                         }
-                        goto case ":.startcmr";
+                        break;
                     case ":.startcmr": //Opening that CMR hype
                         #region
                         if (cmrStatus == "closed") {
@@ -1322,16 +1411,15 @@ namespace FurkiebotCMR {
                                     Msg(chan, "I get it, I can start a racechannel very soon. Jeez, stop spamming already (??;)");
                                 }
                                 if (DateTime.Now < cmrday && DateTime.Now < stopTheSpam) {
-                                    Msg(chan, "We have enough maps to start Custom Map Race " + cmrId + ", race can be " + BoldText("initiated") + " in "
+                                    Msg(chan, "We have enough maps to start Custom Map Race " + cmrId + ", race channel can be " + BoldText("opened") + " in "
                                         + ColourChanger(nextCmrD + " days, "
                                         + nextCmrH + " hours, "
                                         + nextCmrM + " minutes and "
-                                        + nextCmrS + " seconds", "03") + ". The race " + BoldText("starts") + " " + ColourChanger("30 minutes","04") + " after initiating.");
+                                        + nextCmrS + " seconds", "03") + ". The race may be " + BoldText("started") + " " + ColourChanger("30 minutes","04") + " after it can be opened.");
                                 }
-                                if (DateTime.Now > cmrday) {
+                                if (DateTime.Now >= cmrday) {
                                     if (IsAdmin(nickLower, nick)) {
                                         StartCmr();
-                                        NotifyCmrStarting();
                                     } else {
                                         Msg(chan, "Only an Admin can start the race for now, please contact an admin to start the race.");
                                     }
@@ -1352,43 +1440,14 @@ namespace FurkiebotCMR {
                                     Msg(chan, "Custom Map Race " + cmrId + " has been cancelled by " + nick + ".");
                                     Msg(mainchannel, "Custom Map Race " + cmrId + " has been cancelled.");
                                     Msg(cmrchannel, "Custom Map Race " + cmrId + " has been cancelled.");
-                                    sendData("TOPIC", realRacingChan + " :" + ":Status: Cancelled | Game: Dustforce | Goal: Custom Map Race " + cmrId + ". Download maps at http://atlas.dustforce.com/tag/custom-map-race-" + cmrId);
                                     //for (int i = 0; i < CountEntrants(racers); i++)
                                     //{
                                     //    string name2DeVoice = racers.Rows[i]["Name"].ToString();
                                     //    sendData("MODE", realRacingChan + " -v " + name2DeVoice);
                                     //}
-                                    comNames = "CANCEL";
-                                    sendData("NAMES", realRacingChan);
-                                    sendData("MODE", realRacingChan + " +im");
-                                    racers.Clear();
+                                    EndCmr();
                                 } else {
                                     Msg(chan, "" + "A race can only be cancelled in the CMR racing channel " + realRacingChan);
-                                }
-                            }
-                        }
-                        break;
-                        #endregion
-
-                    case ":.closecmr":
-                        #region
-                        if (IsAdmin(nickLower, nick)) {
-                            if (cmrStatus == "open" || cmrStatus == "finished" || cmrStatus == "racing") {
-                                if (chan == realRacingChan) {
-                                    if (cmrStatus == "finished") {
-                                        cmrStatus = "closed";
-                                        Msg(chan, "Custom Map Race " + cmrId + " has been closed by " + nick + ".");
-                                        sendData("TOPIC", realRacingChan + " " + ":Status: Closed | Game: Dustforce | Goal: Custom Map Race " + cmrId + ". Download maps at http://atlas.dustforce.com/tag/custom-map-race-" + cmrId);
-                                        for (int i = 0; i < CountEntrants(); i++) {
-                                            string name2DeVoice = racers.Rows[i]["Name"].ToString();
-                                            sendData("MODE", realRacingChan + " -v " + name2DeVoice);
-                                        }
-                                        comNames = "CANCEL";
-                                        sendData("NAMES", realRacingChan);
-                                        sendData("MODE", realRacingChan + " +im");
-                                        racers.Clear();
-                                        buster.NotifyExit();
-                                    }
                                 }
                             }
                         }
@@ -1568,56 +1627,41 @@ namespace FurkiebotCMR {
                         #endregion
                         break;
 
+                    case ":.startrace":
                     case ":.go": //Starts race and timer
                         #region
-                        if (chan == realRacingChan) { 
-                            //Command only works in racing channel
-                            if (cmrStatus == "open") { 
-                                //Command only works if CMR is open
-                                if (CountEntrants() > 1) { 
-                                    //Command only works if there is at least 1 racer
-                                    if (ComfirmMassStatus(3)) { 
-                                        //Command only works if all racers have status on "ready"
-                                        cmrStatus = "racing";
-                                        Msg(chan, BoldText(ColourChanger("The race will begin in 10 seconds!", "04")));
-                                        bool five = false;
-                                        bool four = false;
-                                        bool three = false;
-                                        bool two = false;
-                                        bool one = false;
-                                        bool go = false;
-                                        countdown.Start();
-                                        while (!go) {
-                                            if (GetTime(countdown) == "00:00:05" && !five) {
-                                                Msg(chan, BoldText(ColourChanger("5", "04")));
-                                                five = true;
-                                            }
-                                            if (GetTime(countdown) == "00:00:06" && !four) {
-                                                Msg(chan, BoldText(ColourChanger("4", "04")));
-                                                four = true;
-                                            }
-                                            if (GetTime(countdown) == "00:00:07" && !three) {
-                                                Msg(chan, BoldText(ColourChanger("3", "04")));
-                                                three = true;
-                                            }
-                                            if (GetTime(countdown) == "00:00:08" && !two) {
-                                                Msg(chan, BoldText(ColourChanger("2", "04")));
-                                                two = true;
-                                            }
-                                            if (GetTime(countdown) == "00:00:09" && !one) {
-                                                Msg(chan, BoldText(ColourChanger("1", "04")));
-                                                one = true;
-                                            }
-                                            if (GetTime(countdown) == "00:00:10" && !go) {
-                                                StartRace(racers, stahpwatch);
-                                                Msg(chan, BoldText(ColourChanger("GO!", "04")));
-                                                sendData("TOPIC", realRacingChan + " " + ":Status: IN PROGRESS | Game: Dustforce | Goal: Custom Map Race " + cmrId + ". Download maps at http://atlas.dustforce.com/tag/custom-map-race-" + cmrId);
-                                                countdown.Stop();
-                                                go = true;
-                                            }
+                        if (chan == realRacingChan) { //Command only works in racing channel
+                            if (cmrStatus == "open") { //Command only works if CMR is open
+                                if (CountEntrants() > 1) { //Command only works if there is at least 1 racer
+                                    if (ComfirmMassStatus(3)) { //Command only works if all racers have status on "ready"
+                                        bool valid = true;
+                                        foreach (MapData md in maps.Values) {
+                                            if (md.id <= 0) valid = false;
                                         }
+                                        if (valid) {    // All maps have an atlas link recognized
+                                            checker.StopChecking();
+                                            cmrStatus = "racing";
+                                            Msg(chan, BoldText(ColourChanger("The race will begin in 10 seconds!", "04")));
+                                            Thread.Sleep(5000);
+                                            Msg(chan, BoldText(ColourChanger("5", "04")));
+                                            Thread.Sleep(990);
+                                            Msg(chan, BoldText(ColourChanger("4", "04")));
+                                            Thread.Sleep(990);
+                                            Msg(chan, BoldText(ColourChanger("3", "04")));
+                                            Thread.Sleep(990);
+                                            Msg(chan, BoldText(ColourChanger("2", "04")));
+                                            Thread.Sleep(990);
+                                            Msg(chan, BoldText(ColourChanger("1", "04")));
+                                            Thread.Sleep(990);
+                                            StartRace(racers, stahpwatch);
+                                            Msg(chan, BoldText(ColourChanger("GO!", "04")));
+                                            sendData("TOPIC", realRacingChan + " " + ":Status: IN PROGRESS | Game: Dustforce | Goal: Custom Map Race " + cmrId + ". Download maps at http://atlas.dustforce.com/tag/custom-map-race-" + cmrId);
+                                        } else {
+                                            Msg(chan, "There are still some maps whose atlas ID's have not been linked. Use .setmap <atlas ID #> <map name> or .removemap <mapname> to remove it from the race.");
+                                        }
+                                        
                                     } else {
-                                        Msg(chan, "" + "Not everyone is ready yet.");
+                                        Msg(chan, "Not everyone is ready yet.");
                                     }
                                 }
                             }
@@ -1683,11 +1727,13 @@ namespace FurkiebotCMR {
                                 Msg(chan, "Recording race...");
                                 RecordResultsReddit(cmrId);
                                 //RecordResultsJson(UpdateJsonToDtMaps(cmrId.ToString()), cmrId);
-                                Msg(chan, "Custom Map Race " + cmrId + " has been succesfully recorded!");
-
-                                cmrId++;
-                                ResetTesters();
-                                SetCMR(cmrId);
+                                cmrStatus = "closed";
+                                Msg(chan, "Custom Map Race " + cmrId + " has been succesfully recorded by " + nick + ".");
+                                sendData("TOPIC", realRacingChan + " " + ":Status: Closed | Game: Dustforce | Goal: Custom Map Race " + cmrId + ". Download maps at http://atlas.dustforce.com/tag/custom-map-race-" + cmrId);
+                                Msg(chan, "This channel will be cleared in 5 seconds.");
+                                Thread.Sleep(5000);
+                                EndCmr();
+                                ResetCmr();
                             }
                         }
                         #endregion
@@ -1878,10 +1924,10 @@ namespace FurkiebotCMR {
                             if (IsIdentified(nickLower, nick)) {
                                 if (StringCompareNoCaps(parameter, "on") || StringCompareNoCaps(parameter, "true")) {
                                     setUserNotify(nickLower, true);
-                                    Msg(chan, "You will be notified via IRC when the CMR channel opens.");
+                                    Msg(chan, nick + " will be notified via IRC when the CMR channel opens.");
                                 } else if (StringCompareNoCaps(parameter, "off") || StringCompareNoCaps(parameter, "false")) {
                                     setUserNotify(nickLower, false);
-                                    Msg(chan, "You will NOT be notified via IRC when the CMR channel opens.");
+                                    Msg(chan, nick + " will NOT be notified via IRC when the CMR channel opens.");
                                 } else {
                                     Msg(chan, "Syntax is \".notify " + BoldText("false/true") + "\"");
                                     break;
@@ -2312,6 +2358,21 @@ namespace FurkiebotCMR {
             return shouldRun;
         }
 
+
+
+        /// <summary>
+        /// Resets the CMR.
+        /// </summary>
+        private void ResetCmr() {
+            mapsTemp = null;
+            ResetTesters();
+            SetCMR(cmrId + 1);
+            maps = getMaps(cmrId);
+            notifyReloadMaps = false;
+        }
+
+
+
         private void CheckInput(string chan, string nick, string[] input, string data) {
             //FurkieBot responding to people talking about him
             if ((input.Length > 3 && (input[3].ToLower().Contains("furkiebot"))) || (input.Length > 4 && (input[4].ToLower().Contains("furkiebot"))) || (input.Length > 5 && (input[5].ToLower().Contains("furkiebot")))) 
@@ -2346,6 +2407,26 @@ namespace FurkiebotCMR {
             sendData("TOPIC", realRacingChan + " :" + ":Status: Entry Open | Game: Dustforce | Goal: Custom Map Race " + cmrId + ". Download maps at http://atlas.dustforce.com/tag/custom-map-race-" + cmrId);
             sendData("MODE", realRacingChan + " +t");
             Msg("TRAXBUSTER", ".join001 " + realRacingChan);
+            NotifyCmrStarting();
+            checker = new AtlasChecker(this);
+            checker.StartChecking();
+        }
+
+
+
+
+        private void EndCmr() {
+            comNames = "CANCEL";
+            sendData("NAMES", realRacingChan);
+            sendData("MODE", realRacingChan + " +im");
+            racers.Clear();
+            buster.NotifyExit();
+        }
+
+
+
+        private void StartRace() {
+            checker.StopChecking();
         }
 
 
@@ -2372,14 +2453,15 @@ namespace FurkiebotCMR {
             conf.nick = "TRAXBUSTER";
             conf.port = 6667;
             conf.server = "irc2.speedrunslive.com";
-            conf.pass = "ilovecalistuslol";
+            conf.pass = GetIRCPass();
             using (buster = new TraxBuster(conf, this)) {
                 buster.Connect();
                 buster.IRCWork();
             }
-            Console.WriteLine("Furkiebot quit/crashed");
+            Console.WriteLine("TraxBuster quit/crashed");
             Console.ReadLine();
         } /* StartTraxBuster */
+
 
 
         /// <summary>
@@ -2559,7 +2641,7 @@ namespace FurkiebotCMR {
                     }
                     if (cmrStatus == "closed") //CMR race not opened yet
                                     {
-                        Msg(chan, "" + " Custom Map Race " + cmrId + " is available.");
+                        Msg(chan, "Custom Map Race " + cmrId + " is available.");
                     }
                     if (cmrStatus == "open") //CMR race opened
                                     {
@@ -4184,6 +4266,34 @@ namespace FurkiebotCMR {
         }
 
 
+
+
+
+        /// <summary>
+        /// Gets the irc password for the bot (so that its not stored publicly in the code).
+        /// </summary>
+        /// <returns>the IRC pass loaded from the default IRC password file location</returns>
+        public static string GetIRCPass() {
+            string toReturn = "";
+            if (File.Exists(PASS_PATH)) {
+                Console.WriteLine("Trying to load map file.");
+                string[] passArray = File.ReadAllLines(PASS_PATH);
+                if (passArray[0].Trim() != "") {
+                    toReturn = passArray[0].Trim();
+                } else {
+                    Console.WriteLine(@"Password wasnt at the top line of the Password file. Default file is " + PASS_PATH);
+                    Console.ReadLine();
+                    Environment.Exit(1);
+                }
+            } else {
+                Console.WriteLine(@"Password wasnt at the top line of the Password file. Default file is " + PASS_PATH);
+                Console.ReadLine();
+                Environment.Exit(1);
+            }
+            return toReturn;
+        } 
+
+
     } /* IRCBot */
 
 
@@ -4197,7 +4307,7 @@ namespace FurkiebotCMR {
             conf.altNick = "FurkieBot_";
             conf.port = 6667;
             conf.server = "irc2.speedrunslive.com";
-            conf.pass = "ilovecalistuslol";
+            conf.pass = FurkieBot.GetIRCPass();
             using (var bot = new FurkieBot(conf)) {
                 bot.Connect();
                 bot.IRCWork();

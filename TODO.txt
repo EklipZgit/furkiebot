@@ -1,10 +1,16 @@
+IMMEDIATE
+~~Fix map list not getting reset when CMR is updated to new CMR
+
+FUTURE
 Make .acceptoverride command that admins can perform to force accept a map w/o being tester.
 .startcmr and .cmr dont use correct map count?
 when race is open, .cmr should list race channel.
 DQ's
-Traxbuster stuff. Auto add maps from atlas.
+~~Traxbuster stuff. Auto add maps from atlas.
+	Display map download links when .maps is used in racechannel
+	maps count should update correctly now? idk?
+	remove map command. Pls.
 
-Fix so that pastas / etc can only be used on the first word in a parameter (no paragraphs as pasta names, etc)
 
 
 
@@ -22,6 +28,9 @@ etc.
 
 
 DONE
+
+Fix so that pastas / etc can only be used on the first word in a parameter (no paragraphs as pasta names, etc)
+
 Fix IGN dupe bugs.
 Add .removeign
 Make .unaccept doable by admins even if not testers.

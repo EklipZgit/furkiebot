@@ -248,7 +248,7 @@ namespace TraxBusterCMR
         static int GetCmrId()
         {
             int res;
-            string filepath = @"C:\Users\Furkan Pham\Documents\FurkieBot\Data\CMR_ID.txt";
+            string filepath = @"C:\CMR\Data\CMR_ID.txt";
             res = Convert.ToInt32(File.ReadAllText(filepath));
             return res;
         }
@@ -321,7 +321,7 @@ namespace TraxBusterCMR
 
         static DataTable UpdateJsonToDtMaps(int cmrid)
         {
-            string filepath = @"C:\Users\Furkan Pham\Documents\FurkieBot\Data\CMR Data\Maps\CMR" + cmrid + "Maps.json";
+            string filepath = @"C:\CMR\Maps\CMR" + cmrid + "Maps.json";
 
             if (File.Exists(filepath))
             {
