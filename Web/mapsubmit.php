@@ -40,6 +40,8 @@ if (isset($_SESSION['loggedIn'])) {
 			$mapdata->filepath = $mappath;
 			$mapdata->author = $mapper;
 			$mapdata->accepted = false;
+			$date = new DateTime();
+			$mapdata->timestamp = $date->getTimestamp();
 
 			$maps[$mapnameLower] = $mapdata;
 

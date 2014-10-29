@@ -10,6 +10,8 @@
  * IRC CODES https://www.alien.net.au/irc/irc2numerics.html
  */
 
+//#define FB_DEBUG  //If defined furkiebot will use debug channels and shit.
+
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -77,32 +79,51 @@ namespace FurkiebotCMR {
         public string author;
         public string acceptedBy;
         public bool accepted;
+        public string timestamp;
+        public bool forceid;
     }
-
-
 
     /// <summary>
     /// A FurkieBot IRC bot.
     /// </summary>
     public class FurkieBot : IDisposable {
-        public static string SEP = ColourChanger(" | ", "07"); //The orange | seperator also used by GLaDOS
-        public const string MAPS_PATH = @"C:\CMR\Maps\";
-        public const char ACT = (char)1;
-        public const string MOLLY = "༼ つ ◕_◕ ༽つ MOLLY ༼ つ ◕_◕ ༽つ";
 
-
-        //public const string BOT_NAME = "FurkieBot";
-        //public const string MAIN_CHAN = "#dustforce";
-        //public const string CMR_CHAN = "#DFcmr";
-
+#if FB_DEBUG
         public const string BOT_NAME = "FurkieBot_";
         public const string MAIN_CHAN = "#dustforcee";
         public const string CMR_CHAN = "#DFcmrr";
+#else
+        public const string BOT_NAME = "FurkieBot";
+        public const string MAIN_CHAN = "#dustforce";
+        public const string CMR_CHAN = "#DFcmr";
+#endif
 
 
+        #region IRC VALUES
+        public static string SEP = ColourChanger(" | ", "07"); //The orange | seperator also used by GLaDOS
+        public const char ACT = (char)1;
+        public const string MOLLY = "༼ つ ◕_◕ ༽つ MOLLY ༼ つ ◕_◕ ༽つ";
+        #endregion
+        #region PATHS
+        public const string MAPS_PATH = @"C:\CMR\Maps\";
         public const string DATA_PATH = @"C:\CMR\Data\";
-        public const string PASS_PATH = @"C:\CMR\Data\Password.txt";
+        public const string PASS_PATH = DATA_PATH + "Password.txt";
+        public const string USERLIST_PATH = DATA_PATH + @"Userlist\userlistmap.json";
+        #endregion
+        #region LINKS
+        public const string URL_BASE = @"http://eklipz.us.to/cmr/";
+        public const string DOWNLOAD_LINK = URL_BASE + @"downloadmap.php?map=";
+        public const string TEST_LINK = URL_BASE + @"maptest.php";
+        public const string UPLOAD_LINK = URL_BASE + @"map.php";
+        public const string WIKI_LINK = @"https://github.com/EklipZgit/furkiebot/wiki";
+        public const string MAP_PACK_LINK = @"http://redd.it/279zmi";
+        public const string INFO_LINK = URL_BASE;
+        #endregion
+
+
+        #region BOT DEFAULTS
         public const int MAX_MSG_LENGTH = 450;
+        #endregion
 
         public const int MIN_MAPS = 7;
 
@@ -266,7 +287,7 @@ namespace FurkiebotCMR {
 
             cmrId = GetCurrentCMRidFromFile();
 
-            maps = getMaps(cmrId);
+            maps = DeserializeMaps(cmrId);
 
             loadUserlist();
 
@@ -484,8 +505,7 @@ namespace FurkiebotCMR {
             int pendingcount = 0;
             foreach (KeyValuePair<string, MapData> entry in maps) {
                 if (entry.Value.accepted == false) {
-                    mapString += "\"" + entry.Value.name + "\"";
-                    mapString += SEP;
+                    mapString += "\"" + entry.Value.name + "\"" + SEP;
                     pendingcount++;
                     //toSay += "\" by " + entry.Value.author;       // TODO comment back in if we want authors in maplist.
                 }
@@ -516,8 +536,7 @@ namespace FurkiebotCMR {
             int acceptedcount = 0;
             foreach (KeyValuePair<string, MapData> entry in maps) {
                 if (entry.Value.accepted == true) {
-                    mapString += "\"" + entry.Value.name + "\"";
-                    mapString += SEP;
+                    mapString += "\"" + entry.Value.name + "\"" + SEP;
                     acceptedcount++;
                     //toSay += "\" by " + entry.Value.author;       // TODO comment back in if we want authors in maplist.
                 }
@@ -535,6 +554,83 @@ namespace FurkiebotCMR {
                 sendData("PRIVMSG", chan + toSay);
             }
         }
+
+
+        private void OutputTesters(string chan) {
+            string testerString = "";
+            int acceptedcount = 0;
+            foreach (KeyValuePair<string, PlayerInfo> entry in userlist) {
+                if (entry.Value.tester == true) {
+                    testerString += entry.Value.ircname + SEP;
+                    acceptedcount++;
+                    //toSay += "\" by " + entry.Value.author;       // TODO comment back in if we want authors in maplist.
+                }
+            }
+
+            if (acceptedcount > 0) {
+                testerString = testerString.Substring(0, testerString.Length - SEP.Length);
+            }
+
+            string toSay = "Map Testers for this CMR: " + testerString;
+            if (chan == null || chan == "" || chan == " ") {
+                Msg(mainchannel, toSay);
+                Msg(cmrchannel, toSay);
+            } else {
+                Msg(chan, toSay);
+            }
+        }
+
+
+        private void OutputTrusted(string chan) {
+            string trustedString = "";
+            int acceptedcount = 0;
+            foreach (KeyValuePair<string, PlayerInfo> entry in userlist) {
+                if (entry.Value.trusted == true) {
+                    trustedString += entry.Value.ircname + SEP;
+                    acceptedcount++;
+                    //toSay += "\" by " + entry.Value.author;       // TODO comment back in if we want authors in maplist.
+                }
+            }
+
+            if (acceptedcount > 0) {
+                trustedString = trustedString.Substring(0, trustedString.Length - SEP.Length);
+            }
+
+            string toSay = "Trusted Users: " + trustedString;
+            if (chan == null || chan == "" || chan == " ") {
+                Msg(mainchannel, toSay);
+                Msg(cmrchannel, toSay);
+            } else {
+                Msg(chan, toSay);
+            }
+        }
+
+
+        private void OutputAdmins(string chan) {
+            string adminString = "";
+            int acceptedcount = 0;
+            foreach (KeyValuePair<string, PlayerInfo> entry in userlist) {
+                if (entry.Value.admin == true) {
+                    adminString += entry.Value.ircname + SEP;
+                    acceptedcount++;
+                    //toSay += "\" by " + entry.Value.author;       // TODO comment back in if we want authors in maplist.
+                }
+            }
+
+            if (acceptedcount > 0) {
+                adminString = adminString.Substring(0, adminString.Length - SEP.Length);
+            }
+
+            string toSay = "Admins: " + adminString;
+            if (chan == null || chan == "" || chan == " ") {
+                Msg(mainchannel, toSay);
+                Msg(cmrchannel, toSay);
+            } else {
+                Msg(chan, toSay);
+            }
+        }
+
+
 
 
 
@@ -566,7 +662,7 @@ namespace FurkiebotCMR {
         /// </summary>
         /// <returns>The current userlist loaded from disk.</returns>
         private Dictionary<string, PlayerInfo> getUserList() {
-            string filepath = DATA_PATH + @"Userlist\userlistmap.json"; // !! FILEPATH !!
+            string filepath = USERLIST_PATH;
 
             while (true) {
                 try {
@@ -584,35 +680,34 @@ namespace FurkiebotCMR {
 
 
         /// <summary>
-        /// Returns a the maplist for the specified CMRID.
+        /// Returns a the maplist for the specified CMRID deserialized from disk.
         /// </summary>
-        /// <param name="cmrId">The CMR identifier.</param>
+        /// <param name="cmrid">The CMR identifier.</param>
         /// <returns>The loaded map list. If the file doesnt exist, returns an empty maplist.</returns>
-        private Dictionary<string, MapData> getMaps(int cmrid) {
-            lock (_updatingMapsLock) {
-                string mapsJsonPath = MAPS_PATH + cmrid + @"\maps.json";
-                int limit = 100;
-                int cur = 0;
-                if (File.Exists(mapsJsonPath)) {
-                    while (true) { // loop waiting for file unlock
-                        cur++;
-                        if (cur > limit) {
-                            throw new Exception("Looped too long trying to load maps. Map file locked for too long?");
-                        }
-                        try {
-                            Console.WriteLine("Trying to load map file.");
-                            string[] mapsarray = File.ReadAllLines(mapsJsonPath);
-                            string jsonPending = string.Join("", mapsarray);
-                            return JsonConvert.DeserializeObject<Dictionary<string, MapData>>(jsonPending); // initially loads the userlist from JSON
-                        } catch (System.IO.IOException e) {
-                            Console.WriteLine("Got an error trying to read file. Error: ");
-                            Console.WriteLine(e.StackTrace);
-                        }
-                        Thread.Sleep(5);
+        private Dictionary<string, MapData> DeserializeMaps(int cmrid) {
+            
+            string mapsJsonPath = MAPS_PATH + cmrid + @"\maps.json";
+            int limit = 100;
+            int cur = 0;
+            if (File.Exists(mapsJsonPath)) {
+                while (true) { // loop waiting for file unlock
+                    cur++;
+                    if (cur > limit) {
+                        throw new Exception("Looped too long trying to load maps. Map file locked for too long?");
                     }
-                } else {
-                    return new Dictionary<string, MapData>();
+                    try {
+                        Console.WriteLine("Trying to load map file.");
+                        string[] mapsarray = File.ReadAllLines(mapsJsonPath);
+                        string jsonPending = string.Join("", mapsarray);
+                        return JsonConvert.DeserializeObject<Dictionary<string, MapData>>(jsonPending); // initially loads the userlist from JSON
+                    } catch (System.IO.IOException e) {
+                        Console.WriteLine("Got an error trying to read file. Error: ");
+                        Console.WriteLine(e.StackTrace);
+                    }
+                    Thread.Sleep(5);
                 }
+            } else {
+                return new Dictionary<string, MapData>();
             }
 
 
@@ -671,18 +766,30 @@ namespace FurkiebotCMR {
 
 
         /// <summary>
-        /// Synchronizes the Map List and notifies the IRC channels about any state changes that have happened.
+        /// Gets the download link for the specified map name.
+        /// </summary>
+        /// <param name="mapname">The mapname.</param>
+        /// <returns></returns>
+        public static string GetDownloadLink(string mapname) {
+            return DOWNLOAD_LINK + mapname.Replace(" ", "%20");
+        }
+
+
+
+        /// <summary>
+        /// Synchronizes the Map List into mapsTemp and notifies furkiebot to reload. Notifies the IRC channels about any state changes that have happened.
         /// </summary>
         private void SyncMapList() {
             lock (_updatingMapsLock) {
                 if (maps != null) {
-                    Dictionary<string, MapData> tocheck = getMaps(cmrId);
+                    Dictionary<string, MapData> tocheck = DeserializeMaps(cmrId);
                     Dictionary<string, MapData> tocompare = maps;
 
                     if (mapsTemp != null) { tocompare = mapsTemp; } //in case we stored map changes in between furkiebot loop executions.
                     acceptedCount = 0;
                     pendingCount = 0;
-                    foreach (KeyValuePair<string, MapData> entry in tocheck) {     // Notifies IRC about any state changes that have happened.
+                    string message;
+                    foreach (KeyValuePair<string, MapData> entry in tocheck) {     // Notifies IRC about any state changes that have happened and sets the flag to reload maps.
                         string key = entry.Key;
                         MapData data = entry.Value;
                         if (entry.Value.accepted) {
@@ -694,24 +801,36 @@ namespace FurkiebotCMR {
                             if (tocompare[key].accepted == false && data.accepted == true) { // map has been approved.
                                 acceptedCount++;
                                 pendingCount--;
-                                string message = "Map approved: " + data.name + " by " + data.author;
+                                message = "Map \"" + data.name + "\" by " + data.author + " approved by " + data.acceptedBy;
                                 MsgChans(message);
-                                //NoticeTesters(message + ". http://eklipz.us.to/cmr/maptest.php");
                                 notifyReloadMaps = true;
                             } else if (tocompare[key].accepted == true && data.accepted == false) {  // map has been unapproved.
                                 pendingCount++;
                                 acceptedCount--;
-                                string message = "Map removed from approved map list: " + data.name + " by " + data.author + ", pending re-approval";
+                                message = "Map \"" + data.name + "\" by " + data.author + " removed from approved map list";
                                 MsgChans(message);
-                                MsgTesters(message + ". You may approve it at http://eklipz.us.to/cmr/maptest.php");
+                                MsgTesters(message + ". Download " + GetDownloadLink(data.name) + SEP + " Approve at " + TEST_LINK);
                                 notifyReloadMaps = true;
-                            }
+                            } else if (tocompare[key].timestamp != data.timestamp) { // map has been resubmitted
+                                if (tocompare[key].accepted == true) {  // resubmit of an approved map
+                                    pendingCount++;
+                                    acceptedCount--;
+                                    data.accepted = false;
+                                    message = "Map \"" + data.name + "\" by " + data.author + " removed from approved map list";
+                                    MsgChans(message);
+                                    MsgTesters(message + ". Download " + GetDownloadLink(data.name) + SEP + " Approve at " + TEST_LINK);
+                                } else { // is a resubmit of a pending map
+                                    message = "Map \"" + data.name + "\" by " + data.author + " resubmitted";
+                                    MsgChans(message);
+                                    MsgTesters(message + ". Download " + GetDownloadLink(data.name) + SEP + " Approve at " + TEST_LINK);
+                                }
+                                notifyReloadMaps = true;
+                            }                            
                         } else { //Map is newly submitted
                             pendingCount++;
-                            string message = "New map submitted for testing: " + data.name + " by " + data.author;
+                            message = "Map \"" + data.name + "\" by " + data.author + " submitted for testing";
                             MsgChans(message);
-                            string safename = data.name.Replace(" ", "%20");
-                            MsgTesters(message + ". http://eklipz.us.to/cmr/downloadmap.php?map=" + safename);
+                            MsgTesters(message + ". Download " + GetDownloadLink(data.name) + SEP + " Approve at " + TEST_LINK);
                             notifyReloadMaps = true;
                         }
                     }
@@ -721,7 +840,7 @@ namespace FurkiebotCMR {
                     }
                 } else {
                     Console.WriteLine("\n\n\nmaps is null. The fuck?\n\n");
-                    maps = getMaps(cmrId);
+                    maps = DeserializeMaps(cmrId);
                 }
             }
         }
@@ -1355,7 +1474,7 @@ namespace FurkiebotCMR {
                         if (!StringCompareNoCaps(chan, realRacingChan)) {
                             //FurkieBot commands for the main channel
                             Msg(chan, @"Commands: .cmr" + SEP + ".maps" + SEP + ".startcmr" + SEP + ".ign " + BoldText("ircname") + SEP + ".setign " + BoldText("in-game name") + SEP + ".mappack" + SEP + ".pending" + SEP + ".accepted");
-                            Msg(chan, @"Upload maps: http://eklipz.us.to/cmr/map.php" + SEP + "CMR info: http://eklipz.us.to/cmr" + SEP + @"Command list: https://github.com/EklipZgit/furkiebot/wiki" + SEP + "FurkieBot announce channel: #DFcmr");
+                            Msg(chan, @"Upload maps: " + UPLOAD_LINK + SEP + "CMR info: " + INFO_LINK + SEP + @"Command list: " + WIKI_LINK + SEP + "FurkieBot announce channel: #DFcmr");
                             Msg(chan, @".help register" + SEP + ".help tester" + SEP + ".help othercommands");
 
                         } else {            // FurkieBot commands for race channel
@@ -1742,12 +1861,12 @@ namespace FurkiebotCMR {
                     case ":.mappack":
                     case ":.mappacks":
                         #region
-                        Msg(chan, "Download map packs here: http://redd.it/279zmi");
+                        Msg(chan, "Download map packs here: " + MAP_PACK_LINK);
                         #endregion
                         break;
 
                     case ":.faq":
-                        Msg(chan, @"Wiki: https://github.com/EklipZgit/furkiebot/wiki");
+                        Msg(chan, @"Wiki: " + WIKI_LINK);
                         break;
                     case ":.hype":
                         if (!hype) {
@@ -1788,31 +1907,18 @@ namespace FurkiebotCMR {
                             sendData("QUIT", " Updating FurkieBot (????)");
                         }
                         break;
+                    case ":.adminlist":
                     case ":.admins":
-                        string adminList = "CMR admins:";
-                        foreach (KeyValuePair<string, PlayerInfo> entry in userlist) {
-                            if (entry.Value.admin && IsIdentified(entry.Key, nickLower)) {
-                                adminList = adminList + SEP + entry.Value.ircname;
-                            }
-                        }
-                        Msg(chan, adminList);
+                        OutputAdmins(chan);
                         break;
+                    case ":.testerlist":
                     case ":.testers":
-                        string testerList = "CMR map testers:";
-                        List<string> testers = GetTesters();
-                        foreach (string tester in testers) {
-                            testerList += SEP + tester;
-                        }
-                        Msg(chan, testerList);
+                        OutputTesters(chan);
                         break;
+                    case ":.trustedlist":
                     case ":.trusted":
                     case ":.trusteds":
-                        string trustedList = "Users trusted to be map testers:";
-                        List<string> trusteds = GetTrusted();
-                        foreach (string trusted in trusteds) {
-                            trustedList += SEP + trusted;
-                        }
-                        Msg(chan, trustedList);
+                        OutputTrusted(chan);
                         break;
                     case ":.molly":
                         Msg(chan, MOLLY);
@@ -1821,9 +1927,6 @@ namespace FurkiebotCMR {
                     //case ":.pasta":
                     //    PastaNoParam(nick, chan);
                     //    break;
-                    case ":.test":
-                        Msg(chan, "testing newline \n testing 2ndline");
-                        break;
 
                 }
             }
@@ -1859,7 +1962,7 @@ namespace FurkiebotCMR {
                                 if (!IsIdentified(nickLower, nick)) {
                                     NoticeNotIdentified(nick);
                                 }
-                                Msg(chan, "Tester Commands:" + SEP + "Test maps at http://eklipz.us.to/maptest.php" + SEP + "To accept via IRC \".accept <mapAuthor>-<mapName>\"" + SEP + "\".unaccept <mapAuthor>-<mapName>\"");
+                                Msg(chan, "Tester Commands:" + SEP + "Test maps at " + TEST_LINK + SEP + "To accept via IRC \".accept <mapAuthor>-<mapName>\"" + SEP + "\".unaccept <mapAuthor>-<mapName>\"");
                                 Msg(chan, ".settester <trueOrFalse> -  sets you as a DEDICATED tester for the next CMR. This is not undoable.");
                                 Msg(chan, "To be a map tester you must currently be a trusted community member. Ask a FurkieBot administrator if you cannot use .settester and believe you should be able to.");
                                 break;
@@ -1990,12 +2093,12 @@ namespace FurkiebotCMR {
                         }
                         #endregion
                         break;
-
+                    case ":.removemap":
                     case ":.deletemap":
                     case ":.delmap": //Not sure if this works, used to remove a map from the .cmrmaps command list
                         #region
                         if (IsAdmin(nickLower, nick)) {
-                            if (DeleteMap(cmrId, parameter)) {
+                            if (DeleteMap(parameter.ToLower(), nick)) {
                                 Msg(chan, "Map removed.");
                             } else {
                                 Msg(chan, "Map doesn't exist.");
@@ -2106,13 +2209,12 @@ namespace FurkiebotCMR {
                     case ":.approve":
                     case ":.approvemap":
                     case ":.acceptmap":
-                        if (IsIdentified(nickLower, nick) && IsTester(nickLower, nick)) {
+                        if (IsIdentified(nickLower, nick) && (IsTester(nickLower, nick) || IsAdmin(nickLower, nick))) {
                             string mapname = parameter;
-                            if (File.Exists(MAPS_PATH + cmrId + "\\pending\\" + mapname)) {
-                                File.Move(MAPS_PATH + cmrId + "\\pending\\" + mapname, MAPS_PATH + cmrId + "\\accepted\\" + mapname);
-                                Notice(nick, "Map successfully accepted.");
+                            if (ApproveMap(mapname, nickLower)) {
+                                Msg(chan, "Map successfully accepted.");
                             } else {
-                                Msg(chan, "Sorry, no file by the name \"" + mapname + "\". in pending maps. Please .accept <mapMakerName>-<mapName>.");
+                                Msg(chan, "Sorry, no map by the name \"" + mapname + "\". in the map list.");
                             }
                         } else if (!IsTester(nickLower, nick)) {
                             Notice(nick, "You need to be a tester, sorry.");
@@ -2160,7 +2262,7 @@ namespace FurkiebotCMR {
                             if (IsTrusted(nickLower, nick)) {//trusted
                                 if (parameter.ToLower() == "true") {
                                     setTester(nickLower, parameter);
-                                    Notice(nick, "Your tester status set to true. visit http://eklipz.us.to/cmr/maptest.php to review the rules and test maps.");
+                                    Notice(nick, "Your tester status set to true. visit " + TEST_LINK + " to review the rules and test maps.");
                                 } else if (paramLower == "false") {
 
                                     if (IsAdmin(nickLower, nick)) { //admin wants to set himself to not-tester
@@ -2314,16 +2416,18 @@ namespace FurkiebotCMR {
                         //}
                         #endregion
                         break;
-
-                    case ":.saydf": //Can be used to broadcast a message to the mainchannel by whispering this command to FurkieBot
-                        Console.WriteLine("In .saydf  Op: " + op + ", chan: " + chan);
+                    case ":.say":
                         if (IsAdmin(nickLower, nick) && op == "PRIVMSG" && StringCompareNoCaps(chan, nick)) {
-                            Console.WriteLine("Inside the .saydf if ????");
                             Msg(mainchannel, parameter);
                             Msg(cmrchannel, parameter);
                         }
                         break;
-
+                    case ":.saydf": //Can be used to broadcast a message to the mainchannel by whispering this command to FurkieBot
+                        if (IsAdmin(nickLower, nick) && op == "PRIVMSG" && StringCompareNoCaps(chan, nick)) {
+                            Msg(mainchannel, parameter);
+                        }
+                        break;
+                    case ":.sayrc":
                     case ":.sayracechan": //Can be used to broadcast a message to the racechannel by whispering this command to FurkieBot
                         if (IsAdmin(nickLower, nick) && op == "PRIVMSG" && StringCompareNoCaps(chan, nick)) {
                             Msg(realRacingChan, parameter);
@@ -2331,7 +2435,7 @@ namespace FurkiebotCMR {
                         break;
 
                     case ":.kick": //Kick someone from a racingchannel
-                        if (IsAdmin(nickLower, nick)) {
+                        if (chan == realRacingChan && IsAdmin(nickLower, nick)) {
                             sendData("KICK", chan + " :" + parameter);
                         }
                         break;
@@ -2367,7 +2471,7 @@ namespace FurkiebotCMR {
             mapsTemp = null;
             ResetTesters();
             SetCMR(cmrId + 1);
-            maps = getMaps(cmrId);
+            maps = DeserializeMaps(cmrId);
             notifyReloadMaps = false;
         }
 
@@ -3068,8 +3172,22 @@ namespace FurkiebotCMR {
         /// </summary>
         /// <param name="maplist">The maplist to write out to disk.</param>
         /// <param name="cmrid">The current cmrid.</param>
-        private void WriteMaps(Dictionary<string, MapData> maplist, int cmrid) {
+        private void WriteMaps() {
+            ignoreChangedMaps = true;
+            lock (_updatingMapsLock) {
+                var mapDict = (mapsTemp == null ? maps : mapsTemp);
+                WriteMaps(mapDict, cmrId);
+            }
+        }
 
+
+
+        /// <summary>
+        /// Writes the given maplist to the file for the provided CMR id number.
+        /// </summary>
+        /// <param name="maplist">The maplist to write out to disk.</param>
+        /// <param name="cmrid">The current cmrid.</param>
+        private void WriteMaps(Dictionary<string, MapData> maplist, int cmrid) {
             string filepath = MAPS_PATH + cmrid + @"\maps.json"; // !! FILEPATH !!
 
             string json = JsonConvert.SerializeObject(maplist, Newtonsoft.Json.Formatting.Indented);
@@ -3079,54 +3197,24 @@ namespace FurkiebotCMR {
 
 
         /// <summary>
-        /// Deletes a map from a specific CMR.
-        /// </summary>
-        /// <param name="cmrid">The cmrid.</param>
-        /// <param name="mapname">The mapname.</param>
-        /// <returns>Whether or not the map deleted successfully.</returns>
-        private bool DeleteMap(int cmrid, string mapname) {
-            bool res = false;
-            mapname = mapname.Trim().ToLower();
-
-            string filepath = MAPS_PATH + cmrid + @"\maps.json"; // !! FILEPATH !!
-            Dictionary<string, MapData> maplist;
-            if (cmrid == cmrId) {
-                maplist = maps;
-            } else {
-                maplist = getMaps(cmrid);
-            }
-
-            Console.WriteLine("Trying to delete map: \"" + mapname + "\" from CMR #" + cmrid);
-                    //DEBUG SHIT IN CASE THE AWFUL, AWFUL CONTAINS BUG COMES BACK THAT I DONT UNDERSTAND HOW IT WENT AWAY.
-            //foreach (KeyValuePair<string, MapData> entry in maplist) {
-            //    Console.WriteLine("\"" + entry.Key + "\"");
-            //}
-            //Console.WriteLine("maplist.ContainsKey(mapname.Trim().ToLower())  " + maplist.ContainsKey(mapname.Trim().ToLower()));
-            //removes all instances of maps with this name from the maplist.
-            if (maplist.ContainsKey(mapname)) {
-                maplist.Remove(mapname);
-                WriteMaps(maplist, cmrid);
-                
-                Console.WriteLine("found map, deleting. Maps now: ");
-                res = true;
-
-                foreach (KeyValuePair<string, MapData> entry in maplist) {
-                    Console.WriteLine("\"" + entry.Key + "\"");
-                }
-            } else { res = false; }
-
-            return res;
-        }
-
-
-
-        /// <summary>
         /// Deletes a map from the current CMR.
         /// </summary>
         /// <param name="mapname">The mapname.</param>
         /// <returns>Whether or not the map deleted successfully.</returns>
-        private bool DeleteMap(string mapname) {
-            return DeleteMap(cmrId, mapname);
+        private bool DeleteMap(string mapname, string tester) {
+            mapname = mapname.ToLower().Trim();
+            Dictionary<string, MapData> maps = (mapsTemp == null ? this.maps : mapsTemp);
+            if (maps.ContainsKey(mapname)) {
+                if (maps[mapname].accepted) {
+                    acceptedCount--;
+                } else {
+                    pendingCount--;
+                }
+                maps.Remove(mapname);
+                WriteMaps();
+                return true;
+            }
+            return false;
         }
 
 
@@ -3136,9 +3224,20 @@ namespace FurkiebotCMR {
         /// <param name="mapname">The mapname.</param>
         /// <param name="tester">The testers name.</param>
         /// <returns>Whether or not the map existed.</returns>
-        private bool approveMap(string mapname, string tester) {
-            throw new NotImplementedException();
-            return false; // todo
+        private bool ApproveMap(string mapname, string tester) {
+            mapname = mapname.ToLower().Trim();
+            Dictionary<string, MapData> maps = (mapsTemp == null ? this.maps : mapsTemp);
+            if (maps.ContainsKey(mapname) && maps[mapname].accepted == false) {
+                MapData map = maps[mapname];
+                acceptedCount++;
+                pendingCount--;
+                map.acceptedBy = tester;
+                map.accepted = true;
+                maps[mapname] = map;
+                WriteMaps(maps, cmrId);
+                return true;
+            }
+            return false;
         }
 
         /// <summary>
@@ -3148,7 +3247,7 @@ namespace FurkiebotCMR {
         /// <param name="tester">The tester.</param>
         /// <param name="denyMessage">The deny message.</param>
         /// <returns>Whether or not the map existed.</returns>
-        private bool denyMap(string mapname, string tester, string denyMessage) {
+        private bool DenyMap(string mapname, string tester, string denyMessage) {
             throw new NotImplementedException();
             return false; //todo
         }
@@ -3166,6 +3265,7 @@ namespace FurkiebotCMR {
             if (maps.ContainsKey(mapname)) {
                 MapData md = maps[mapname];
                 md.id = id;
+                md.forceid = true;
                 maps[mapname] = md;
                 WriteMaps(maps, cmrId);
                 return true;
@@ -3195,7 +3295,7 @@ namespace FurkiebotCMR {
 
         private long CmrMapCount(int cmrid) //Used to count the amount of maps on the current CMR
         {
-            Dictionary<string, MapData> maplist = getMaps(cmrid);
+            Dictionary<string, MapData> maplist = DeserializeMaps(cmrid);
             return maplist.Count;
         } /* CountMapsInCMR() */
 
@@ -4228,12 +4328,10 @@ namespace FurkiebotCMR {
          * Plain text to be verified against the specified hash. The function
          * does not check whether this parameter is null.
          * </param>
-         * <param name="hashAlgorithm">
-         * Name of the hash algorithm. Allowed values are: "MD5", "SHA1", 
-         * "SHA256", "SHA384", and "SHA512" (if any other value is specified,
-         * MD5 hashing algorithm will be used). This value is case-insensitive.
+         * <param name="salt">
+         * The salt used to encrypt the password.
          * </param>
-         * <param name="expectedHash">
+         * <param name="expectedHashString">
          * Base64-encoded hash value produced by ComputeHash function. This value
          * includes the original salt appended to it.
          * </param>

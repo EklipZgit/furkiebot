@@ -9,7 +9,7 @@ namespace FurkiebotCMR {
     public delegate void NotifyCallback(List<AtlasMapResult> updatedList);
 
     class AtlasChecker {
-        public const int CHECK_EVERY_SECONDS = 10;
+        public const int CHECK_EVERY_SECONDS = 5;
         public const string INSTALL_URL = @"http://eklipz.us.to/cmr/install.php";
         public const string ATLAS_MAP_URL = @"http://atlas.dustforce.com/";
 
@@ -69,16 +69,17 @@ namespace FurkiebotCMR {
                         Dictionary<string, MapData> curMaps = furkiebot.GetMaps();
                         bool altered = false;
                         foreach (AtlasMapResult result in maps) {
-                            if (curMaps.ContainsKey(result.clean_name) && (result.id != curMaps[result.clean_name].id)) { //If the atlas map is in our list of maps, AND it hasn't yet been id'd....
-                                MapData temp = curMaps[result.clean_name];
+                            string name = result.clean_name.Trim().ToLower();
+                            if (curMaps.ContainsKey(name) && (result.id != curMaps[name].id)) { //If the atlas map is in our list of maps, AND it hasn't yet been id'd....
+                                MapData temp = curMaps[name];
                                 temp.id = result.id;
-                                if (curMaps[result.clean_name].id <= 0) {   //Newly uploaded map
+                                if (curMaps[name].id <= 0) {   //Newly uploaded map
                                     uploadedCount++;
                                     furkiebot.MessageRacechan("CMR map #" + uploadedCount + " uploaded to Atlas: " + ATLAS_MAP_URL + result.id + FurkieBot.SEP + @"Install: " + GetMapInstallUrl(result.id, result.urlName) + FurkieBot.SEP + (furkiebot.AcceptedCount - uploadedCount) + " left to be uploaded!");
                                 } else {                                    //reuploaded map
-                                    furkiebot.MessageRacechan("CMR map REUPLOADED to Atlas: " + ATLAS_MAP_URL + result.id + FurkieBot.SEP + @"Install: " + GetMapInstallUrl(result.id, result.urlName) + FurkieBot.SEP + (furkiebot.AcceptedCount - uploadedCount) + " left to be uploaded!");
+                                    furkiebot.MessageRacechan("CMR map REUPLOADED to Atlas: " + ATLAS_MAP_URL + result.id + FurkieBot.SEP + @"Install: " + GetMapInstallUrl(result.id, result.urlName) + FurkieBot.SEP + "DELETE THE OLD ONE FROM YOUR CUSTOM MAPS DIRECTORY" + FurkieBot.SEP + (furkiebot.AcceptedCount - uploadedCount) + " left to be uploaded!");
                                 }
-                                curMaps[result.clean_name] = temp;
+                                curMaps[name] = temp;
                                 altered = true;
                             }
                         }
