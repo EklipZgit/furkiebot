@@ -1,9 +1,11 @@
 IMMEDIATE
 	~Fix map list not getting reset when CMR is updated to new CMR
-	~Fix so that tester gets notified when pending maps are overwritten (currently doesnt notify, because sync sees them as the same. Use timestamp)
-	Fix bug where maps published to atlas that havent been accepted yet are still registered in the race channel. **Account for maps accepted while race channel is open**
-	Fix bug where maps with capitals in their names are not recognized by AtlasChecker ????
-	Check for .forceid == true before allowing a published atlas map to overwrite a maps mapid.
+	Fix bug where maps published to atlas that havent been accepted yet are still registered in the race channel. **Account for maps accepted while race channel is open** in AtlasChecker
+	Fix bug where maps with capitals in their names are not recognized by AtlasChecker ???? why shouldnt this all be case insensitive? :<<<<
+	Check for .forceid == true before allowing a published atlas map to overwrite a maps mapid in AtlasChecker
+	.maps needs to print author along with map names again
+	make slap only occur when toSlap parameter is less than 3 words or something
+	When testers join IRC, notify them with download links to untested maps etc
 
 FUTURE
 	Make .acceptoverride command that admins can perform to force accept a map w/o being tester.
@@ -17,7 +19,7 @@ FUTURE
 		maps count should update correctly now? idk?
 
 	Allow mappers to see the maps they've uploaded, and also delete uploaded maps.
-	Furkiebot code to properly handle deletes. Idk how.
+	Furkiebot code to properly handle deletes. Idk how. (done within furkiebot .deletemap command, but not when syncing and a map has been deleted from outside furkiebot)
 
 
 
@@ -37,6 +39,7 @@ etc.
 
 DONE
 
+~Fix so that tester gets notified when pending maps are overwritten 
 ~remove map command. Pls.
 
 ~Fix so that pastas / etc can only be used on the first word in a parameter (no paragraphs as pasta names, etc)
