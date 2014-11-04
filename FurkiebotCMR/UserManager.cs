@@ -90,8 +90,8 @@ namespace UserCMR {
     /// A Singleton class to manage Users in the Database.
     /// </summary>
     class UserManager {
-        private static MongoCollection<User> Users = DB.Database.GetCollection<User>(DB._USER_TABLE_NAME);
-        private static MongoCollection<IGN> Igns = DB.Database.GetCollection<IGN>(DB._IGN_TABLE_NAME);
+        private MongoCollection<User> Users = DB.Database.GetCollection<User>(DB._USER_TABLE_NAME);
+        private MongoCollection<IGN> Igns = DB.Database.GetCollection<IGN>(DB._IGN_TABLE_NAME);
         private static UserManager instance;
         private static object _instanceLock = new Object();
         public static UserManager Instance {
@@ -170,6 +170,23 @@ namespace UserCMR {
 
 
 
+        /// <summary>
+        /// Gets the users in a Queryable format.
+        /// </summary>
+        /// <returns></returns>
+        public IQueryable<User> GetUsers() {
+            return Users.AsQueryable<User>();
+        }
+
+
+        /// <summary>
+        /// Gets the igns in a Queryable format.
+        /// </summary>
+        /// <returns></returns>
+        public IQueryable<IGN> GetIgns() {
+            return Igns.AsQueryable<IGN>();
+        }
+
 
 
 
@@ -179,7 +196,7 @@ namespace UserCMR {
         /// </summary>
         /// <param name="nick">The nickname.</param>
         /// <returns>bool whether or not the nick is registered.</returns>
-        private bool IsRegistered(string nick, string toNotify = null) {
+        public bool IsRegistered(string nick, string toNotify = null) {
             User user = this[nick];
             bool registered = false;
             if (user != null) {

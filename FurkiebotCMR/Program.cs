@@ -847,11 +847,11 @@ namespace FurkiebotCMR {
         /// </summary>
         /// <param name="toSay">The message.</param>
         public void MsgTesters(string toSay) {
-            List<string> testers = GetTesters();
-            foreach (string tester in testers) {
+            var testers = UserMan.GetTesters();
+            foreach (User tester in testers) {
                 //Console.WriteLine("\n\n\nTester: " + tester + " ");
                 //Console.WriteLine("is identified? " + identified + ".\n\n\n");
-                Msg(tester.Trim(), toSay);
+                Msg(tester.Name, toSay);
             }
         }
 
@@ -863,11 +863,11 @@ namespace FurkiebotCMR {
         /// </summary>
         /// <param name="toSay">The message.</param>
         public void NoticeTesters(string toSay) {
-            List<string> testers = GetTesters();
-            foreach (string tester in testers) {
+            var testers = UserMan.GetTesters();
+            foreach (User tester in testers) {
                 //Console.WriteLine("\n\n\nTester: " + tester + " ");
                 //Console.WriteLine("is identified? " + identified + ".\n\n\n");
-                Notice(tester.Trim(), toSay);
+                Notice(tester.Name, toSay);
             }
         }
 
@@ -886,7 +886,6 @@ namespace FurkiebotCMR {
                 string data;
 
                 data = sr.ReadLine();
-                checkState();
 
 
                 char[] charSeparator = new char[] { ' ' };
@@ -978,13 +977,13 @@ namespace FurkiebotCMR {
                 case "JOIN": //Message someone when they join a certain channel
                     #region
                     if (chan == ":" + realRacingChan) {
-                        if (IsRegistered(nickLower)) {
-                            if (getUserIgn(nickLower) == "") { 
+                        if (UserMan.IsRegistered(nickLower)) {
+                            if (UserMan.GetIgnByIrc(nickLower).DustforceName == "" || UserMan.GetIgnByIrc(nickLower).DustforceName == null) { 
                                 // if they have no IGN set.
                                 Notice(nick, "You need to set your Dustforce name with FurkieBot in order to join a race. Type " + BoldText(".setign dustforcename") + " to register the name you use in Dustforce");
                             } else {                          
                                 // let them know what their IGN currently is.
-                                Notice(nick, "Your Dustforce name is currently set to " + ColourChanger(getUserIgn(nickLower), "03") + ". If your name has changed, please set a new nickname using " + BoldText(".setign dustforcename"));
+                                Notice(nick, "Your Dustforce name is currently set to " + ColourChanger(UserMan.GetIgnByIrc(nickLower).DustforceName, "03") + ". If your name has changed, please set a new nickname using " + BoldText(".setign dustforcename"));
                             }
                             if (CheckEntrant(nickLower)) {
                                 sendData("MODE", realRacingChan + " +v " + nick);
@@ -1083,7 +1082,7 @@ namespace FurkiebotCMR {
                         #endregion
 
                     case ":.startcmr+": // Used for testing purposes, forces the start of a race without having to worry about the date and time, make sure to use this command when mainchannel is NOT #dustforce
-                        if (IsAdmin(nickLower, nick)) {
+                        if (UserMan.IsAdmin(nickLower, nick)) {
                             cmrtime = DateTime.Now.TimeOfDay;
                             goto case ":.startcmr";
                         }
@@ -1108,9 +1107,9 @@ namespace FurkiebotCMR {
                             string nextCmrH = duration.Hours.ToString();
                             string nextCmrM = duration.Minutes.ToString();
                             string nextCmrS = duration.Seconds.ToString();
-
-                            if (maps.Count < MIN_MAPS && cmrtime.ToString(@"%h\:mm\:ss") == "10:30:00") {// If there are less than MIN_MAPS maps submitted AND if command wasn't issued using .startcmr+
-                                Msg(chan, "There are not enough maps to start a CMR. We need " + (MIN_MAPS - maps.Count) + " more maps to start a CMR.");
+                            int mapCount = MapMan.GetAcceptedMaps().Count();
+                            if (mapCount < MIN_MAPS && cmrtime.ToString(@"%h\:mm\:ss") == "10:30:00") {// If there are less than MIN_MAPS maps submitted AND if command wasn't issued using .startcmr+
+                                Msg(chan, "There are not enough maps to start a CMR. We need " + (MIN_MAPS - mapCount) + " more maps to start a CMR.");
                             } else {
                                 TimeSpan stopTheTime = new TimeSpan(20, 29, 20);
                                 DateTime stopTheSpam = saturday.Date + stopTheTime;
@@ -1125,7 +1124,7 @@ namespace FurkiebotCMR {
                                         + nextCmrS + " seconds", "03") + ". The race may be " + BoldText("started") + " " + ColourChanger("30 minutes","04") + " after it can be opened.");
                                 }
                                 if (DateTime.Now >= cmrday) {
-                                    if (IsAdmin(nickLower, nick)) {
+                                    if (UserMan.IsAdmin(nickLower, nick)) {
                                         StartCmr();
                                     } else {
                                         Msg(chan, "Only an Admin can start the race for now, please contact an admin to start the race.");
@@ -1140,7 +1139,7 @@ namespace FurkiebotCMR {
 
                     case ":.cancelcmr": //Shattering everyones dreams by destroying that CMR hype
                         #region
-                        if (IsAdmin(nickLower, nick)) {
+                        if (UserMan.IsAdmin(nickLower, nick)) {
                             if (cmrStatus == "open" || cmrStatus == "finished" || cmrStatus == "racing") {
                                 if (chan == realRacingChan) {
                                     cmrStatus = "closed";
@@ -1193,8 +1192,8 @@ namespace FurkiebotCMR {
                             //Command only works in racing channel
                             if (cmrStatus == "open") {
                                 //Command only works if CMR is open
-                                if (IsRegistered(nickLower)) {
-                                    if (getUserIgn(nickLower) != "+") {
+                                if (UserMan.IsRegistered(nickLower)) {
+                                    if (UserMan.GetIgnByIrc(nickLower).DustforceName != "+") {
                                         if (!CheckEntrant(nickLower)) {//Command only works if user isn't part of the race
                                             //Add user to race
                                             AddEntrant(nickLower);
@@ -1202,7 +1201,7 @@ namespace FurkiebotCMR {
                                             if (CountEntrants() > 1) {
                                                 extraS = "s";
                                             }
-                                            Msg(chan, nick + " (" + getUserIgn(nickLower) + ") enters the race! " + CountEntrants() + " entrant" + extraS + ".");
+                                            Msg(chan, nick + " (" + UserMan.GetIgnByIrc(nickLower) + ") enters the race! " + CountEntrants() + " entrant" + extraS + ".");
                                             sendData("MODE", realRacingChan + " +v " + nick);
                                         } else {
                                             Msg(chan, nick + " already entered the race.");
@@ -1342,8 +1341,8 @@ namespace FurkiebotCMR {
                                 if (CountEntrants() > 1) { //Command only works if there is at least 1 racer
                                     if (ComfirmMassStatus(3)) { //Command only works if all racers have status on "ready"
                                         bool valid = true;
-                                        foreach (MapData md in maps.Values) {
-                                            if (md.id <= 0) valid = false;
+                                        foreach (CmrMap map in MapMan.GetMaps(cmrId)) {
+                                            if (map.AtlasID <= 0) valid = false;
                                         }
                                         if (valid) {    // All maps have an atlas link recognized
                                             checker.StopChecking();
@@ -1429,7 +1428,7 @@ namespace FurkiebotCMR {
 
                     case ":.record": //Used to record a race, outputting the final results in .xlsx
                         #region
-                        if (IsAdmin(nickLower, nick)) {
+                        if (UserMan.IsAdmin(nickLower, nick)) {
                             if (cmrStatus == "finished") {
                                 Msg(chan, "Recording race...");
                                 RecordResultsReddit(cmrId);
@@ -1491,7 +1490,7 @@ namespace FurkiebotCMR {
                         break;
                     #endregion
                     case ":.updatebot": //doesn't actually update anything, just shuts down Furkiebot with a fancy update message, I always whisper this because it would look stupid to type a command like this in channel lol
-                        if (IsAdmin(nickLower, nick)) {
+                        if (UserMan.IsAdmin(nickLower, nick)) {
                             sendData("QUIT", " Updating FurkieBot (????)");
                         }
                         break;
@@ -1573,8 +1572,8 @@ namespace FurkiebotCMR {
                     case ":.deleteign":
                     case ":.freeign":
                     case ":.removeign":
-                        if (IsAdmin(nickLower, nick)) {
-                            removeIGN(parameter, nick);
+                        if (UserMan.IsAdmin(nickLower, nick)) {
+                            UserMan.RemoveIGN(parameter, nick);
                         } else {
                             Notice(nick, "Ask an admin to perform this for you.");
                         }
@@ -1583,19 +1582,25 @@ namespace FurkiebotCMR {
                     case ":.ign":
                         #region
                         string ign_ex4 = parameter;
-                        if (StringCompareNoCaps(ign_ex4, getUserInfo(ign_ex4.ToLower()).ircname)) {
-                            Msg(chan, ColourChanger(parameter, "03") + " > " + ColourChanger(getUserInfo(ign_ex4).dustforcename, "03") + "");
+                        User user = UserMan[ign_ex4.Trim()];
+                        if (user != null) {
+                            IGN ign = UserMan.GetIgns().Where<IGN>(i => i.IrcUserID == user.Id).First();
+                            if (ign != null) {
+                                Msg(chan, ColourChanger(user.Name, "03") + " > " + ColourChanger(ign.DustforceName, "03") + "");
+                            } else {
+                                Msg(chan, "No in-game name registered for " + parameter + "");
+                            }
                         } else {
-                            Msg(chan, "No in-game name registered for " + parameter + "");
+                            Msg(chan, parameter + " is not a registered nickname.");                        
                         }
                         #endregion
                         break;
 
                     case ":.setign":
                         #region
-                        if (IsRegistered(nickLower)) {
+                        if (UserMan.IsRegistered(nickLower)) {
                             if (IsIdentified(nickLower, nick)) {
-                                if (setUserIGN(nick, parameter)) { 
+                                if (UserMan.SetIgnByIrc(nick, parameter)) { 
                                     Msg(chan, "New IGN registered: " + ColourChanger(nick, "03") + " > " + ColourChanger(parameter, "03") + ""); 
                                 }
                             } else {
@@ -1611,13 +1616,13 @@ namespace FurkiebotCMR {
                     case ":.notify":
                         #region
 
-                        if (IsRegistered(nickLower)) {
+                        if (UserMan.IsRegistered(nickLower)) {
                             if (IsIdentified(nickLower, nick)) {
                                 if (StringCompareNoCaps(parameter, "on") || StringCompareNoCaps(parameter, "true")) {
-                                    setUserNotify(nickLower, true);
+                                    UserMan.SetUserNotify(nickLower, true);
                                     Msg(chan, nick + " will be notified via IRC when the CMR channel opens.");
                                 } else if (StringCompareNoCaps(parameter, "off") || StringCompareNoCaps(parameter, "false")) {
-                                    setUserNotify(nickLower, false);
+                                    UserMan.SetUserNotify(nickLower, false);
                                     Msg(chan, nick + " will NOT be notified via IRC when the CMR channel opens.");
                                 } else {
                                     Msg(chan, "Syntax is \".notify " + BoldText("false/true") + "\"");
@@ -1661,9 +1666,9 @@ namespace FurkiebotCMR {
 
                     case ":.setcmr": //Set CMR ID for whatever reason there might 
                         #region
-                        if (IsAdmin(nickLower, nick)) {
+                        if (UserMan.IsAdmin(nickLower, nick)) {
                             if (int.TryParse(parameter, out cmrId)) {
-                                ResetTesters();
+                                UserMan.ResetTesters();
                                 SetCMR(cmrId);
                                 Msg(chan, "Custom Map Race has been set to " + parameter);
                                 InitDirectories();
@@ -1675,7 +1680,7 @@ namespace FurkiebotCMR {
 
                     case ":.quit61": //Quit 
                         #region
-                        if (IsAdmin(nickLower, nick)) {
+                        if (UserMan.IsAdmin(nickLower, nick)) {
                             sendData("QUIT", parameter);
                             shouldRun = false; //turn shouldRun to false - the server will stop sending us data so trying to read it will not work and result in an error. This stops the loop from running and we will close off the connections properly
                         }
@@ -1685,8 +1690,8 @@ namespace FurkiebotCMR {
                     case ":.deletemap":
                     case ":.delmap": //Not sure if this works, used to remove a map from the .cmrmaps command list
                         #region
-                        if (IsAdmin(nickLower, nick) || IsTester(nickLower, nick)) {
-                            if (DeleteMap(parameter.ToLower(), nick)) {
+                        if (UserMan.IsAdmin(nickLower, nick) || UserMan.IsTester(nickLower, nick)) {
+                            if (MapMan.DeleteMap(parameter.ToLower(), nick)) {
                                 Msg(chan, "Map removed.");
                             } else {
                                 Msg(chan, "Map doesn't exist.");
@@ -1723,7 +1728,7 @@ namespace FurkiebotCMR {
 
                     case ":.forceunjoin": //You can force someone to .unjoin, please dont abuse your powers unless you are a troll
                         #region
-                        if (IsAdmin(nickLower, nick)) {
+                        if (UserMan.IsAdmin(nickLower, nick)) {
                             RemoveEntrant(paramLower);
                             string extraS = "";
                             if (CountEntrants() != 1) {
@@ -1737,7 +1742,7 @@ namespace FurkiebotCMR {
 
                     case ":.forcequit": //You can force someone to .quit, please dont abuse your powers unless you are a troll
                         #region
-                        if (IsAdmin(nickLower, nick)) {
+                        if (UserMan.IsAdmin(nickLower, nick)) {
                             SetStatus(paramLower, 4);
                             Msg(chan, nick + " forced " + parameter + " to forfeit from the race.");
                         }
@@ -1746,7 +1751,7 @@ namespace FurkiebotCMR {
 
                     case ":.forcedone": //You can force someone to .done, because sometimes, you just want to be able to guarentee that
                         #region
-                        if (IsAdmin(nickLower, nick)) {
+                        if (UserMan.IsAdmin(nickLower, nick)) {
                             //SetStatus(ex[4], 1);
                             SetTime(parameter, stahpwatch);
 
@@ -1765,7 +1770,7 @@ namespace FurkiebotCMR {
                     case ":.forceundone": //You can force someone to .undone, get rekt thought you were done son?
                         #region
                         Console.WriteLine("Nickname: \t" + nick);
-                        if (IsAdmin(nickLower, nick)) {
+                        if (UserMan.IsAdmin(nickLower, nick)) {
                             Console.WriteLine("chan: \t" + chan);
                             if (chan == realRacingChan || StringCompareNoCaps(chan, nick)) //Command only works in racing channel
                                 {
@@ -1778,11 +1783,11 @@ namespace FurkiebotCMR {
                                         //Set racer status to "racing"
 
                                         if (StringCompareNoCaps(nick, "traxbuster")) {
-                                            string realnickname = getUserIrc(parameter);
+                                            string realnickname = UserMan.GetUserByIGN(parameter).Name;
                                             SetStatus(realnickname, 2);
-                                            Msg(realRacingChan, "Nice try, " + getUserIgn(parameter) + "! Try to .done when you have an SS on " + BoldText("all") + " maps. You have been put back in racing status.");
+                                            Msg(realRacingChan, "Nice try, " + UserMan.GetIgnByIrc(parameter) + "! Try to .done when you have an SS on " + BoldText("all") + " maps. You have been put back in racing status.");
                                             Notice(realnickname, "If something went wrong and the proofcall is not justified, message Furkiepurkie about this issue.");
-                                        } else if (IsAdmin(nickLower, nick)) {
+                                        } else if (UserMan.IsAdmin(nickLower, nick)) {
                                             SetStatus(nickLower, 2);
                                             Msg(chan, parameter + " isn't done yet.");
                                         }
@@ -1797,14 +1802,14 @@ namespace FurkiebotCMR {
                     case ":.approve":
                     case ":.approvemap":
                     case ":.acceptmap":
-                        if (IsIdentified(nickLower, nick) && (IsTester(nickLower, nick) || IsAdmin(nickLower, nick))) {
+                        if (IsIdentified(nickLower, nick) && (UserMan.IsTester(nickLower, nick) || UserMan.IsAdmin(nickLower, nick))) {
                             string mapname = parameter;
-                            if (ApproveMap(mapname, nickLower)) {
+                            if (MapMan.Accept(mapname, nickLower, UserMan.IsAdmin(nickLower, nick))) {
                                 Msg(chan, "Map successfully accepted.");
                             } else {
                                 Msg(chan, "Sorry, no map by the name \"" + mapname + "\". in the map list.");
                             }
-                        } else if (!IsTester(nickLower, nick)) {
+                        } else if (!UserMan.IsTester(nickLower, nick)) {
                             Notice(nick, "You need to be a tester, sorry.");
                         }
                         break;
@@ -1814,7 +1819,7 @@ namespace FurkiebotCMR {
                     case ":.unapprove":
                     case ":.unapprovemap":
                     case ":.unacceptmap":
-                        if (IsIdentified(nickLower, nick) && (IsTester(nickLower, nick) || IsAdmin(nickLower, nick))) {
+                        if (IsIdentified(nickLower, nick) && (UserMan.IsTester(nickLower, nick) || UserMan.IsAdmin(nickLower, nick))) {
                             string mapname = parameter;
                             if (File.Exists(MAPS_PATH + cmrId + "\\accepted\\" + mapname)) {
                                 File.Move(MAPS_PATH + cmrId + "\\accepted\\" + mapname, MAPS_PATH + cmrId + "\\pending\\" + mapname);
@@ -1822,21 +1827,21 @@ namespace FurkiebotCMR {
                             } else {
                                 Msg(chan, "Sorry, no file by the name \"" + mapname + "\". in accepted maps. Please .unaccept <mapMakerName>-<mapName>.");
                             }
-                        } else if (!IsTester(nickLower, nick)) {
+                        } else if (!UserMan.IsTester(nickLower, nick)) {
                             Notice(nick, "You need to be a tester, sorry.");
                         }
                         break;
 
                     case ":.settester":
-                        if (IsAdmin(nickLower, nick)) {  //admin is sending this command
+                        if (UserMan.IsAdmin(nickLower, nick)) {  //admin is sending this command
                             char[] separator = { ' ' };
                             string[] split = parameter.Split(separator, 2);
                             if (split.Length == 2 && (split[1].ToLower() == "true" || split[1].ToLower() == "false")) {    // name true/false
-                                if (IsRegistered(split[0].ToLower())) {
+                                if (UserMan.IsRegistered(split[0].ToLower())) {
                                     setTester(split[0].ToLower(), split[1]);
                                     Notice(split[0], "Your tester status set to: " + split[1]);
                                     Notice(nick, split[0] + "'s tester status set to: " + split[1]);
-                                    if (!IsTrusted(split[0].ToLower(), nick) && split[1] == "true") {
+                                    if (!UserMan.IsTrusted(split[0].ToLower(), nick) && split[1] == "true") {
                                         setTrusted(split[0].ToLower(), split[1]);
                                         Notice(split[0], "You are now trusted.");
                                     }
@@ -1847,13 +1852,13 @@ namespace FurkiebotCMR {
                                 Notice(nick, "Incorrect format. Use <name> <trueOrFalse>");
                             }
                         } else {
-                            if (IsTrusted(nickLower, nick)) {//trusted
+                            if (UserMan.IsTrusted(nickLower, nick)) {//trusted
                                 if (parameter.ToLower() == "true") {
                                     setTester(nickLower, parameter);
                                     Notice(nick, "Your tester status set to true. visit " + TEST_LINK + " to review the rules and test maps.");
                                 } else if (paramLower == "false") {
 
-                                    if (IsAdmin(nickLower, nick)) { //admin wants to set himself to not-tester
+                                    if (UserMan.IsAdmin(nickLower, nick)) { //admin wants to set himself to not-tester
                                         setTester(nickLower, parameter);
                                         Notice(nick, "As you wish, sir. You are no longer a tester.");
                                     } else {                        //normal tester wants to set himself to not-tester
@@ -1871,11 +1876,11 @@ namespace FurkiebotCMR {
                     case ":.setstream":
                         char[] separ = { ' ' };
                         string[] splitStream = parameter.Split(separ, 2);
-                        if (IsAdmin(nickLower, nick) && splitStream.Length > 1) {  //admin is sending this command
+                        if (UserMan.IsAdmin(nickLower, nick) && splitStream.Length > 1) {  //admin is sending this command
                             string streamURL = splitStream[1].Trim();
                             streamURL = FormatStreamURL(streamURL);
                             string streamNick = splitStream[0].Trim();
-                            if (IsRegistered(streamNick.ToLower())) {
+                            if (UserMan.IsRegistered(streamNick.ToLower())) {
                                 setStream(streamNick.ToLower(), streamURL);
                                 Msg(chan, streamNick + "'s stream url set to: " + streamURL);
                             } else {
@@ -1885,7 +1890,7 @@ namespace FurkiebotCMR {
                             string streamURL = splitStream[0];
                             streamURL = FormatStreamURL(streamURL);
                             if (IsIdentified(nickLower, nick)) {
-                                if (IsRegistered(nickLower)) {
+                                if (UserMan.IsRegistered(nickLower)) {
                                     setStream(nickLower, streamURL);
                                     Msg(chan, nick + "'s stream url set to: " + streamURL);
                                 } else {
@@ -1898,17 +1903,18 @@ namespace FurkiebotCMR {
                         break;
 
                     case ":.stream":
-                        if (userlist.ContainsKey(paramLower)) {
-                            Msg(chan, parameter + "'s stream url is: " + userlist[paramLower].streamurl);
+                        User temp = UserMan[parameter.Trim()];
+                        if (temp != null) {
+                            Msg(chan, parameter + "'s stream url is: " + temp.Streamurl);
                         }
                         break;
 
                     case ":.settrusted":
-                        if (IsAdmin(nickLower, nick)) {
+                        if (UserMan.IsAdmin(nickLower, nick)) {
                             char[] separator = { ' ' };
                             string[] split = parameter.Split(separator, 2);
                             if (split.Length == 2 && (split[1].ToLower() == "true" || split[1].ToLower() == "false")) {
-                                if (IsRegistered(split[0].ToLower())) {
+                                if (UserMan.IsRegistered(split[0].ToLower())) {
                                     setTrusted(split[0].ToLower(), split[1]);
                                     Notice(split[0], "Your trusted status set to: " + split[1]);
                                     Notice(nick, split[0] + "'s trusted status set to: " + split[1]);
@@ -1930,7 +1936,7 @@ namespace FurkiebotCMR {
                                 Notice(nick, "Nice try");
                             } else {
                                 if (split.Length == 2 && (split[1].ToLower() == "true" || split[1].ToLower() == "false")) {
-                                    if (IsRegistered(split[0].ToLower())) {
+                                    if (UserMan.IsRegistered(split[0].ToLower())) {
                                         setAdmin(split[0].ToLower(), split[1]);
                                         Notice(split[0], "Your admin status set to: " + split[1]);
                                         Notice(nick, split[0] + "'s admin status set to: " + split[1]);
@@ -1945,11 +1951,11 @@ namespace FurkiebotCMR {
                         break;
 
                     case ":.setrating":
-                        if (IsAdmin(nickLower, nick)) {
+                        if (UserMan.IsAdmin(nickLower, nick)) {
                             char[] separator = { ' ' };
                             string[] split = parameter.Split(separator, 2);
                             if (split.Length == 2) {
-                                if (IsRegistered(split[0].ToLower())) {
+                                if (UserMan.IsRegistered(split[0].ToLower())) {
                                     setRating(split[0].ToLower(), split[1]);
                                     Notice(split[0], "Your rating set to: " + split[1]);
                                     Notice(nick, split[0] + "'s rating set to: " + split[1]);
@@ -1963,11 +1969,11 @@ namespace FurkiebotCMR {
                         break;
 
                     case ":.setrandmaprating":
-                        if (IsAdmin(nickLower, nick)) {
+                        if (UserMan.IsAdmin(nickLower, nick)) {
                             char[] separator = { ' ' };
                             string[] split = parameter.Split(separator, 2);
                             if (split.Length == 2) {
-                                if (IsRegistered(split[0].ToLower())) {
+                                if (UserMan.IsRegistered(split[0].ToLower())) {
                                     setRandmapRating(split[0].ToLower(), split[1]);
                                 } else {
                                     Notice(nick, "That person isn't registered.");
@@ -2005,25 +2011,25 @@ namespace FurkiebotCMR {
                         #endregion
                         break;
                     case ":.say":
-                        if (IsAdmin(nickLower, nick) && op == "PRIVMSG" && StringCompareNoCaps(chan, nick)) {
+                        if (UserMan.IsAdmin(nickLower, nick) && op == "PRIVMSG" && StringCompareNoCaps(chan, nick)) {
                             Msg(mainchannel, parameter);
                             Msg(cmrchannel, parameter);
                         }
                         break;
                     case ":.saydf": //Can be used to broadcast a message to the mainchannel by whispering this command to FurkieBot
-                        if (IsAdmin(nickLower, nick) && op == "PRIVMSG" && StringCompareNoCaps(chan, nick)) {
+                        if (UserMan.IsAdmin(nickLower, nick) && op == "PRIVMSG" && StringCompareNoCaps(chan, nick)) {
                             Msg(mainchannel, parameter);
                         }
                         break;
                     case ":.sayrc":
                     case ":.sayracechan": //Can be used to broadcast a message to the racechannel by whispering this command to FurkieBot
-                        if (IsAdmin(nickLower, nick) && op == "PRIVMSG" && StringCompareNoCaps(chan, nick)) {
+                        if (UserMan.IsAdmin(nickLower, nick) && op == "PRIVMSG" && StringCompareNoCaps(chan, nick)) {
                             Msg(realRacingChan, parameter);
                         }
                         break;
 
                     case ":.kick": //Kick someone from a racingchannel
-                        if (chan == realRacingChan && IsAdmin(nickLower, nick)) {
+                        if (chan == realRacingChan && UserMan.IsAdmin(nickLower, nick)) {
                             sendData("KICK", chan + " :" + parameter);
                         }
                         break;
@@ -2042,7 +2048,7 @@ namespace FurkiebotCMR {
 
 
                     case ":register":
-                        AttemptRegistration(nick, parameter);
+                        UserMan.AttemptRegistration(nick, parameter);
                         break;
 
                 }
@@ -2056,11 +2062,10 @@ namespace FurkiebotCMR {
         /// Resets the CMR.
         /// </summary>
         private void ResetCmr() {
-            mapsTemp = null;
-            ResetTesters();
+            UserMan.ResetCmr();
+            //mapsTemp = null;
+            UserMan.ResetTesters();
             SetCMR(cmrId + 1);
-            maps = DeserializeMaps(cmrId);
-            notifyReloadMaps = false;
         }
 
 
@@ -2126,10 +2131,10 @@ namespace FurkiebotCMR {
         /// Notifies the users who asked to be notified of the start of a CMR.
         /// </summary>
         private void NotifyCmrStarting(){
-            foreach(KeyValuePair<string, PlayerInfo> entry in userlist) {
-                if ( entry.Value.notify == true ) {
-                    Notice(entry.Value.ircname, "The CMR channel has opened. You asked to be notified of this event. If you wish these messages to stop, please type \".notify false\"");
-                }
+            foreach (User user in UserMan.GetUsers().Where(u => u.Notify == true)) {
+                Notice(user.Name, "The CMR channel has opened. You asked to be notified of this event. If you wish these messages to stop, please type \".notify false\"");
+                Notice(user.Name + "_", "The CMR channel has opened. You asked to be notified of this event. If you wish these messages to stop, please type \".notify false\"");
+                Notice(user.Name + "__", "The CMR channel has opened. You asked to be notified of this event. If you wish these messages to stop, please type \".notify false\"");
             }
         }
 
@@ -2155,67 +2160,10 @@ namespace FurkiebotCMR {
         } /* StartTraxBuster */
 
 
-
-        /// <summary>
-        /// Gets an array of the nicks of users registered to test maps for this CMR.
-        /// </summary>
-        /// <returns>An array of the nicks of users registered to test maps for this CMR.</returns>
-        private List<string> GetTesters() {
-            List<string> testers = new List<string>();
-            foreach (KeyValuePair<string, PlayerInfo> entry in userlist) {
-                if (entry.Value.tester) {
-                    testers.Add(entry.Value.ircname);
-                }
-            }
-            return testers;
-        }
-
-
-        /// <summary>
-        /// Gets an array of the nicks of users that are trusted.
-        /// </summary>
-        /// <returns>An array of the nicks of users who are currently trusted.</returns>
-        private List<string> GetTrusted() {
-            List<string> trustedlist = new List<string>();
-            foreach (KeyValuePair<string, PlayerInfo> entry in userlist) {
-                if (entry.Value.trusted) {
-                    trustedlist.Add(entry.Value.ircname);
-                }
-            }
-            return trustedlist;
-        }
-
-
-        /// <summary>
-        /// Formats the provided string into a full twitch or hitbox url.
-        /// </summary>
-        /// <param name="streamURL">The provided portion of a url.</param>
-        /// <returns>The final stream url.</returns>
-        private string FormatStreamURL(string streamURL) {
-            
-            string streamLower = streamURL.ToLower();
-            string finalURL = "";
-            if (streamLower.StartsWith(@"http://") || streamLower.StartsWith(@"https://")) {//Already starts with http://
-                return streamURL;
-            } else {
-                finalURL = @"http://";
-                if (streamLower.StartsWith(@"www.")) {
-                    return finalURL + streamURL;
-                } else {
-                    finalURL = finalURL + @"www.";
-                }
-                if (!streamLower.StartsWith(@"twitch.tv/") && !streamLower.StartsWith(@"hitbox.tv/")) {
-                    finalURL = finalURL + @"twitch.tv/";
-                }
-                finalURL = finalURL + streamURL;
-                return finalURL;
-            }
-        }
-
-
         private string getStream(string nickname) {
-            if (userlist.ContainsKey(nickname.ToLower())) {
-                return userlist[nickname.ToLower()].streamurl;
+            User user = UserMan[nickname];
+            if (user != null) {
+                return user.Streamurl;
             } else {
                 return "Error, " + nickname + " wasnt in the userlist.";
             }
@@ -2232,57 +2180,47 @@ namespace FurkiebotCMR {
 
         private void setRandmapRating(string nickname, string rating) {
             throw new NotImplementedException();
-            if (IsRegistered(nickname)) {
-                PlayerInfo info = userlist[nickname];
-                info.tester = (rating.ToLower() == "true" ? true : false);
-                userlist[nickname] = info;
-                WriteUsers();
+            if (UserMan.IsRegistered(nickname)) {
+                User user = UserMan[nickname];
             }
         }
 
         private void setRating(string nickname, string rating) {
             throw new NotImplementedException();
-            if (IsRegistered(nickname)) {
-                PlayerInfo info = userlist[nickname];
-                info.tester = (rating.ToLower() == "true" ? true : false);
-                userlist[nickname] = info;
-                WriteUsers();
+            if (UserMan.IsRegistered(nickname)) {
+                User user = UserMan[nickname];
             }
         }
 
         private void setAdmin(string nickname, string tOrF) {
-            if (IsRegistered(nickname)) {
-                PlayerInfo info = userlist[nickname];
-                info.admin = (tOrF.ToLower() == "true" ? true : false);
-                userlist[nickname] = info;
-                WriteUsers();
+            if (UserMan.IsRegistered(nickname)) {
+                User user = UserMan[nickname];
+                user.Admin = (tOrF.ToLower() == "true" ? true : false);
+                UserMan.SaveUser(user);    
             }
         }
 
         private void setTrusted(string nickname, string tOrF) {
-            if (IsRegistered(nickname)) {
-                PlayerInfo info = userlist[nickname];
-                info.trusted = (tOrF.ToLower() == "true" ? true : false);
-                userlist[nickname] = info;
-                WriteUsers();
+            if (UserMan.IsRegistered(nickname)) {
+                User user = UserMan[nickname];
+                user.Trusted = (tOrF.ToLower() == "true" ? true : false);
+                UserMan.SaveUser(user);
             }
         }
 
         private void setTester(string nickname, string tOrF) {
-            if (IsRegistered(nickname)) {
-                PlayerInfo info = userlist[nickname];
-                info.tester = (tOrF.ToLower() == "true" ? true : false);
-                userlist[nickname] = info;
-                WriteUsers();
+            if (UserMan.IsRegistered(nickname)) {
+                User user = UserMan[nickname];
+                user.Tester = (tOrF.ToLower() == "true" ? true : false);
+                UserMan.SaveUser(user);
             }
         }
 
         private void setStream(string nickname, string url) {
-            if (IsRegistered(nickname)) {
-                PlayerInfo info = userlist[nickname];
-                info.streamurl = url;
-                userlist[nickname] = info;
-                WriteUsers();
+            if (UserMan.IsRegistered(nickname)) {
+                User user = UserMan[nickname];
+                user.Streamurl = FormatStreamURL(url);
+                UserMan.SaveUser(user);    
             }
         }
 
@@ -3482,6 +3420,34 @@ namespace FurkiebotCMR {
             return startDate.AddDays(DaysToAdd(startDate.DayOfWeek, desiredDay));
         }
 
+
+
+
+        /// <summary>
+        /// Formats the provided string into a full twitch or hitbox url.
+        /// </summary>
+        /// <param name="streamURL">The provided portion of a url.</param>
+        /// <returns>The final stream url.</returns>
+        public static string FormatStreamURL(string streamURL) {
+
+            string streamLower = streamURL.ToLower();
+            string finalURL = "";
+            if (streamLower.StartsWith(@"http://") || streamLower.StartsWith(@"https://")) {//Already starts with http://
+                return streamURL;
+            } else {
+                finalURL = @"http://";
+                if (streamLower.StartsWith(@"www.")) {
+                    return finalURL + streamURL;
+                } else {
+                    finalURL = finalURL + @"www.";
+                }
+                if (!streamLower.StartsWith(@"twitch.tv/") && !streamLower.StartsWith(@"hitbox.tv/")) {
+                    finalURL = finalURL + @"twitch.tv/";
+                }
+                finalURL = finalURL + streamURL;
+                return finalURL;
+            }
+        }
 
 
         static void Simulation() {
