@@ -87,7 +87,7 @@ namespace UserManager {
 
 
     /// <summary>
-    /// A Singleton class to manage Users in the DB.
+    /// A Singleton class to manage Users in the Database.
     /// </summary>
     class UserManager {
         private static MongoCollection<User> Users = DB.Database.GetCollection<User>(DB._USER_TABLE_NAME);
@@ -119,6 +119,14 @@ namespace UserManager {
         }
 
 
+        /// <summary>
+        /// Gets the <see cref="User"/> with the specified identifier from the Users Mongo Collection
+        /// </summary>
+        /// <value>
+        /// The <see cref="User"/>.
+        /// </value>
+        /// <param name="id">The identifier.</param>
+        /// <returns>The user with that ID.</returns>
         public User this[ObjectId id] {
             get {
                 return Users.AsQueryable<User>()
@@ -128,6 +136,14 @@ namespace UserManager {
         }
 
 
+        /// <summary>
+        /// Gets the <see cref="User"/> with the specified name out of the Users mongocollection.
+        /// </summary>
+        /// <value>
+        /// The <see cref="User"/>.
+        /// </value>
+        /// <param name="name">The name to find</param>
+        /// <returns>The user by that name.</returns>
         public User this[string name] {
             get {
                 return Users.AsQueryable()
@@ -137,9 +153,26 @@ namespace UserManager {
         }
 
 
+        /// <summary>
+        /// Saves the user to the Users table.
+        /// </summary>
+        /// <param name="user">The user.</param>
         public void SaveUser(User user) {
             var result = Users.Save(user);
         }
+
+
+
+        /// <summary>
+        /// Saves the ign to the Igns table.
+        /// </summary>
+        /// <param name="user">The ign.</param>
+        public void SaveIgn(IGN ign) {
+            var result = Igns.Save(ign);
+        }
+
+
+
 
 
 
@@ -230,7 +263,7 @@ namespace UserManager {
         /// </summary>
         /// <param name="nickname">The nickname.</param>
         /// <param name="password">The password.</param>
-        private void AttemptRegistration(string nickname, string password) {
+        public void AttemptRegistration(string nickname, string password) {
             User user = this[nickname];
             bool wasNull = false;
             if (user == null) {
@@ -272,7 +305,7 @@ namespace UserManager {
         /// <summary>
         /// Resets all users' tester status to false.
         /// </summary>
-        private void ResetTesters() {
+        public void ResetTesters() {
             //Dictionary<string, PlayerInfo> newUserList = new Dictionary<string, PlayerInfo>(userlist.Count * 2);
             var testers = GetTesters().ToList<User>();
             foreach (User user in testers) {
@@ -289,7 +322,7 @@ namespace UserManager {
         /// Gets a Queryable list of testers.
         /// </summary>
         /// <returns></returns>
-        private IQueryable<User> GetTesters() {
+        public IQueryable<User> GetTesters() {
             return Users.AsQueryable<User>()
                 .Where(c => c.Tester == true)
                 .OrderBy(c => c.Name);
@@ -304,7 +337,7 @@ namespace UserManager {
         /// </summary>
         /// <param name="dustforceuser">The dustforceuser.</param>
         /// <returns>null if not found</returns>
-        private User GetUserByIGN(string ign) {
+        public User GetUserByIGN(string ign) {
             ObjectId id = Igns.AsQueryable<User>()
                 .Where(c => c.NameLower == ign.ToLower())
                 .Select<User, ObjectId>(c => c.Id)
@@ -318,31 +351,39 @@ namespace UserManager {
         }
 
 
-
         /// <summary>
-        /// Gets the users in game dustforce name.
+        /// Gets the ingame name object for the specified name.
         /// </summary>
-        /// <param name="ircuser">The nick of the user.</param>
-        /// <returns>The users dustforce name.</returns>
-        private IGN GetUserIgn(string ircuser) {
-            User user = this[ircuser];
-
+        /// <param name="dustforcename">The dustforcename.</param>
+        /// <returns></returns>
+        /// <exception cref="System.Exception">Found multiple entries in the Igns table matching:  + dustforcename</exception>
+        public IGN GetIgnByDustforcename(string dustforcename) {
+            var query = Query.EQ("NameLower", dustforcename.ToLower().Trim());
+            var results = Igns.Find(query);
+            if (results.Count() > 1) {
+                throw new Exception("Found multiple entries in the Igns table matching: " + dustforcename);
+            }
+            return results.First();
         }
 
 
 
         /// <summary>
-        /// Gets the user rating.
+        /// Gets the users in game dustforce name.
         /// </summary>
-        /// <param name="ircuser">The ircuser.</param>
-        /// <returns></returns>
-        private int getUserRating(string ircuser) {
-            PlayerInfo res = new PlayerInfo();
-            if (userlist.ContainsKey(ircuser.ToLower())) {
-                userlist.TryGetValue(ircuser.ToLower(), out res);
-                return res.rating;
+        /// <param name="ircuser">The nick of the user.</param>
+        /// <returns>The users IGN.</returns>
+        public IGN GetIgnByIrc(string ircuser) {
+            User user = this[ircuser];
+            if (user != null) {
+                var query = Query.EQ("IrcUserID", user.Id);
+                var matches = Igns.Find(query);
+                if (matches.Count() > 1) {
+                    throw new Exception("in GetUserIgn, multiple matches in Igns for user.Id: " + user.Id);
+                }
+                return matches.First<IGN>();
             } else {
-                return -1;
+                return null;
             }
         }
 
@@ -353,31 +394,48 @@ namespace UserManager {
         /// Sets a users in game dustforce name.
         /// </summary>
         /// <param name="ircuser">The ircuser whose name to set.</param>
-        /// <param name="dustforceuser">The users dustforce name.</param>
-        private bool setUserIGN(string ircuser, string dustforceuser) {
-            string ircLower = ircuser.ToLower();
-            //if (!|| (dustforcelist[dustforceuser].ircname.ToLower() == ircLower)) {
-            if (dustforcelist.ContainsKey(dustforceuser) && dustforcelist[dustforceuser].ircname.ToLower() != ircuser.ToLower()) {
-                Notice(ircuser, "That IGN is already registered to someone else. Perhaps you registered it under another IRC nickname? If this is an issue, ask an admin to use .deleteign on that IGN.");
-                return false;
-            } else {
-                PlayerInfo temp = new PlayerInfo();
-                userlist.TryGetValue(ircLower, out temp);
-                string oldname = temp.dustforcename;
-                //Console.WriteLine("name " + temp.ircname + " dustforcename " + temp.dustforcename + " tester " + temp.tester + " trusted " + temp.trusted + " admin " + temp.admin);
+        /// <param name="dustforcename">The users dustforce name.</param>
+        public bool SetIgnByIrc(string ircuser, string dustforcename) {
+            User user = this[ircuser];
+            IGN ign = GetIgnByDustforcename(dustforcename);
+            if (ign != null) {
+                User ignUser = GetUserByIGN(ign.DustforceName);
+                //if (!|| (dustforcelist[dustforceuser].ircname.ToLower() == ircLower)) {
+                if (ignUser != null && ignUser.Id != user.Id) {
+                    fb.Notice(ircuser, "That IGN is already registered to someone else. Perhaps you registered it under another IRC nickname? If this is an issue, ask an admin to use .deleteign on that IGN.");
+                    return false;
+                } else { //ignUser was null, or it matches the expected userId. So update.
 
-                //delete old dustforceuser entry
-                if (oldname != null && dustforcelist.ContainsKey(oldname)) {
-                    dustforcelist.Remove(oldname);
+                    string oldname = ign.DustforceName;
+
+
+                    ign.DustforceName = dustforcename;
+
+                    SaveIgn(ign);
+                    return true;
                 }
-
-                temp.dustforcename = dustforceuser;
-                temp.ircname = ircuser;
-                userlist[ircLower] = temp;
-                dustforcelist.Add(dustforceuser, temp);
-
-                WriteUsers();
+            } else {
+                ign = new IGN();
+                ign.DustforceName = dustforcename;
+                ign.IrcUserID = user.Id;
+                SaveIgn(ign);
                 return true;
+            }
+        }
+
+
+
+        /// <summary>
+        /// Gets the users rating.
+        /// </summary>
+        /// <param name="ircuser">The ircuser.</param>
+        /// <returns>The users rating.</returns>
+        public int GetUserRating(string ircuser) {
+            User user = this[ircuser];
+            if (user != null) {
+                return user.Rating;
+            } else {
+                return -1;
             }
         }
 
@@ -386,17 +444,11 @@ namespace UserManager {
         /// Removes the provided IGN from any nicks that use it.
         /// </summary>
         /// <param name="ign">The ign.</param>
-        private void removeIGN(string ign, string toNotify) {
-            if (dustforcelist.ContainsKey(ign)) {
-                string ircname = dustforcelist[ign].ircname.ToLower();
-                PlayerInfo temp = userlist[ircname];
-                temp.dustforcename = "";
-                userlist[ircname] = temp;
-
-                dustforcelist.Remove(ign);
-            } else {
-                Notice(toNotify, "That IGN isnt registered with FurkieBot.");
-            }
+        public bool RemoveIGN(string dustforcename, string toNotify) {
+            IGN ign = GetIgnByDustforcename(dustforcename);
+            var query = Query.EQ("DustforceName", dustforcename);
+            var result = Igns.Remove(query);
+            return result.DocumentsAffected > 0;
         }
 
 
@@ -405,32 +457,12 @@ namespace UserManager {
         /// </summary>
         /// <param name="ircuser">The ircuser whose name to set.</param>
         /// <param name="option">On or Off</param>
-        private void setUserNotify(string ircuser, bool option) {
-            string ircLower = ircuser.ToLower();
-            PlayerInfo temp = new PlayerInfo();
-            userlist.TryGetValue(ircLower, out temp);
-            string oldoption = (temp.notify ? "true" : "false");
+        public void SetUserNotify(string ircuser, bool option) {
+            User user = this[ircuser];
+            //string oldoption = (user.Notify ? "true" : "false");
 
-            temp.notify = option;
-            userlist[ircLower] = temp;
-
-            WriteUsers();
-        }
-
-
-
-        /// <summary>
-        /// Serializes the user data to disk.
-        /// </summary>
-        private void WriteUsers() {
-            if (userlist != null) {
-                ignoreChangedUserlist = true;
-                string json = JsonConvert.SerializeObject(userlist, Newtonsoft.Json.Formatting.Indented);
-
-                File.WriteAllText(DATA_PATH + @"Userlist\userlistmap.json", json); // !! FILEPATH !!
-            } else {
-                throw new Exception("Null userlist attempting to be written");
-            }
+            user.Notify = option;
+            SaveUser(user);
         }
 
 
