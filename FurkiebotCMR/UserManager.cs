@@ -20,11 +20,11 @@ using MongoDB.Driver.Wrappers;
 //may not need ^
 
 using FurkiebotCMR;
-using FurkieDB;
-using CmrMap;
+using DatabaseCMR;
+using MapCMR;
 
 
-namespace CmrUser {
+namespace UserCMR {
     /// <summary>
     /// Class containing all the data about a User.
     /// </summary>
@@ -93,10 +93,13 @@ namespace CmrUser {
         private static MongoCollection<User> Users = DB.Database.GetCollection<User>(DB._USER_TABLE_NAME);
         private static MongoCollection<IGN> Igns = DB.Database.GetCollection<IGN>(DB._IGN_TABLE_NAME);
         private static UserManager instance;
+        private static object _instanceLock = new Object();
         public static UserManager Instance {
             get {
-                if (instance == null) {
-                    instance = new UserManager();
+                lock (_instanceLock) {
+                    if (instance == null) {
+                        instance = new UserManager();
+                    }
                 }
                 return instance;
             }
@@ -319,6 +322,30 @@ namespace CmrUser {
         public IQueryable<User> GetTesters() {
             return Users.AsQueryable<User>()
                 .Where(c => c.Tester == true)
+                .OrderBy(c => c.Name);
+        }
+
+
+
+        /// <summary>
+        /// Gets a Queryable list of testers.
+        /// </summary>
+        /// <returns></returns>
+        public IQueryable<User> GetTrustedUsers() {
+            return Users.AsQueryable<User>()
+                .Where(c => c.Trusted == true)
+                .OrderBy(c => c.Name);
+        }
+
+
+
+        /// <summary>
+        /// Gets a Queryable list of testers.
+        /// </summary>
+        /// <returns></returns>
+        public IQueryable<User> GetAdmins() {
+            return Users.AsQueryable<User>()
+                .Where(c => c.Admin == true)
                 .OrderBy(c => c.Name);
         }
 

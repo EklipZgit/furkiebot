@@ -18,11 +18,11 @@ using MongoDB.Driver.Wrappers;
 //may not need ^
 
 using FurkiebotCMR;
-using CmrUser;
-using CmrMap;
+using UserCMR;
+using MapCMR;
 
 
-namespace FurkieDB {
+namespace DatabaseCMR {
     class DBObject {
         [BsonId]
         public ObjectId Id;
@@ -40,13 +40,19 @@ namespace FurkieDB {
 
         private static FurkieBot fb = FurkieBot.Instance;
 
+        private static object _instanceLock = new Object();
+
+        public static Int32 UnixTimestamp { get { return (Int32)(DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1))).TotalSeconds; } }
+
         public static MongoDatabase Database {
             get {
-                if (db == null) {
-                    MongoClient client = new MongoClient(_CONNECTION_STRING);
-                    MongoServer server = client.GetServer();
-                    db = server.GetDatabase(_DB_NAME); // "CmrDB" is the name of the database
-                } 
+                lock (_instanceLock) {
+                    if (db == null) {
+                        MongoClient client = new MongoClient(_CONNECTION_STRING);
+                        MongoServer server = client.GetServer();
+                        db = server.GetDatabase(_DB_NAME); // "CmrDB" is the name of the database
+                    }
+                }
                 return db;
             }
         }

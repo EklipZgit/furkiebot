@@ -29,6 +29,9 @@ using System.Threading;
 using System.Xml;
 using TraxBusterCMR;
 using AtlasTools;
+using DatabaseCMR;
+using MapCMR;
+using UserCMR;
 
 /// <summary>
 /// The Furkiebot namespace.
@@ -46,7 +49,6 @@ namespace FurkiebotCMR {
         public string altNick;
     } /* IRCConfig */
 
-
     struct MapData {
         public string name;
         public int id;
@@ -57,7 +59,7 @@ namespace FurkiebotCMR {
         public string timestamp;
         public bool forceid;
     }
-    
+
 
     /// <summary>
     /// Player info struct containing all information about a player.
@@ -82,22 +84,27 @@ namespace FurkiebotCMR {
     /// </summary>
     public class FurkieBot : IDisposable {
         private static FurkieBot instance;
+        private static object _instanceLock = new Object();
         public static FurkieBot Instance {
             get {
-                if (instance == null) {
-                    IRCConfig conf = new IRCConfig();
-                    conf.name = FurkieBot.BOT_NAME;
-                    conf.nick = FurkieBot.BOT_NAME;
-                    conf.altNick = "FurkieBot_";
-                    conf.port = 6667;
-                    conf.server = "irc2.speedrunslive.com";
-                    conf.pass = FurkieBot.GetIRCPass();
+                lock (_instanceLock) {
+                    if (instance == null) {
+                        IRCConfig conf = new IRCConfig();
+                        conf.name = FurkieBot.BOT_NAME;
+                        conf.nick = FurkieBot.BOT_NAME;
+                        conf.altNick = "FurkieBot_";
+                        conf.port = 6667;
+                        conf.server = "irc2.speedrunslive.com";
+                        conf.pass = FurkieBot.GetIRCPass();
 
-                    instance = new FurkieBot(conf);
+                        instance = new FurkieBot(conf);
+                    }
                 }
                 return instance;
             } 
         }
+        private static UserManager UserMan = UserManager.Instance;
+        private static MapManager MapMan = MapManager.Instance;
 
 #if FB_DEBUG
         public const string BOT_NAME = "FurkieBot_";
@@ -118,6 +125,7 @@ namespace FurkiebotCMR {
         #region PATHS
         public const string MAPS_PATH = @"C:\CMR\Maps\";
         public const string DATA_PATH = @"C:\CMR\Data\";
+        public const string MAPS_UPDATE_PATH = DATA_PATH + "mapupdates.txt";
         public const string PASS_PATH = DATA_PATH + "Password.txt";
         public const string USERLIST_PATH = DATA_PATH + @"Userlist\userlistmap.json";
         #endregion
@@ -136,7 +144,7 @@ namespace FurkiebotCMR {
         public const int MAX_MSG_LENGTH = 450;
         #endregion
 
-        public const int MIN_MAPS = 7;
+        public const int MIN_MAPS = 8;
 
         private TraxBuster buster;
         private Thread busterThread;
@@ -179,49 +187,11 @@ namespace FurkiebotCMR {
 
 
 
-        /// <summary>
-        /// A flag that is set when FurkieBot itself modified the map file, so that the change handler knows not to reload anything.
-        /// </summary>
-        private bool ignoreChangedMaps = false;
-
-        /// <summary>
-        /// Notifies FurkieBot to reload the map data. This avoid Threading issues by ensuring critical data is only modified by the core FurkieBot thread.
-        /// </summary>
-        private bool notifyReloadMaps = false;
-
-
-        /// <summary>
-        /// A flag that is set when FurkieBot itself modified the userlist file, so that the change handler knows not to reload anything.
-        /// </summary>
-        private bool ignoreChangedUserlist = false;
-
-
-        /// <summary>
-        /// Notifies FurkieBot to reload the userlist data. This avoid Threading issues by ensuring critical data is only modified by the core FurkieBot thread.
-        /// </summary>
-        private bool notifyReloadUserlist = false;
-
-
 
         /// <summary>
         /// Locks multithreading down for the Whois checking sections, so that no threads can be waiting on whois's at once.
         /// </summary>
         private readonly object _whoisLock = new Object();
-
-
-        /// <summary>
-        /// Locks multithreading down for the map update checking sections, so that the maplist cannot be used at the same time it is being updated.
-        /// Public so that outside sources who alter maps and then set externally can lock this.
-        /// </summary>
-        public readonly object _updatingMapsLock = new Object();
-
-
-        /// <summary>
-        /// Locks multithreading down for the userlist update checking sections, so that the userlist cannot be used at the same time it is being updated.
-        /// </summary>
-        private readonly object _updatingUserlistLock = new Object();
-
-
         private readonly object _sendingMessageLock = new Object();
 
 
@@ -233,27 +203,12 @@ namespace FurkiebotCMR {
         private StreamReader sr = null;
         private StreamWriter sw = null;
 
-        //watches the maps.json file
-        private FileSystemWatcher mapsWatcher;
-        //watches the userlist.json file
-        private FileSystemWatcher userlistWatcher;
 
 
         private DataTable racers;
         //private DataTable users;
 
-        private Dictionary<string, MapData> maps;
-
-
-        /// <summary>
-        /// Allows FurkieBot to instantly respond to changes in the map file without actually modifying maps while anything is running.
-        /// </summary>
-        private Dictionary<string, MapData> mapsTemp;
-
-        private Dictionary<string, PlayerInfo> userlist; //ircnames -> userinfo. used for quick lookup and serializing to userlistmap.json upon modification
-        private Dictionary<string, PlayerInfo> userlistTemp; //temp file to store the userlist temporarily until update.
-        private Dictionary<string, PlayerInfo> dustforcelist;// dustforcenames -> userinfo. used only for quick lookup, and duplicate dustforcename checking.
-        private Dictionary<string, bool> identlist;// dustforcenames -> userinfo. used only for quick lookup, and duplicate dustforcename checking.
+        private Dictionary<string, bool> identlist;// lookup for who is currently identified. Will not be housed in the MongoDB since it is detrimental to persistently store it.
 
 
         public string dummyRacingChan; //first part of racingchannel string
@@ -282,9 +237,6 @@ namespace FurkiebotCMR {
         /// </summary>
         /// <param name="config">The configuration.</param>
         private FurkieBot(IRCConfig config) {
-            if (instance != null) {
-                throw new Exception("FurkieBot instance already exists when trying to create a new FurkieBot!");
-            }
             this.config = config;   // Create a new FileSystemWatcher and set its properties.
 
 
@@ -303,10 +255,6 @@ namespace FurkiebotCMR {
 
             cmrId = GetCurrentCMRidFromFile();
 
-            maps = DeserializeMaps(cmrId);
-
-            loadUserlist();
-
             dummyRacingChan = "#cmr-"; //first part of racingchannel string
             realRacingChan = ""; //real racing channel string
             mainchannel = MAIN_CHAN; //also the channel that will be joined upon start, change to #dustforcee for testing purposes
@@ -319,38 +267,37 @@ namespace FurkiebotCMR {
             cmrStatus = GetCurrentCMRStatus(); //CMR status can be closed, open, racing or finished
             identlist = new Dictionary<string, bool>();
 
-            hype = true; //Just for .unhype command lol
+            hype = false; //Just for .unhype command lol
 
             stahpwatch = new Stopwatch(); //Timer used for races
             countdown = new Stopwatch(); //Timer used to countdown a race
 
 
             cmrtime = new TimeSpan(10, 30, 0); //At what time (local) it is possible to start a CMR, 8:30pm equals 6:30pm GMT for me  EDIT now 11:30 AM PST for 6:30 GMT
-            cmrtimeString = @"11:30:00"; //make sure this equals the time on TimeSpan cmrtime
+            cmrtimeString = @"10:30:00"; //make sure this equals the time on TimeSpan cmrtime
 
 
 
-
+            InitDirectories();
+            //The one watcher, just used to notify furkiebot of changes to the map database.
+            #region HIDDEN, OLD EVENT HANDLERS
             /*
              * Set up the event handlers for watching the CMR map filesystem. Solution for now. 
              */
             //pendingWatcher = new FileSystemWatcher();
             //acceptedWatcher = new FileSystemWatcher();
-            mapsWatcher = new FileSystemWatcher();
-            userlistWatcher = new FileSystemWatcher();
-            InitDirectories();
-            mapsWatcher.Path = MAPS_PATH + cmrId;
-            userlistWatcher.Path = DATA_PATH + "\\Userlist";
+
+            //userlistWatcher = new FileSystemWatcher();
+            //mapsWatcher.Path = MAPS_PATH + cmrId;
+            //userlistWatcher.Path = DATA_PATH + "\\Userlist";
             /* Watch for changes in LastWrite times, and
                the renaming of files or directories. */
             //pendingWatcher.NotifyFilter = NotifyFilters.LastWrite
             //   | NotifyFilters.FileName | NotifyFilters.DirectoryName;
             //acceptedWatcher.NotifyFilter = NotifyFilters.LastWrite
             //   | NotifyFilters.FileName | NotifyFilters.DirectoryName;
-            mapsWatcher.NotifyFilter = NotifyFilters.LastWrite
-               | NotifyFilters.FileName | NotifyFilters.DirectoryName;
-            userlistWatcher.NotifyFilter = NotifyFilters.LastWrite
-               | NotifyFilters.FileName | NotifyFilters.DirectoryName;
+            //userlistWatcher.NotifyFilter = NotifyFilters.LastWrite
+            //   | NotifyFilters.FileName | NotifyFilters.DirectoryName;
             // Only watch text files.
             //fileWatcher.Filter = "*.txt";
 
@@ -365,18 +312,17 @@ namespace FurkiebotCMR {
             //acceptedWatcher.Deleted += new FileSystemEventHandler(DeletedAccepted);
             //acceptedWatcher.Renamed += new RenamedEventHandler(OnRenamed);
 
-            mapsWatcher.Changed += new FileSystemEventHandler(ChangedMaps);
-            userlistWatcher.Changed += new FileSystemEventHandler(ChangedUserlist);
+            //userlistWatcher.Changed += new FileSystemEventHandler(ChangedUserlist);
             //mapsWatcher.Created += new FileSystemEventHandler(CreatedMaps);
             //mapsWatcher.Renamed += new RenamedEventHandler(OnRenamed);
 
 
 
             //// Begin watching.
-            mapsWatcher.EnableRaisingEvents = true;
-            userlistWatcher.EnableRaisingEvents = true;
+            //userlistWatcher.EnableRaisingEvents = true;
+            #endregion
+            
         }
-
 
 
 
@@ -386,43 +332,6 @@ namespace FurkiebotCMR {
         /// <param name="message">The message for the race channel</param>
         public void MessageRacechan(string message) {
             sendData("PRIVMSG", " " + realRacingChan + " :" + message);
-        }
-
-
-
-
-        public Dictionary<string, MapData> GetMaps() {
-            if (this.mapsTemp != null) {
-                return new Dictionary<string, MapData>(this.mapsTemp);
-            } else {
-                return new Dictionary<string, MapData>(this.maps);
-            }
-        }
-
-
-        public void SetMaps(Dictionary<string, MapData> maps) {
-            lock (_updatingMapsLock) {
-                if (this.mapsTemp != null) {
-                    this.mapsTemp = maps;
-                } else {
-                    this.maps = maps;
-                }
-                WriteMaps(maps, cmrId);
-            }
-        }
-
-
-
-        public Dictionary<string, PlayerInfo> GetUsers() {
-            return new Dictionary<string, PlayerInfo>(this.userlist);
-        }
-
-
-        public void SetUsers(Dictionary<string, PlayerInfo> users) {
-            lock (_updatingUserlistLock) {
-                this.userlist = users;
-                WriteUsers();
-            }
         }
 
 
@@ -449,56 +358,6 @@ namespace FurkiebotCMR {
         }
 
 
-        // Define the filesystem event handlers. 
-
-        /// <summary>
-        /// The EventHandler function for when the maps json file is changed.
-        /// </summary>
-        /// <param name="source">The source of the event.</param>
-        /// <param name="e">The <see cref="RenamedEventArgs"/> instance containing the event data.</param>
-        private void ChangedUserlist(object source, FileSystemEventArgs e) {
-            if (e.Name == "userlistmap.json") {
-                Console.WriteLine("Userlist file changed.");
-                if (!ignoreChangedUserlist) {
-                    notifyReloadUserlist = true;
-                    SyncUserList();
-                } else {
-                    ignoreChangedUserlist = false;
-                }
-            }
-        }
-
-
-        // Define the filesystem event handlers. 
-
-        /// <summary>
-        /// The EventHandler function for when the maps json file is changed.
-        /// </summary>
-        /// <param name="source">The source of the event.</param>
-        /// <param name="e">The <see cref="RenamedEventArgs"/> instance containing the event data.</param>
-        private void ChangedMaps(object source, FileSystemEventArgs e) {
-            if (e.Name == "maps.json") {
-                Console.WriteLine("Maps file changed.");
-                if (!ignoreChangedMaps) {
-                    notifyReloadMaps = true;
-                    SyncMapList();
-                } else {
-                    ignoreChangedMaps = false;
-                }
-            }
-        }
-
-
-
-        /// <summary>
-        /// The EventHander function for when the maps json file is created.
-        /// </summary>
-        /// <param name="source">The source.</param>
-        /// <param name="e">The <see cref="FileSystemEventArgs"/> instance containing the event data.</param>
-        private static void CreatedMaps(object source, FileSystemEventArgs e) {
-            throw new Exception("this shit should never get called???????");
-        }
-
         /// <summary>
         /// Outputs the current CMR's map status to the provided channel.
         /// </summary>
@@ -519,12 +378,10 @@ namespace FurkiebotCMR {
             string toSay = "";
             string mapString = "";
             int pendingcount = 0;
-            foreach (KeyValuePair<string, MapData> entry in maps) {
-                if (entry.Value.accepted == false) {
-                    mapString += "\"" + entry.Value.name + "\" by " + entry.Value.author + SEP;
-                    pendingcount++;
-                    //toSay += "\" by " + entry.Value.author;       // TODO comment back in if we want authors in maplist.
-                }
+            foreach (CmrMap map in MapMan.GetPendingMaps()) {
+                User author = UserMan[map.AuthorId];
+                mapString += "\"" + map.Name + "\" by " + author.Name + SEP;
+                pendingcount++;
             }
             if (pendingcount > 0) {
                 mapString = mapString.Substring(0, mapString.Length - SEP.Length);
@@ -550,12 +407,11 @@ namespace FurkiebotCMR {
             string toSay = "";
             string mapString = "";
             int acceptedcount = 0;
-            foreach (KeyValuePair<string, MapData> entry in maps) {
-                if (entry.Value.accepted == true) {
-                    mapString += "\"" + entry.Value.name + "\" by " + entry.Value.author + SEP;
-                    acceptedcount++;
-                    //toSay += "\" by " + entry.Value.author;       // TODO comment back in if we want authors in maplist.
-                }
+            foreach (CmrMap map in MapMan.GetAcceptedMaps()) {
+                User author = UserMan[map.AuthorId];
+                mapString += "\"" + map.Name + "\" by " + author.Name + SEP;
+                acceptedcount++;
+                //toSay += "\" by " + entry.Value.author;       // TODO comment back in if we want authors in maplist.
             }
 
             if (acceptedcount > 0) {
@@ -572,18 +428,50 @@ namespace FurkiebotCMR {
         }
 
 
+
+
+        /// <summary>
+        /// Outputs the current CMR denied map status to the provided channel.
+        /// </summary>
+        /// <param name="chan">The channel. If empty or null, output to both main channels.</param>
+        private void OutputDenied(string chan) {
+            string toSay = "";
+            string mapString = "";
+            int deniedCount = 0;
+            foreach (CmrMap map in MapMan.GetDeniedMaps()) {
+                User author = UserMan[map.AuthorId];
+                Denial denial = MapMan.GetLatestDenialByMap(map.Id);
+                mapString += "\"" + map.Name + "\" by " + author.Name + " denied because \"" + denial.Message + "\"" + SEP;
+                deniedCount++;
+                //toSay += "\" by " + entry.Value.author;       // TODO comment back in if we want authors in maplist.
+            }
+
+            if (deniedCount > 0) {
+                mapString = mapString.Substring(0, mapString.Length - SEP.Length);
+            }
+
+            toSay += deniedCount + " maps denied: " + mapString;
+            if (chan == null || chan == "" || chan == " ") {
+                Msg(mainchannel, toSay);
+                Msg(cmrchannel, toSay);
+            } else {
+                Msg(chan, toSay);
+            }
+        }
+
+
         private void OutputTesters(string chan) {
             string testerString = "";
-            int acceptedcount = 0;
-            foreach (KeyValuePair<string, PlayerInfo> entry in userlist) {
-                if (entry.Value.tester == true) {
-                    testerString += entry.Value.ircname + SEP;
-                    acceptedcount++;
-                    //toSay += "\" by " + entry.Value.author;       // TODO comment back in if we want authors in maplist.
+            int testerCount = 0;
+            var testers = UserMan.GetTesters();
+            foreach (User tester in testers) {
+                if (IsIdentified(tester.NameLower, tester.Name)) {
+                    testerString += tester.Name + SEP;
+                    testerCount++;
                 }
             }
 
-            if (acceptedcount > 0) {
+            if (testerCount > 0) {
                 testerString = testerString.Substring(0, testerString.Length - SEP.Length);
             }
 
@@ -599,16 +487,15 @@ namespace FurkiebotCMR {
 
         private void OutputTrusted(string chan) {
             string trustedString = "";
-            int acceptedcount = 0;
-            foreach (KeyValuePair<string, PlayerInfo> entry in userlist) {
-                if (entry.Value.trusted == true) {
-                    trustedString += entry.Value.ircname + SEP;
-                    acceptedcount++;
-                    //toSay += "\" by " + entry.Value.author;       // TODO comment back in if we want authors in maplist.
+            int trustedCount = 0;
+            foreach (User trusted in UserMan.GetTrustedUsers()) {
+                if (IsIdentified(trusted.NameLower, trusted.Name)) {
+                    trustedString += trusted.Name + SEP;
+                    trustedCount++;
                 }
             }
 
-            if (acceptedcount > 0) {
+            if (trustedCount > 0) {
                 trustedString = trustedString.Substring(0, trustedString.Length - SEP.Length);
             }
 
@@ -624,16 +511,16 @@ namespace FurkiebotCMR {
 
         private void OutputAdmins(string chan) {
             string adminString = "";
-            int acceptedcount = 0;
-            foreach (KeyValuePair<string, PlayerInfo> entry in userlist) {
-                if (entry.Value.admin == true) {
-                    adminString += entry.Value.ircname + SEP;
-                    acceptedcount++;
+            int adminCount = 0;
+            foreach (User admin in UserMan.GetAdmins()) {
+                if (IsIdentified(admin.NameLower, admin.Name)) {
+                    adminString += admin.Name + SEP;
+                    adminCount++;
                     //toSay += "\" by " + entry.Value.author;       // TODO comment back in if we want authors in maplist.
                 }
             }
 
-            if (acceptedcount > 0) {
+            if (adminCount > 0) {
                 adminString = adminString.Substring(0, adminString.Length - SEP.Length);
             }
 
@@ -648,50 +535,6 @@ namespace FurkiebotCMR {
 
 
 
-
-
-
-
-        /// <summary>
-        /// Loads the userlist from the userlist map file into the userlist Dictionary.
-        /// </summary>
-        private void loadUserlist() {
-            userlist = getUserList();
-            //Dictionary<string, PlayerInfo> temp = new Dictionary<string, PlayerInfo>();
-            //foreach (KeyValuePair<string, PlayerInfo> entry in userlist) {
-            //    PlayerInfo info = entry.Value;
-            //    if (info.streamurl == "http://twitch.tv") {
-            //        info.streamurl = "";
-            //    }
-            //    temp[entry.Key] = info;
-            //}
-            //userlist = temp;
-            //WriteUsers();
-            SyncOtherTables();
-        }
-
-
-
-
-        /// <summary>
-        /// Gets the user list and returns it.
-        /// </summary>
-        /// <returns>The current userlist loaded from disk.</returns>
-        private Dictionary<string, PlayerInfo> getUserList() {
-            string filepath = USERLIST_PATH;
-
-            while (true) {
-                try {
-                    string[] jsonarray = File.ReadAllLines(filepath);
-                    string json = string.Join("", jsonarray);
-                    return JsonConvert.DeserializeObject<Dictionary<string, PlayerInfo>>(json); // initially loads the userlist from JSON
-                } catch (System.IO.IOException e) {
-                    Console.WriteLine("Got an error trying to read the userlist. Error: ");
-                    Console.WriteLine(e.StackTrace);
-                }
-                Thread.Sleep(5);
-            }
-        }
 
 
 
@@ -742,43 +585,6 @@ namespace FurkiebotCMR {
 
 
 
-        /// <summary>
-        /// Syncronizes other dictionaries.
-        /// </summary>
-        private void SyncOtherTables() {
-            dustforcelist = new Dictionary<string, PlayerInfo>();
-            Dictionary<string, PlayerInfo> temp = (userlistTemp == null ? userlist : userlistTemp);
-            foreach (KeyValuePair<string, PlayerInfo> entry in temp) {
-                if (!dustforcelist.ContainsKey(entry.Value.dustforcename)) {
-                    dustforcelist.Add(entry.Value.dustforcename, entry.Value);
-                }
-            }
-        } /* IRCBot */
-
-
-
-
-
-        /// <summary>
-        /// Helper function to be called before handling new IRC input to make sure the bots state is up to date with the real world data.
-        /// </summary>
-        private void checkState() {
-            lock (_updatingMapsLock) {            
-                if (notifyReloadMaps) {
-                    maps = mapsTemp;
-                    mapsTemp = null;
-                    notifyReloadMaps = false;
-                }
-            }
-            lock (_updatingUserlistLock) {
-                if (notifyReloadUserlist) {
-                    userlist = userlistTemp;
-                    userlistTemp = null;
-                    notifyReloadUserlist = false;
-                }
-            }
-        }
-
 
 
         /// <summary>
@@ -791,99 +597,6 @@ namespace FurkiebotCMR {
         }
 
 
-
-        /// <summary>
-        /// Synchronizes the Map List into mapsTemp and notifies furkiebot to reload. Notifies the IRC channels about any state changes that have happened.
-        /// </summary>
-        private void SyncMapList() {
-            lock (_updatingMapsLock) {
-                if (maps != null) {
-                    Dictionary<string, MapData> tocheck = DeserializeMaps(cmrId);
-                    Dictionary<string, MapData> tocompare = maps;
-
-                    if (mapsTemp != null) { tocompare = mapsTemp; } //in case we stored map changes in between furkiebot loop executions.
-                    acceptedCount = 0;
-                    pendingCount = 0;
-                    string message;
-                    foreach (KeyValuePair<string, MapData> entry in tocheck) {     // Notifies IRC about any state changes that have happened and sets the flag to reload maps.
-                        string key = entry.Key;
-                        MapData data = entry.Value;
-                        if (entry.Value.accepted) {
-                            acceptedCount++;
-                        } else {
-                            pendingCount++;
-                        }
-                        if (tocompare.ContainsKey(key)) {
-                            if (tocompare[key].accepted == false && data.accepted == true) { // map has been approved.
-                                acceptedCount++;
-                                pendingCount--;
-                                message = "Map \"" + data.name + "\" by " + data.author + " approved by " + data.acceptedBy;
-                                MsgChans(message);
-                                notifyReloadMaps = true;
-                            } else if (tocompare[key].accepted == true && data.accepted == false) {  // map has been unapproved.
-                                pendingCount++;
-                                acceptedCount--;
-                                message = "Map \"" + data.name + "\" by " + data.author + " removed from approved map list";
-                                MsgChans(message);
-                                MsgTesters(message + ". Download " + GetDownloadLink(data.name) + SEP + " Approve at " + TEST_LINK);
-                                notifyReloadMaps = true;
-                            } else if (tocompare[key].timestamp != data.timestamp) { // map has been resubmitted
-                                if (tocompare[key].accepted == true) {  // resubmit of an approved map
-                                    pendingCount++;
-                                    acceptedCount--;
-                                    data.accepted = false;
-                                    message = "Map \"" + data.name + "\" by " + data.author + " removed from approved map list";
-                                    MsgChans(message);
-                                    MsgTesters(message + ". Download " + GetDownloadLink(data.name) + SEP + " Approve at " + TEST_LINK);
-                                } else { // is a resubmit of a pending map
-                                    message = "Map \"" + data.name + "\" by " + data.author + " resubmitted";
-                                    MsgChans(message);
-                                    MsgTesters(message + ". Download " + GetDownloadLink(data.name) + SEP + " Approve at " + TEST_LINK);
-                                }
-                                notifyReloadMaps = true;
-                            }                            
-                        } else { //Map is newly submitted
-                            pendingCount++;
-                            message = "Map \"" + data.name + "\" by " + data.author + " submitted for testing";
-                            MsgChans(message);
-                            MsgTesters(message + ". Download " + GetDownloadLink(data.name) + SEP + " Approve at " + TEST_LINK);
-                            notifyReloadMaps = true;
-                        }
-                    }
-                    if (notifyReloadMaps) {
-                        mapsTemp = tocheck; // update the maps list to the new one.
-                        Console.WriteLine("\nReloaded the map file.\n");
-                    }
-                } else {
-                    Console.WriteLine("\n\n\nmaps is null. The fuck?\n\n");
-                    maps = DeserializeMaps(cmrId);
-                }
-            }
-        }
-
-
-
-        /// <summary>
-        /// Synchronizes the userlist.
-        /// </summary>
-        private void SyncUserList() {
-            lock (_updatingUserlistLock) {
-                if (userlist != null) {
-                    Dictionary<string, PlayerInfo> tocheck = getUserList();
-                    Dictionary<string, PlayerInfo> tocompare = userlist;
-
-                    if (userlistTemp != null) { tocompare = userlistTemp; }
-                        //nothing to compare atm
-
-                    userlistTemp = tocheck; // update the maps list to the new one.
-                    SyncOtherTables();
-                    Console.WriteLine("\nReloaded the userlist file.\n");
-                } else {
-                    Console.WriteLine("\n\n\nUserlist is null. The fuck?\n\n");
-                    userlist = getUserList();
-                }
-            }
-        }
 
 
 

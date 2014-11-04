@@ -62,6 +62,8 @@
     <Compile Include="AtlasChecker.cs" />
     <Compile Include="AtlasTools.cs" />
     <Compile Include="Buster.cs" />
+    <Compile Include="FurkieDB.cs" />
+    <Compile Include="UserManager.cs" />
     <Compile Include="MapManager.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

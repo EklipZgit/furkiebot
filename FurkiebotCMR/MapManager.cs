@@ -18,11 +18,12 @@ using MongoDB.Driver.Wrappers;
 //may not need ^
 
 using FurkiebotCMR;
-using FurkieDB;
-using CmrUser;
+using DatabaseCMR;
+using UserCMR;
+using System.IO;
 
 
-namespace CmrMap {
+namespace MapCMR {
 
     /// <summary>
     /// Denial objects to represent specific instances of denials
@@ -33,15 +34,17 @@ namespace CmrMap {
         public ObjectId MapId;
         public int Timestamp;
         public bool DisplayedToMapper;
+        public int CmrNo;
 
         [BsonConstructor]
-        public Denial(ObjectId id, ObjectId testerId, ObjectId mapId, string message, int timestamp, bool displayedToMapper) {
+        public Denial(ObjectId id, ObjectId testerId, ObjectId mapId, int cmrNo, string message, int timestamp, bool displayedToMapper) {
             Id = id;
             Message = message;
             TesterId = testerId;
             MapId = mapId;
             Timestamp = timestamp;
             DisplayedToMapper = displayedToMapper;
+            CmrNo = cmrNo;
         }
         
         public Denial() {}
@@ -58,7 +61,7 @@ namespace CmrMap {
         private ObjectId authorId;
         private ObjectId acceptedById;
         private bool accepted;
-        private string modifiedTimestamp;
+        private int modifiedTimestamp;
         private bool isIdForced;
         private bool isDenied;
         private int cmrNumber;
@@ -77,7 +80,7 @@ namespace CmrMap {
         public ObjectId AuthorId { get { return authorId; } set { authorId = value; } }
         public bool Accepted { get { return accepted; } set { accepted = value; if (value) { IsDenied = false; } } }
         public ObjectId AcceptedById { get { return acceptedById; } set { acceptedById = value; } }
-        public string LastModified { get { return modifiedTimestamp; } set { modifiedTimestamp = value; } }
+        public int LastModified { get { return modifiedTimestamp; } set { modifiedTimestamp = value; } }
         public bool IsAtlasIdForced { get { return isIdForced; } }
         public bool IsDenied { get { return isDenied; } set { isDenied = value; } }
         public int CmrNo { get { return cmrNumber; } set { cmrNumber = value; } }
@@ -132,19 +135,25 @@ namespace CmrMap {
         private static MongoCollection<CmrMap> Maps = DB.Database.GetCollection<CmrMap>(DB._MAP_TABLE_NAME);
         private static MongoCollection<Denial> Denials = DB.Database.GetCollection<Denial>(DB._DENIAL_TABLE_NAME);
         private static MapManager instance;
+        private static object _instanceLock = new Object();
         public static MapManager Instance {
             get {
-                if (instance == null) {
-                    instance = new MapManager();
+                lock (_instanceLock) {
+                    if (instance == null) {
+                        instance = new MapManager();
+                    }
                 }
                 return instance;
             }
         }
-        public static Int32 UnixTimestamp { get { return (Int32)(DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1))).TotalSeconds; } }
             
         private FurkieBot fb = FurkieBot.Instance;
         private UserManager UserMgr = UserManager.Instance;
 
+
+        private IQueryable<CmrMap> lastMaps;
+        private IQueryable<Denial> lastDenials;
+        private FileSystemWatcher mapsWatcher;
 
         private MapManager() {
             if (!BsonClassMap.IsClassMapRegistered(typeof(CmrMap))) {
@@ -167,6 +176,16 @@ namespace CmrMap {
                     cm.AutoMap();
                 });
             }
+
+
+            mapsWatcher = new FileSystemWatcher();
+            mapsWatcher.Path = FurkieBot.MAPS_UPDATE_PATH;
+            mapsWatcher.NotifyFilter = NotifyFilters.LastWrite
+               | NotifyFilters.FileName | NotifyFilters.DirectoryName;
+            mapsWatcher.Changed += new FileSystemEventHandler(CheckMaps);
+            mapsWatcher.EnableRaisingEvents = true;
+            lastMaps = GetMaps();
+            lastDenials = GetDenials();
         }
 
 
@@ -200,6 +219,36 @@ namespace CmrMap {
 
 
         /// <summary>
+        /// Gets all denials, including those from previous CMR's denials.
+        /// </summary>
+        /// <returns>All denials ever</returns>
+        public IQueryable<Denial> GetAllDenials() {
+            return Denials.AsQueryable<Denial>().OrderBy<Denial, int>(c => c.Timestamp);
+        }
+
+
+        /// <summary>
+        /// Gets the denials for the current CMR.
+        /// </summary>
+        /// <returns>All denials in the current CMR</returns>
+        public IQueryable<Denial> GetDenials() {
+            return GetDenials(fb.cmrId);
+        }
+
+
+        /// <summary>
+        /// Gets the denials for the provided CMR number.
+        /// </summary>
+        /// <param name="cmrId">The CMR identifier.</param>
+        /// <returns>
+        /// All denials in the provided CMR
+        /// </returns>
+        public IQueryable<Denial> GetDenials(int cmrId) {
+            return Denials.AsQueryable<Denial>().Where(c => c.CmrNo == cmrId).OrderBy<Denial, int>(c => c.Timestamp);
+        }
+
+
+        /// <summary>
         /// Gets the denial by identifier.
         /// </summary>
         /// <param name="denialId">The denial identifier.</param>
@@ -217,6 +266,87 @@ namespace CmrMap {
         public IQueryable<Denial> GetDenialsByMap(ObjectId mapId) {
             return Denials.AsQueryable<Denial>().Where(c => c.MapId == mapId).OrderBy<Denial, int>(c => c.Timestamp);
         }
+
+
+        /// <summary>
+        /// Gets the most recent denial for the provided MapId.
+        /// </summary>
+        /// <param name="mapId">The map identifier.</param>
+        /// <returns></returns>
+        public Denial GetLatestDenialByMap(ObjectId mapId) {
+            return Denials.AsQueryable<Denial>().Where(c => c.MapId == mapId).OrderBy<Denial, int>(c => c.Timestamp).First();
+        }
+
+
+        /// <summary>
+        /// Gets the maps.
+        /// </summary>
+        /// <returns></returns>
+        public IQueryable<CmrMap> GetMaps() { return GetMaps(fb.cmrId); }
+        /// <summary>
+        /// Gets the maps.
+        /// </summary>
+        /// <param name="cmrId">The CMR Number.</param>
+        /// <returns></returns>
+        public IQueryable<CmrMap> GetMaps(int cmrId) {
+            return Maps.AsQueryable<CmrMap>()
+                .Where(m => m.CmrNo == cmrId)
+                .OrderBy<CmrMap, int>(c => c.LastModified);
+        }
+
+
+        /// <summary>
+        /// Gets the accepted maps.
+        /// </summary>
+        /// <returns></returns>
+        public IQueryable<CmrMap> GetAcceptedMaps() { return GetAcceptedMaps(fb.cmrId); }
+        /// <summary>
+        /// Gets the accepted maps.
+        /// </summary>
+        /// <param name="cmrId">The CMR Number.</param>
+        /// <returns></returns>
+        public IQueryable<CmrMap> GetAcceptedMaps(int cmrId) {
+            return Maps.AsQueryable<CmrMap>()
+                .Where(m => m.CmrNo == cmrId && m.Accepted == true)
+                .OrderBy<CmrMap, int>(c => c.LastModified);
+        }
+
+
+        /// <summary>
+        /// Gets the pending maps.
+        /// </summary>
+        /// <returns></returns>
+        public IQueryable<CmrMap> GetPendingMaps() { return GetPendingMaps(fb.cmrId); }
+        /// <summary>
+        /// Gets the pending maps.
+        /// </summary>
+        /// <param name="cmrId">The CMR Number.</param>
+        /// <returns></returns>
+        public IQueryable<CmrMap> GetPendingMaps(int cmrId) {
+            return Maps.AsQueryable<CmrMap>()
+                .Where(m => m.CmrNo == cmrId && m.Accepted == false && m.IsDenied == false)
+                .OrderBy<CmrMap, int>(c => c.LastModified);
+        }
+
+
+        /// <summary>
+        /// Gets the denied maps.
+        /// </summary>
+        /// <returns></returns>
+        public IQueryable<CmrMap> GetDeniedMaps() { return GetDeniedMaps(fb.cmrId); }
+        /// <summary>
+        /// Gets the denied maps.
+        /// </summary>
+        /// <param name="cmrId">The CMR Number.</param>
+        /// <returns></returns>
+        public IQueryable<CmrMap> GetDeniedMaps(int cmrId) {
+            return Maps.AsQueryable<CmrMap>()
+                .Where(m => m.CmrNo == cmrId && m.Accepted == false && m.IsDenied == true)
+                .OrderBy<CmrMap, int>(c => c.LastModified);
+        }
+
+
+        
 
 
         /// <summary>
@@ -305,7 +435,7 @@ namespace CmrMap {
                         denial.MapId = selected.Id;
                         denial.TesterId = testerUsr.Id;
                         denial.Message = denialMessage;
-                        denial.Timestamp = UnixTimestamp;
+                        denial.Timestamp = DB.UnixTimestamp;
                         SaveDenial(denial);
                     }
                     successful = true;
@@ -370,7 +500,7 @@ namespace CmrMap {
                         denial.MapId = selected.Id;
                         denial.TesterId = testerUsr.Id;
                         denial.Message = denialMessage;
-                        denial.Timestamp = UnixTimestamp;
+                        denial.Timestamp = DB.UnixTimestamp;
                         SaveDenial(denial);
                     }
                     successful = true;
@@ -391,7 +521,7 @@ namespace CmrMap {
         /// </summary>
         /// <param name="mapname">The mapname.</param>
         /// <returns>Whether or not the map deleted successfully.</returns>
-        private bool DeleteMap(string mapname, string tester) {
+        public bool DeleteMap(string mapname, string tester) {
             return DeleteMap(mapname, tester, fb.cmrId);
         }
         /// <summary>
@@ -399,7 +529,7 @@ namespace CmrMap {
         /// </summary>
         /// <param name="mapname">The mapname.</param>
         /// <returns>Whether or not the map deleted successfully.</returns>
-        private bool DeleteMap(string mapname, string tester, int cmrId) {
+        public bool DeleteMap(string mapname, string tester, int cmrId) {
             var query = Query.And(Query.EQ("NameLower", mapname.Trim().ToLower()),
                                   Query.EQ("CmrNo", cmrId));
             var removing = Maps.Find(query);
@@ -420,7 +550,7 @@ namespace CmrMap {
         /// <param name="mapname">The mapname.</param>
         /// <param name="id">The identifier.</param>
         /// <returns></returns>
-        private bool SetMapId(string mapname, int id) {
+        public bool SetMapId(string mapname, int id) {
             CmrMap map = this[mapname];
             if (map != null) {
                 map.AtlasID = id;
@@ -428,7 +558,73 @@ namespace CmrMap {
                 return true;
             } 
             return false;
-            
         }
+
+
+
+        private void CheckMaps(object sender, FileSystemEventArgs e) {
+            if (maps != null) {
+                Dictionary<string, MapData> tocheck = DeserializeMaps(cmrId);
+                Dictionary<string, MapData> tocompare = maps;
+
+                if (mapsTemp != null) { tocompare = mapsTemp; } //in case we stored map changes in between furkiebot loop executions.
+                acceptedCount = 0;
+                pendingCount = 0;
+                string message;
+                foreach (KeyValuePair<string, MapData> entry in tocheck) {     // Notifies IRC about any state changes that have happened and sets the flag to reload maps.
+                    string key = entry.Key;
+                    MapData data = entry.Value;
+                    if (entry.Value.accepted) {
+                        acceptedCount++;
+                    } else {
+                        pendingCount++;
+                    }
+                    if (tocompare.ContainsKey(key)) {
+                        if (tocompare[key].accepted == false && data.accepted == true) { // map has been approved.
+                            acceptedCount++;
+                            pendingCount--;
+                            message = "Map \"" + data.name + "\" by " + data.author + " approved by " + data.acceptedBy;
+                            MsgChans(message);
+                            notifyReloadMaps = true;
+                        } else if (tocompare[key].accepted == true && data.accepted == false) {  // map has been unapproved.
+                            pendingCount++;
+                            acceptedCount--;
+                            message = "Map \"" + data.name + "\" by " + data.author + " removed from approved map list";
+                            MsgChans(message);
+                            MsgTesters(message + ". Download " + GetDownloadLink(data.name) + SEP + " Approve at " + TEST_LINK);
+                            notifyReloadMaps = true;
+                        } else if (tocompare[key].timestamp != data.timestamp) { // map has been resubmitted
+                            if (tocompare[key].accepted == true) {  // resubmit of an approved map
+                                pendingCount++;
+                                acceptedCount--;
+                                data.accepted = false;
+                                message = "Map \"" + data.name + "\" by " + data.author + " removed from approved map list";
+                                MsgChans(message);
+                                MsgTesters(message + ". Download " + GetDownloadLink(data.name) + SEP + " Approve at " + TEST_LINK);
+                            } else { // is a resubmit of a pending map
+                                message = "Map \"" + data.name + "\" by " + data.author + " resubmitted";
+                                MsgChans(message);
+                                MsgTesters(message + ". Download " + GetDownloadLink(data.name) + SEP + " Approve at " + TEST_LINK);
+                            }
+                            notifyReloadMaps = true;
+                        }
+                    } else { //Map is newly submitted
+                        pendingCount++;
+                        message = "Map \"" + data.name + "\" by " + data.author + " submitted for testing";
+                        MsgChans(message);
+                        MsgTesters(message + ". Download " + GetDownloadLink(data.name) + SEP + " Approve at " + TEST_LINK);
+                        notifyReloadMaps = true;
+                    }
+                }
+                if (notifyReloadMaps) {
+                    mapsTemp = tocheck; // update the maps list to the new one.
+                    Console.WriteLine("\nReloaded the map file.\n");
+                }
+            } else {
+                lastMaps = MapMan.GetMaps();
+            }
+        }
+
+
     }
 }
