@@ -4,7 +4,6 @@ using System.Linq;
 using System.Text;
 using MongoDB.Bson;
 using MongoDB.Driver;
-//may not need V
 using MongoDB.Driver.Builders;
 using MongoDB.Driver.GridFS;
 using MongoDB.Driver.Linq;
@@ -12,6 +11,7 @@ using MongoDB.Driver.Linq;
 
 
 namespace CmrMapManager {
+
     /// <summary>
     /// Denial objects to represent specific instances of denials
     /// </summary>
@@ -21,6 +21,11 @@ namespace CmrMapManager {
         public Denial(string theTester, string theMessage) {
             message = theMessage;
             tester = theTester;
+        }
+
+        public Denial()
+            : this("Not Initialized", "Not Initialized") {
+
         }
     }
 
@@ -59,6 +64,10 @@ namespace CmrMapManager {
         }
 
 
+        public CmrMap() {
+        }
+
+
         public bool Accept(string tester, bool isAdmin=false) {
             if (accepted) {
                 return false;
@@ -80,12 +89,18 @@ namespace CmrMapManager {
             return true;
         }
     }
-
+    
+        
     class MapManager {
         private static string CONNECTION_STRING = "mongodb://localhost";
         private static MongoClient CLIENT = new MongoClient(CONNECTION_STRING);
         static MongoServer SERVER = CLIENT.GetServer();
         MongoDatabase DB = SERVER.GetDatabase("CmrDB"); // "CmrDB" is the name of the database
+        
+        BsonClassMap.RegisterClassMap<MyClass>(cm => {
+            cm.MapIdProperty(c => c.SomeProperty);
+            // mappings for other fields and properties
+        });
         
     }
 }

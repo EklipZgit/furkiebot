@@ -22,10 +22,18 @@ Create the folders "C:\CMR\Mongo\db" and "C:\CMR\Mongo\log"
 
 ONLY DO THIS IF YOU WANT THIS DB TO AUTOSTART WITH WINDOWS
 	open a cmd prompt as admin (winkey, search for "Command Prompt", right click and select run as administrator) and run:
-		sc.exe create MongoDB binPath= "\"C:\CMR\bin\mongod.exe\" --service --config=\"C:\CMR\mongod.cfg\"" DisplayName= "CMR MongoDB" start= "auto"
-
-to run mongodb server, open command prompt and
 	cd C:\CMR\Mongo\bin
-	mongod.exe --config=C:\CMR\Mongo\mongod.cfg
+	mongod.exe --config C:\CMR\Mongo\mongod.cfg --install
+	Open your services manager and find MongoDB and manually start it.
+		(IF THE ABOVE DOESNT WORK, RUN THE COMMAND BELOW IN COMMAND PROMPT AS ADMIN)
+			sc.exe create MongoDB binPath= "\"C:\CMR\bin\mongod.exe\" --service --config=\"C:\CMR\mongod.cfg\"" DisplayName= "CMR MongoDB" start= "auto"
 
+to run mongodb server but not install it as a service, open command prompt and
+	cd C:\CMR\Mongo\bin
+	mongod.exe --config C:\CMR\Mongo\mongod.cfg
+
+(You shouldnt need to do this...) IF VS DOESNT RECOGNIZE THINGS IN THE PROJECT, YOU MAY NEED TO:
+	open Tools -> Library Package Manager -> Package Manager Console    in Visual Studio Tools dropdown
+		in the console that opens at the bottom, run 
+			Install-Package mongocsharpdriver
 
