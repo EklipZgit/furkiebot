@@ -19,25 +19,32 @@ using MongoDB.Driver.Wrappers;
 
 using FurkiebotCMR;
 using FurkieDB;
+using CmrUser;
 
 
-namespace MapManager {
+namespace CmrMap {
 
     /// <summary>
     /// Denial objects to represent specific instances of denials
     /// </summary>
     class Denial : DBObject {
         public string Message;
-        public string Tester;
+        public ObjectId TesterId;
+        public ObjectId MapId;
+        public int Timestamp;
+        public bool DisplayedToMapper;
 
-        public Denial(string theTester, string theMessage) {
-            Message = theMessage;
-            Tester = theTester;
+        [BsonConstructor]
+        public Denial(ObjectId id, ObjectId testerId, ObjectId mapId, string message, int timestamp, bool displayedToMapper) {
+            Id = id;
+            Message = message;
+            TesterId = testerId;
+            MapId = mapId;
+            Timestamp = timestamp;
+            DisplayedToMapper = displayedToMapper;
         }
-
-        public Denial()
-            : this("Not Initialized", "Not Initialized") {
-        }
+        
+        public Denial() {}
     }
 
     /// <summary>
@@ -48,47 +55,74 @@ namespace MapManager {
         private string nameLower;
         private int atlasId;
         private string filepath;
-        private string author;
-        private string acceptedBy;
+        private ObjectId authorId;
+        private ObjectId acceptedById;
         private bool accepted;
         private string modifiedTimestamp;
-        private bool forceid;
+        private bool isIdForced;
         private bool isDenied;
         private int cmrNumber;
-        private List<ObjectId> denialMessages;
 
         public string Name { get { return name; } set { name = value; nameLower = name.ToLower(); } }
         public string NameLower { get { return nameLower; } }
         public int AtlasID {
             get { return atlasId; }
             set {
-                if (!forceid) {
+                if (!isIdForced) {
                     atlasId = value;
                 }
             }
         }
         public string Filepath { get { return filepath; } set { filepath = value; } }
-        public string Author { get { return author; } set { author = value; } }
-        public bool Accepted { get { return accepted; } set { accepted = value; } }
-        public string AcceptedBy { get { return acceptedBy; } set { acceptedBy = value; } }
+        public ObjectId AuthorId { get { return authorId; } set { authorId = value; } }
+        public bool Accepted { get { return accepted; } set { accepted = value; if (value) { IsDenied = false; } } }
+        public ObjectId AcceptedById { get { return acceptedById; } set { acceptedById = value; } }
         public string LastModified { get { return modifiedTimestamp; } set { modifiedTimestamp = value; } }
-        public bool IsForcedID { get { return forceid; } }
+        public bool IsAtlasIdForced { get { return isIdForced; } }
         public bool IsDenied { get { return isDenied; } set { isDenied = value; } }
         public int CmrNo { get { return cmrNumber; } set { cmrNumber = value; } }
 
 
 
+        /// <summary>
+        /// Forces the Atlas ID on this map.
+        /// </summary>
+        /// <param name="tester">The tester.</param>
+        /// <param name="newId">The new Atlas ID.</param>
+        /// <returns>Whether or not the map already had a forced ID. (Updates the AtlasID either way)</returns>
+        public bool ForceID(string tester, int newId) {
+            AtlasID = newId;
+            if (!isIdForced) {
+                isIdForced = true;
+                return true;
+            }
+            return false;
+        }
+
+
+        /// <summary>
+        /// Unforces the Atlas ID on this map.
+        /// </summary>
+        /// <param name="tester">The tester.</param>
+        /// <returns></returns>
+        public bool Unforce(string tester) {
+            if (isIdForced) {
+                isIdForced = false;
+                return true;
+            }
+            return false;
+        }
+
+
         [BsonConstructor]
-        public CmrMap(ObjectId id, bool isForcedId, List<ObjectId> denialMessages) {
-            this.Id = id;
-            this.denialMessages = denialMessages;
-            this.forceid = isForcedId;
+        public CmrMap(ObjectId id, bool isForcedId) {
+            Id = id;
+            isIdForced = isForcedId;
         }
 
 
         public CmrMap() {
-            denialMessages = new List<ObjectId>();
-            forceid = false;
+            isIdForced = false;
         }
 
     }
@@ -106,8 +140,10 @@ namespace MapManager {
                 return instance;
             }
         }
+        public static Int32 UnixTimestamp { get { return (Int32)(DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1))).TotalSeconds; } }
             
         private FurkieBot fb = FurkieBot.Instance;
+        private UserManager UserMgr = UserManager.Instance;
 
 
         private MapManager() {
@@ -135,9 +171,96 @@ namespace MapManager {
 
 
 
+        /// <summary>
+        /// Gets the <see cref="CmrMap"/> with the specified identifier from the Maps Mongo Collection
+        /// </summary>
+        /// <param name="id">The identifier of the map to find.</param>
+        /// <returns>The Map with that ID. Null if non-existent</returns>
+        public CmrMap this[ObjectId id] {
+            get {
+                return Maps.AsQueryable<CmrMap>()
+                    .Where<CmrMap>(u => u.Id == id)
+                    .First<CmrMap>();
+            }
+        }
+
+
+        /// <summary>
+        /// Gets the <see cref="CmrMap"/> with the specified name out of the Maps mongocollection.
+        /// </summary>
+        /// <param name="name">The name of the map to find</param>
+        /// <returns>The Map by that name. Null if non-existent</returns>
+        public CmrMap this[string name] {
+            get {
+                return Maps.AsQueryable()
+                    .Where(u => u.NameLower == name.ToLower().Trim() && u.CmrNo == fb.cmrId)
+                    .First();
+            }
+        }
+
+
+        /// <summary>
+        /// Gets the denial by identifier.
+        /// </summary>
+        /// <param name="denialId">The denial identifier.</param>
+        /// <returns></returns>
+        public Denial GetDenialById(ObjectId denialId) {
+            return Denials.AsQueryable<Denial>().Where(c => c.Id == denialId).First();
+        }
+
+
+        /// <summary>
+        /// Gets the denials by map ID.
+        /// </summary>
+        /// <param name="mapId">The map identifier.</param>
+        /// <returns></returns>
+        public IQueryable<Denial> GetDenialsByMap(ObjectId mapId) {
+            return Denials.AsQueryable<Denial>().Where(c => c.MapId == mapId).OrderBy<Denial, int>(c => c.Timestamp);
+        }
+
+
+        /// <summary>
+        /// Saves the provided map to the Database.
+        /// </summary>
+        /// <param name="map">The map to save</param>
+        /// <returns>Whether or not the save was successful ?</returns>
+        public bool SaveMap(CmrMap map) {
+            var result = Maps.Save(map);
+            return result.DocumentsAffected > 0;
+        }
+
+
+
+        /// <summary>
+        /// Saves the provided Denial object to the Database.
+        /// </summary>
+        /// <param name="denial">The Denial instance to save</param>
+        /// <returns>Whether or not the save was successful ?</returns>
+        public bool SaveDenial(Denial denial) {
+            var result = Denials.Save(denial);
+            return result.DocumentsAffected > 0;
+        }
+
+
+
+        /// <summary>
+        /// Accepts the specified map for the current CMR.
+        /// </summary>
+        /// <param name="mapName">Name of the map.</param>
+        /// <param name="tester">The tester.</param>
+        /// <param name="isAdmin">if set to <c>true</c> [is admin].</param>
+        /// <returns>Whether or not the map was accepted.</returns>
         public bool Accept(string mapName, string tester, bool isAdmin = false) {
             return Accept(mapName, tester, fb.cmrId, isAdmin);
         }
+        /// <summary>
+        /// Accepts the specified map for the current CMR.
+        /// </summary>
+        /// <param name="mapName">Name of the map.</param>
+        /// <param name="tester">The tester.</param>
+        /// <param name="cmrId">The cmr for which to accept the map.</param>
+        /// <param name="isAdmin">if set to <c>true</c> [is admin].</param>
+        /// <returns>Whether or not the map was accepted.</returns>
         public bool Accept(string mapName, string tester, int cmrId, bool isAdmin = false) {
             var selected =
                 Maps.AsQueryable<CmrMap>()
@@ -145,68 +268,120 @@ namespace MapManager {
             bool successful = false;
             foreach (CmrMap map in selected) {
                 if (!map.Accepted) {
-                    map.AcceptedBy = tester;
-                    map.Accepted = true;
-                    successful = true;
-                    furkiebot.MsgChans("Map: \"" + map.Name + "\" accepted by ");
+                    User testerUsr = UserMgr[tester];
+                    if (testerUsr != null) {
+                        map.AcceptedById = testerUsr.Id;
+                        map.Accepted = true;
+                        successful = true;
+                        fb.MsgChans("Map: \"" + map.Name + "\" accepted by " + tester);
+                        SaveMap(map);
+                    }
                 }
             }
             return successful;
         }
 
-        public bool Unaccept(string tester, bool isAdmin = false) {
-            if (accepted) {
-                acceptedBy = "Not accepted.";
-                accepted = false;
+
+
+        /// <summary>
+        /// Unaccepts the specified map.
+        /// </summary>
+        /// <param name="mapName">Name of the map.</param>
+        /// <param name="tester">The tester.</param>
+        /// <param name="denialMessage">The denial message.</param>
+        /// <param name="isAdmin">if set to <c>true</c> [is admin].</param>
+        /// <returns></returns>
+        public bool Unaccept(string mapName, string tester, string denialMessage = null, bool isAdmin = false) {
+
+            var selected = this[mapName];
+            bool successful = false;
+            if (selected.Accepted) {
+                User testerUsr = UserMgr[tester];
+                if (testerUsr != null) {
+                    selected.Accepted = false;
+                    if (denialMessage != null) {
+                        selected.IsDenied = true;
+                        Denial denial = new Denial();
+                        denial.MapId = selected.Id;
+                        denial.TesterId = testerUsr.Id;
+                        denial.Message = denialMessage;
+                        denial.Timestamp = UnixTimestamp;
+                        SaveDenial(denial);
+                    }
+                    successful = true;
+                    fb.MsgChans("Map: \"" + selected.Name + "\" accepted by " + tester);
+                    SaveMap(selected);
+                }
+            }
+            return successful;
+        }
+
+        /// <summary>
+        /// Forces the maps atlas identifier.
+        /// </summary>
+        /// <param name="mapName">Name of the map.</param>
+        /// <param name="tester">The tester.</param>
+        /// <param name="newId">The new AtlasID.</param>
+        /// <returns>Whether or not the map was found.</returns>
+        public bool ForceMapAtlasID(string mapName, string tester, int newId) {
+            CmrMap map = this[mapName];
+            if (map != null) {
+                map.ForceID(tester, newId);
                 return true;
-            } else {
-                return false;
             }
+            return false;
         }
 
-        public bool ForceID(string tester, int newId) {
-            atlasId = newId;
-            forceid = true;
-            return true;
-        }
 
-        public bool Deny(string tester, ObjectId denialId, bool isAdmin = false) {
-            if (!accepted) {
-                denialMessages.Add(new Denial(tester, reasonForDenial));
-            } else {
-                denialMessages.Add(new Denial(tester, reasonForDenial));
-                isDenied = Unaccept(tester, isAdmin);
+        /// <summary>
+        /// Unforces the Atlas ID on this map.
+        /// </summary>
+        /// <param name="tester">The tester.</param>
+        /// <returns>Whether or not the map was found.</returns>
+        public bool UnforceMapAtlasID(string mapName, string tester) {
+            CmrMap map = this[mapName];
+            if (map != null) {
+                map.Unforce(tester);
+                return true;
             }
-            return isDenied;
+            return false;
         }
 
 
 
         /// <summary>
-        /// Writes the given maplist to the file for the provided CMR id number.
+        /// Denies the map with the provided map name.
         /// </summary>
-        /// <param name="maplist">The maplist to write out to disk.</param>
-        /// <param name="cmrid">The current cmrid.</param>
-        private void WriteMaps() {
-            ignoreChangedMaps = true;
-            lock (_updatingMapsLock) {
-                var mapDict = (mapsTemp == null ? maps : mapsTemp);
-                WriteMaps(mapDict, cmrId);
+        /// <param name="mapName">Name of the map.</param>
+        /// <param name="tester">The tester.</param>
+        /// <param name="denialMessage">The denial message.</param>
+        /// <param name="isAdmin">if set to <c>true</c> [is admin].</param>
+        /// <returns>Whether or not the map was successfully denied.</returns>
+        public bool DenyMap(string mapName, string tester, string denialMessage, bool isAdmin = false) {
+            var selected = this[mapName];
+            bool successful = false;
+            if (!selected.Accepted) {
+                User testerUsr = UserMgr[tester];
+                if (testerUsr != null) {
+                    selected.Accepted = false;
+                    if (denialMessage != null) {
+                        selected.IsDenied = true;
+                        Denial denial = new Denial();
+                        denial.MapId = selected.Id;
+                        denial.TesterId = testerUsr.Id;
+                        denial.Message = denialMessage;
+                        denial.Timestamp = UnixTimestamp;
+                        SaveDenial(denial);
+                    }
+                    successful = true;
+                    fb.MsgChans("Map: \"" + selected.Name + "\" accepted by " + tester);
+                    SaveMap(selected);
+                }
+            } else {
+                fb.Notice(tester, "Map couldn't be denied because it has already been accepted. Instead, use:");
+                fb.Notice(tester, ".unaccept \"mapname\" denial message");
             }
-        }
-
-
-
-        /// <summary>
-        /// Writes the given maplist to the file for the provided CMR id number.
-        /// </summary>
-        /// <param name="maplist">The maplist to write out to disk.</param>
-        /// <param name="cmrid">The current cmrid.</param>
-        private void WriteMaps(Dictionary<string, MapData> maplist, int cmrid) {
-            string filepath = MAPS_PATH + cmrid + @"\maps.json"; // !! FILEPATH !!
-
-            string json = JsonConvert.SerializeObject(maplist, Newtonsoft.Json.Formatting.Indented);
-            System.IO.File.WriteAllText(filepath, json);
+            return successful;
         }
 
 
@@ -217,55 +392,25 @@ namespace MapManager {
         /// <param name="mapname">The mapname.</param>
         /// <returns>Whether or not the map deleted successfully.</returns>
         private bool DeleteMap(string mapname, string tester) {
-            mapname = mapname.ToLower().Trim();
-            Dictionary<string, MapData> maps = (mapsTemp == null ? this.maps : mapsTemp);
-            if (maps.ContainsKey(mapname)) {
-                if (maps[mapname].accepted) {
-                    acceptedCount--;
-                } else {
-                    pendingCount--;
-                }
-                maps.Remove(mapname);
-                WriteMaps();
-                return true;
-            }
-            return false;
+            return DeleteMap(mapname, tester, fb.cmrId);
         }
-
-
         /// <summary>
-        /// Approves a CMR map by name.
+        /// Deletes a map from the current CMR.
         /// </summary>
         /// <param name="mapname">The mapname.</param>
-        /// <param name="tester">The testers name.</param>
-        /// <returns>Whether or not the map existed.</returns>
-        private bool ApproveMap(string mapname, string tester) {
-            mapname = mapname.ToLower().Trim();
-            Dictionary<string, MapData> maps = (mapsTemp == null ? this.maps : mapsTemp);
-            if (maps.ContainsKey(mapname) && maps[mapname].accepted == false) {
-                MapData map = maps[mapname];
-                acceptedCount++;
-                pendingCount--;
-                map.acceptedBy = tester;
-                map.accepted = true;
-                maps[mapname] = map;
-                WriteMaps(maps, cmrId);
-                return true;
+        /// <returns>Whether or not the map deleted successfully.</returns>
+        private bool DeleteMap(string mapname, string tester, int cmrId) {
+            var query = Query.And(Query.EQ("NameLower", mapname.Trim().ToLower()),
+                                  Query.EQ("CmrNo", cmrId));
+            var removing = Maps.Find(query);
+            var results = Maps.Remove(query);
+            foreach (CmrMap map in removing) {
+                var linqQuery = Query<Denial>.Where(d => d.MapId == map.Id);
+                if (Denials.Remove(linqQuery).DocumentsAffected > 0) { Console.WriteLine("Successfully removed a map Denial for map: " + map.Name); }
             }
-            return false;
+            return results.DocumentsAffected > 0;
         }
 
-        /// <summary>
-        /// Denies the map.
-        /// </summary>
-        /// <param name="mapname">The mapname.</param>
-        /// <param name="tester">The tester.</param>
-        /// <param name="denyMessage">The deny message.</param>
-        /// <returns>Whether or not the map existed.</returns>
-        private bool DenyMap(string mapname, string tester, string denyMessage) {
-            throw new NotImplementedException();
-            return false; //todo
-        }
 
 
 
@@ -275,21 +420,15 @@ namespace MapManager {
         /// <param name="mapname">The mapname.</param>
         /// <param name="id">The identifier.</param>
         /// <returns></returns>
-        private bool setMapId(string mapname, int id) {
-            mapname = mapname.Trim().ToLower();
-            if (maps.ContainsKey(mapname)) {
-                MapData md = maps[mapname];
-                md.id = id;
-                md.forceid = true;
-                maps[mapname] = md;
-                WriteMaps(maps, cmrId);
+        private bool SetMapId(string mapname, int id) {
+            CmrMap map = this[mapname];
+            if (map != null) {
+                map.AtlasID = id;
+                SaveMap(map);
                 return true;
-            } else {
-                return false;
-            }
+            } 
+            return false;
+            
         }
-
-
-
     }
 }

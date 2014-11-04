@@ -18,8 +18,8 @@ using MongoDB.Driver.Wrappers;
 //may not need ^
 
 using FurkiebotCMR;
-using UserManager;
-using MapManager;
+using CmrUser;
+using CmrMap;
 
 
 namespace FurkieDB {

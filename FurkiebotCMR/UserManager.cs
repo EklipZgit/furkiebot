@@ -21,10 +21,10 @@ using MongoDB.Driver.Wrappers;
 
 using FurkiebotCMR;
 using FurkieDB;
-using MapManager;
+using CmrMap;
 
 
-namespace UserManager {
+namespace CmrUser {
     /// <summary>
     /// Class containing all the data about a User.
     /// </summary>
@@ -122,10 +122,7 @@ namespace UserManager {
         /// <summary>
         /// Gets the <see cref="User"/> with the specified identifier from the Users Mongo Collection
         /// </summary>
-        /// <value>
-        /// The <see cref="User"/>.
-        /// </value>
-        /// <param name="id">The identifier.</param>
+        /// <param name="id">The identifier to look for.</param>
         /// <returns>The user with that ID.</returns>
         public User this[ObjectId id] {
             get {
@@ -139,15 +136,12 @@ namespace UserManager {
         /// <summary>
         /// Gets the <see cref="User"/> with the specified name out of the Users mongocollection.
         /// </summary>
-        /// <value>
-        /// The <see cref="User"/>.
-        /// </value>
-        /// <param name="name">The name to find</param>
+        /// <param name="name">The name of the user to find.</param>
         /// <returns>The user by that name.</returns>
         public User this[string name] {
             get {
                 return Users.AsQueryable()
-                    .Where(u => u.NameLower == name.ToLower())
+                    .Where(u => u.NameLower == name.ToLower().Trim())
                     .First();
             }
         }
@@ -405,9 +399,7 @@ namespace UserManager {
                     fb.Notice(ircuser, "That IGN is already registered to someone else. Perhaps you registered it under another IRC nickname? If this is an issue, ask an admin to use .deleteign on that IGN.");
                     return false;
                 } else { //ignUser was null, or it matches the expected userId. So update.
-
                     string oldname = ign.DustforceName;
-
 
                     ign.DustforceName = dustforcename;
 
@@ -459,7 +451,6 @@ namespace UserManager {
         /// <param name="option">On or Off</param>
         public void SetUserNotify(string ircuser, bool option) {
             User user = this[ircuser];
-            //string oldoption = (user.Notify ? "true" : "false");
 
             user.Notify = option;
             SaveUser(user);
