@@ -68,21 +68,6 @@ namespace FurkiebotCMR {
         public string salt;
     }
 
-
-    /// <summary>
-    /// Struct containing all the data about a map.
-    /// </summary>
-    public struct MapData {
-        public string name;
-        public int id;
-        public string filepath;
-        public string author;
-        public string acceptedBy;
-        public bool accepted;
-        public string timestamp;
-        public bool forceid;
-    }
-
     /// <summary>
     /// A FurkieBot IRC bot.
     /// </summary>
