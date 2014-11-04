@@ -20,9 +20,6 @@ using System.IO;
 using System.Diagnostics;
 using System.Text.RegularExpressions;
 using System.Data;
-using System.Data.SqlClient;
-using System.Security.Permissions;
-using System.Security.Cryptography;
 using ClosedXML.Excel;
 using System.Net;
 using Newtonsoft.Json;
@@ -50,6 +47,17 @@ namespace FurkiebotCMR {
     } /* IRCConfig */
 
 
+    struct MapData {
+        public string name;
+        public int id;
+        public string filepath;
+        public string author;
+        public string acceptedBy;
+        public bool accepted;
+        public string timestamp;
+        public bool forceid;
+    }
+    
 
     /// <summary>
     /// Player info struct containing all information about a player.
@@ -70,8 +78,26 @@ namespace FurkiebotCMR {
 
     /// <summary>
     /// A FurkieBot IRC bot.
+    /// Singleton, get with .Instance
     /// </summary>
     public class FurkieBot : IDisposable {
+        private static FurkieBot instance;
+        public static FurkieBot Instance {
+            get {
+                if (instance == null) {
+                    IRCConfig conf = new IRCConfig();
+                    conf.name = FurkieBot.BOT_NAME;
+                    conf.nick = FurkieBot.BOT_NAME;
+                    conf.altNick = "FurkieBot_";
+                    conf.port = 6667;
+                    conf.server = "irc2.speedrunslive.com";
+                    conf.pass = FurkieBot.GetIRCPass();
+
+                    instance = new FurkieBot(conf);
+                }
+                return instance;
+            } 
+        }
 
 #if FB_DEBUG
         public const string BOT_NAME = "FurkieBot_";
@@ -116,6 +142,8 @@ namespace FurkiebotCMR {
         private Thread busterThread;
 
         private AtlasChecker checker;
+
+        
 
         private int acceptedCount;
         private int pendingCount;
@@ -253,7 +281,10 @@ namespace FurkiebotCMR {
         /// Initializes a new instance of the <see cref="FurkieBot"/> class.
         /// </summary>
         /// <param name="config">The configuration.</param>
-        public FurkieBot(IRCConfig config) {
+        private FurkieBot(IRCConfig config) {
+            if (instance != null) {
+                throw new Exception("FurkieBot instance already exists when trying to create a new FurkieBot!");
+            }
             this.config = config;   // Create a new FileSystemWatcher and set its properties.
 
 
@@ -485,7 +516,7 @@ namespace FurkiebotCMR {
         /// </summary>
         /// <param name="chan">The channel. If empty or null, output to both main channels.</param>
         private void OutputPending(string chan) {
-            string toSay = " :";
+            string toSay = "";
             string mapString = "";
             int pendingcount = 0;
             foreach (KeyValuePair<string, MapData> entry in maps) {
@@ -501,10 +532,10 @@ namespace FurkiebotCMR {
 
             toSay += pendingcount + " maps pending: " + mapString;
             if (chan == null || chan == "" || chan == " ") {
-                sendData("PRIVMSG", mainchannel + toSay);
-                sendData("PRIVMSG", cmrchannel + toSay);
+                Msg(mainchannel, toSay);
+                Msg(cmrchannel, toSay);
             } else {
-                sendData("PRIVMSG", chan + toSay);
+                Msg(chan, toSay);
             }
         }
 
@@ -516,7 +547,7 @@ namespace FurkiebotCMR {
         /// </summary>
         /// <param name="chan">The channel. If empty or null, output to both main channels.</param>
         private void OutputAccepted(string chan) {
-            string toSay = " :";
+            string toSay = "";
             string mapString = "";
             int acceptedcount = 0;
             foreach (KeyValuePair<string, MapData> entry in maps) {
@@ -533,10 +564,10 @@ namespace FurkiebotCMR {
 
             toSay += acceptedcount + " maps accepted: " + mapString;
             if (chan == null || chan == "" || chan == " ") {
-                sendData("PRIVMSG", mainchannel + toSay);
-                sendData("PRIVMSG", cmrchannel + toSay);
+                Msg(mainchannel, toSay);
+                Msg(cmrchannel, toSay);
             } else {
-                sendData("PRIVMSG", chan + toSay);
+                Msg(chan, toSay);
             }
         }
 
@@ -945,82 +976,6 @@ namespace FurkiebotCMR {
 
 
 
-        /// <summary>
-        /// Determines whether the specified nick is registered.
-        /// </summary>
-        /// <param name="nick">The nickname.</param>
-        /// <returns>bool whether or not the nick is registered.</returns>
-        private bool IsRegistered(string nick) {
-            if (userlist.ContainsKey(nick)) {
-                if (userlist[nick].password != "") {
-                    return true;
-                } else {
-                    //sendData("NOTICE", nick + " :You'll need to register your nick with FurkieBot before you may do this. Type .help register for more info.");
-                    return false;
-                }
-            } else {
-                //sendData("NOTICE", nick + " :You'll need to register your nick with FurkieBot before you may do this. Type .help register for more info.");
-                return false;
-            }
-        }
-
-
-
-        /// <summary>
-        /// Determines whether the specified nick is an admin.
-        /// </summary>
-        /// <param name="nick">The nick.</param>
-        /// <param name="toNotify">The IRC user initiating this check.</param>
-        /// <returns>bool whether or not the nick is an admin.</returns>
-        public bool IsAdmin(string nick, string toNotify) {
-            nick = nick.ToLower();
-            if (IsRegistered(nick) && IsIdentified(nick, toNotify)) {
-                return userlist[nick].admin;
-            } else return false;
-        }
-
-
-
-
-        /// <summary>
-        /// Determines whether the specified nick is a tester.
-        /// </summary>
-        /// <param name="nick">The nick.</param>
-        /// <param name="toNotify">To notify.</param>
-        /// <returns></returns>
-        public bool IsTester(string nick, string toNotify) {
-            if (IsIdentified(nick, toNotify)) {
-                if (IsRegistered(nick)) {
-                    return userlist[nick].tester;
-                } else {
-                    return false;
-                }
-            } else if (IsRegistered(nick)) {
-                return false;
-            } else {
-                return false;
-            }
-        }
-
-
-
-        /// <summary>
-        /// Determines whether the specified nick is trusted.
-        /// </summary>
-        /// <param name="nick">The nick.</param>
-        /// <param name="toNotify">To notify.</param>
-        /// <returns></returns>
-        public bool IsTrusted(string nick, string toNotify) {
-            if (IsIdentified(nick, toNotify)) {
-                if (IsRegistered(nick)) {
-                    return userlist[nick].trusted;
-                } else {
-                    return false;
-                }
-            } else {
-                return false;
-            }
-        }
 
 
 
@@ -1031,7 +986,7 @@ namespace FurkiebotCMR {
         /// <param name="nick">The nick.</param>
         /// <param name="toNotice">To notice.</param>
         /// <returns>Whether or not the nick is identified.</returns>
-        public bool IsIdentified(string nick, string toNotice) {
+        public bool IsIdentified(string nick, string toNotice = null) {
             lock (_whoisLock) {
                 if (identlist.ContainsKey(nick) && identlist[nick]) {
                     Console.WriteLine("Successfully identified " + nick);
@@ -1085,72 +1040,7 @@ namespace FurkiebotCMR {
                     }
                     return false;
                 }
-            }           
-        }
-
-
-
-
-        /// <summary>
-        /// Attempts to set the Users password to the given password. 
-        /// If no user exists by this nickname, create a new user.
-        /// </summary>
-        /// <param name="nickname">The nickname.</param>
-        /// <param name="password">The password.</param>
-        private void AttemptRegistration(string nickname, string password) {
-            string nickLower = nickname.ToLower();
-            if (IsIdentified(nickLower, nickname)) {
-                string[] hashes = GeneratePasswordHashes(password.Trim());
-                if (userlist.ContainsKey(nickLower)) {
-                    PlayerInfo info = userlist[nickLower];
-                    info.salt = hashes[0];
-                    info.password = hashes[1];
-                    info.ircname = nickname;
-                    //userlist.Remove(nickname);
-                    //userlist.Add(nickname, info);
-                    userlist[nickLower] = info;
-                    WriteUsers();
-                } else {
-                    PlayerInfo info = new PlayerInfo();
-                    info.salt = hashes[0];
-                    info.password = hashes[1];
-                    info.ircname = nickname;
-                    info.dustforcename = "";
-                    info.streamurl = "";
-                    info.admin = false;
-                    info.tester = false;
-                    info.trusted = false;
-                    userlist[nickLower] = info;
-                    WriteUsers();
-                }
-                Notice(nickname, "Successfully registered your nick with FurkieBot! Dont forget your password. You can always re-register if you forget the password.");
-                Notice(nickname, "You will now want to set your in-game dustforce name with FurkieBot. use \".setign <steam / drm-free name>\" to set your IGN with FurkieBot.");
-            } else {
-                NoticeNotIdentified(nickname);
             }
-        }
-
-
-
-
-
-
-
-
-        /// <summary>
-        /// Resets all users' tester status to false.
-        /// </summary>
-        private void ResetTesters() {
-            Dictionary<string, PlayerInfo> newUserList = new Dictionary<string, PlayerInfo>(userlist.Count * 2);
-            foreach (KeyValuePair<string, PlayerInfo> entry in userlist) {
-                PlayerInfo info = entry.Value;
-                info.tester = false;
-                newUserList[entry.Key] = info;
-            }
-            userlist = newUserList;
-            WriteUsers();
-            SyncOtherTables();
-            MsgChans("All testers have been reset to non testers. If you want to be a tester for the next CMR use \".settester true\" provided you have tester permissions. If you try this and don't have permissions, ask an admin.");
         }
 
 
@@ -1174,7 +1064,7 @@ namespace FurkiebotCMR {
         /// Notifies the privided nick that they are not identified.
         /// </summary>
         /// <param name="nick">The user to notify.</param>
-        private void NoticeNotIdentified(string nick) {
+        public void NoticeNotIdentified(string nick) {
             sendData("NOTICE", nick + " :Sorry, you need to first be using a Nickname registered on SRL. ");
             sendData("NOTICE", nick + " :\"/msg NickServ HELP REGISTER\".");
         }
@@ -1186,7 +1076,7 @@ namespace FurkiebotCMR {
         /// Notifies the privided nick that they are not registered.
         /// </summary>
         /// <param name="nick">The user to notify.</param>
-        private void NoticeNotRegistered(string nick) {
+        public void NoticeNotRegistered(string nick) {
             sendData("NOTICE", nick + " :Sorry, you need to register with FurkieBot first! \".help register\"");
         }
 
@@ -1197,7 +1087,7 @@ namespace FurkiebotCMR {
         /// Notifies the privided nick that they need to retry the command in a moment.
         /// </summary>
         /// <param name="nick">The user to notify.</param>
-        private void NoticeRetry(string nick) {
+        public void NoticeRetry(string nick) {
             sendData("NOTICE", nick + " :Sorry, FurkieBot was processing something complex. Try that command again!");
         }
 
@@ -1209,7 +1099,7 @@ namespace FurkiebotCMR {
         /// </summary>
         /// <param name="chan">The channel to message.</param>
         /// <param name="message">The message to send to the channel.</param>
-        private void Msg(string chan, string message) {
+        public void Msg(string chan, string message) {
             sendData("PRIVMSG", " " + chan + " :" + message);
         }
 
@@ -1219,7 +1109,7 @@ namespace FurkiebotCMR {
         /// Sends a message to all currently joined channels.
         /// </summary>
         /// <param name="message">The message to send to the channel.</param>
-        private void MsgChans(string message) {
+        public void MsgChans(string message) {
             sendData("PRIVMSG", mainchannel + " :" + message);
             sendData("PRIVMSG", cmrchannel + " :" + message);
             //sendData("PRIVMSG", realRacingChan + " :" + message);
@@ -1232,7 +1122,7 @@ namespace FurkiebotCMR {
         /// </summary>
         /// <param name="user">The user to message.</param>
         /// <param name="message">The message to send to the channel.</param>
-        private void Notice(string user, string message) {
+        public void Notice(string user, string message) {
             sendData("NOTICE", user + " :" + message);
         }
 
@@ -1243,7 +1133,7 @@ namespace FurkiebotCMR {
         /// Sends a message to all testers.
         /// </summary>
         /// <param name="toSay">The message.</param>
-        private void MsgTesters(string toSay) {
+        public void MsgTesters(string toSay) {
             List<string> testers = GetTesters();
             foreach (string tester in testers) {
                 //Console.WriteLine("\n\n\nTester: " + tester + " ");
@@ -1259,7 +1149,7 @@ namespace FurkiebotCMR {
         /// Sends a notice to all testers.
         /// </summary>
         /// <param name="toSay">The message.</param>
-        private void NoticeTesters(string toSay) {
+        public void NoticeTesters(string toSay) {
             List<string> testers = GetTesters();
             foreach (string tester in testers) {
                 //Console.WriteLine("\n\n\nTester: " + tester + " ");
@@ -2994,275 +2884,6 @@ namespace FurkiebotCMR {
 
 
         /// <summary>
-        /// Gets the user information.
-        /// </summary>
-        /// <param name="ircuser">The ircuser.</param>
-        /// <returns></returns>
-        private PlayerInfo getUserInfo(string ircuser) {
-
-            PlayerInfo res = new PlayerInfo();
-            if (userlist.ContainsKey(ircuser.ToLower())) {
-                userlist.TryGetValue(ircuser.ToLower(), out res);
-                return res;
-            }
-
-            return res;
-        }
-
-
-
-
-
-
-        /// <summary>
-        /// Gets the user ircname by the provided dustforceuser name.
-        /// </summary>
-        /// <param name="dustforceuser">The dustforceuser.</param>
-        /// <returns></returns>
-        private string getUserIrc(string dustforceuser) {
-            PlayerInfo res = new PlayerInfo();
-            if (dustforcelist.ContainsKey(dustforceuser.ToLower())) {
-                dustforcelist.TryGetValue(dustforceuser.ToLower(), out res);
-                return res.ircname;
-            } else {
-                return null;
-            }
-        }
-
-
-
-        /// <summary>
-        /// Gets the users in game dustforce name.
-        /// </summary>
-        /// <param name="ircuser">The nick of the user.</param>
-        /// <returns>The users dustforce name.</returns>
-        private string getUserIgn(string ircuser) {
-            PlayerInfo res = new PlayerInfo();
-            if (userlist.ContainsKey(ircuser.ToLower())) {
-                userlist.TryGetValue(ircuser.ToLower(), out res);
-                return res.dustforcename;
-            } else {
-                return null;
-            }
-        }
-
-
-
-        /// <summary>
-        /// Gets the user rating.
-        /// </summary>
-        /// <param name="ircuser">The ircuser.</param>
-        /// <returns></returns>
-        private int getUserRating(string ircuser) {
-            PlayerInfo res = new PlayerInfo();
-            if (userlist.ContainsKey(ircuser.ToLower())) {
-                userlist.TryGetValue(ircuser.ToLower(), out res);
-                return res.rating;
-            } else {
-                return -1;
-            }
-        }
-
-
-
-
-        /// <summary>
-        /// Sets a users in game dustforce name.
-        /// </summary>
-        /// <param name="ircuser">The ircuser whose name to set.</param>
-        /// <param name="dustforceuser">The users dustforce name.</param>
-        private bool setUserIGN(string ircuser, string dustforceuser) {
-            string ircLower = ircuser.ToLower();
-            //if (!|| (dustforcelist[dustforceuser].ircname.ToLower() == ircLower)) {
-            if (dustforcelist.ContainsKey(dustforceuser) && dustforcelist[dustforceuser].ircname.ToLower() != ircuser.ToLower()) {
-                Notice(ircuser, "That IGN is already registered to someone else. Perhaps you registered it under another IRC nickname? If this is an issue, ask an admin to use .deleteign on that IGN.");
-                return false;
-            } else {
-                PlayerInfo temp = new PlayerInfo();
-                userlist.TryGetValue(ircLower, out temp);
-                string oldname = temp.dustforcename;
-                //Console.WriteLine("name " + temp.ircname + " dustforcename " + temp.dustforcename + " tester " + temp.tester + " trusted " + temp.trusted + " admin " + temp.admin);
-
-                //delete old dustforceuser entry
-                if (oldname != null && dustforcelist.ContainsKey(oldname)) {
-                    dustforcelist.Remove(oldname);
-                }
-
-                temp.dustforcename = dustforceuser;
-                temp.ircname = ircuser;
-                userlist[ircLower] = temp;
-                dustforcelist.Add(dustforceuser, temp);
-
-                WriteUsers();
-                return true;
-            }
-        }
-
-
-        /// <summary>
-        /// Removes the provided IGN from any nicks that use it.
-        /// </summary>
-        /// <param name="ign">The ign.</param>
-        private void removeIGN(string ign, string toNotify) {
-            if (dustforcelist.ContainsKey(ign)) {
-                string ircname = dustforcelist[ign].ircname.ToLower();
-                PlayerInfo temp = userlist[ircname];
-                temp.dustforcename = "";
-                userlist[ircname] = temp;
-
-                dustforcelist.Remove(ign);
-            } else {
-                Notice(toNotify, "That IGN isnt registered with FurkieBot.");
-            }
-        }
-        
-        
-        /// <summary>
-        /// Sets a user irc notify on/off
-        /// </summary>
-        /// <param name="ircuser">The ircuser whose name to set.</param>
-        /// <param name="option">On or Off</param>
-        private void setUserNotify(string ircuser, bool option) {
-            string ircLower = ircuser.ToLower();
-            PlayerInfo temp = new PlayerInfo();
-            userlist.TryGetValue(ircLower, out temp);
-            string oldoption = (temp.notify ? "true" : "false");
-            
-            temp.notify = option;
-            userlist[ircLower] = temp;
-
-            WriteUsers();
-        }
-
-
-
-        /// <summary>
-        /// Serializes the user data to disk.
-        /// </summary>
-        private void WriteUsers() {
-            if (userlist != null) {
-                ignoreChangedUserlist = true;
-                string json = JsonConvert.SerializeObject(userlist, Newtonsoft.Json.Formatting.Indented);
-
-                File.WriteAllText(DATA_PATH + @"Userlist\userlistmap.json", json); // !! FILEPATH !!
-            } else {
-                throw new Exception("Null userlist attempting to be written");
-            }
-        }
-
-
-
-        /// <summary>
-        /// Writes the given maplist to the file for the provided CMR id number.
-        /// </summary>
-        /// <param name="maplist">The maplist to write out to disk.</param>
-        /// <param name="cmrid">The current cmrid.</param>
-        private void WriteMaps() {
-            ignoreChangedMaps = true;
-            lock (_updatingMapsLock) {
-                var mapDict = (mapsTemp == null ? maps : mapsTemp);
-                WriteMaps(mapDict, cmrId);
-            }
-        }
-
-
-
-        /// <summary>
-        /// Writes the given maplist to the file for the provided CMR id number.
-        /// </summary>
-        /// <param name="maplist">The maplist to write out to disk.</param>
-        /// <param name="cmrid">The current cmrid.</param>
-        private void WriteMaps(Dictionary<string, MapData> maplist, int cmrid) {
-            string filepath = MAPS_PATH + cmrid + @"\maps.json"; // !! FILEPATH !!
-
-            string json = JsonConvert.SerializeObject(maplist, Newtonsoft.Json.Formatting.Indented);
-            System.IO.File.WriteAllText(filepath, json);
-        }
-
-
-
-        /// <summary>
-        /// Deletes a map from the current CMR.
-        /// </summary>
-        /// <param name="mapname">The mapname.</param>
-        /// <returns>Whether or not the map deleted successfully.</returns>
-        private bool DeleteMap(string mapname, string tester) {
-            mapname = mapname.ToLower().Trim();
-            Dictionary<string, MapData> maps = (mapsTemp == null ? this.maps : mapsTemp);
-            if (maps.ContainsKey(mapname)) {
-                if (maps[mapname].accepted) {
-                    acceptedCount--;
-                } else {
-                    pendingCount--;
-                }
-                maps.Remove(mapname);
-                WriteMaps();
-                return true;
-            }
-            return false;
-        }
-
-
-        /// <summary>
-        /// Approves a CMR map by name.
-        /// </summary>
-        /// <param name="mapname">The mapname.</param>
-        /// <param name="tester">The testers name.</param>
-        /// <returns>Whether or not the map existed.</returns>
-        private bool ApproveMap(string mapname, string tester) {
-            mapname = mapname.ToLower().Trim();
-            Dictionary<string, MapData> maps = (mapsTemp == null ? this.maps : mapsTemp);
-            if (maps.ContainsKey(mapname) && maps[mapname].accepted == false) {
-                MapData map = maps[mapname];
-                acceptedCount++;
-                pendingCount--;
-                map.acceptedBy = tester;
-                map.accepted = true;
-                maps[mapname] = map;
-                WriteMaps(maps, cmrId);
-                return true;
-            }
-            return false;
-        }
-
-        /// <summary>
-        /// Denies the map.
-        /// </summary>
-        /// <param name="mapname">The mapname.</param>
-        /// <param name="tester">The tester.</param>
-        /// <param name="denyMessage">The deny message.</param>
-        /// <returns>Whether or not the map existed.</returns>
-        private bool DenyMap(string mapname, string tester, string denyMessage) {
-            throw new NotImplementedException();
-            return false; //todo
-        }
-
-
-
-        /// <summary>
-        /// Sets the map URL.
-        /// </summary>
-        /// <param name="mapname">The mapname.</param>
-        /// <param name="id">The identifier.</param>
-        /// <returns></returns>
-        private bool setMapId(string mapname, int id) {
-            mapname = mapname.Trim().ToLower();
-            if (maps.ContainsKey(mapname)) {
-                MapData md = maps[mapname];
-                md.id = id;
-                md.forceid = true;
-                maps[mapname] = md;
-                WriteMaps(maps, cmrId);
-                return true;
-            } else {
-                return false;
-            }
-        }
-
-
-
-
-        /// <summary>
         /// Adds an entrant to the race.
         /// </summary>
         /// <param name="racer">The racer.</param>
@@ -4219,139 +3840,6 @@ namespace FurkiebotCMR {
 
 
 
-
-
-
-
-
-
-
-
-        private static string[] GeneratePasswordHashes(string pwTextString) {
-            // If salt is not specified, generate it on the fly.
-            // Define min and max salt sizes.
-            int minSaltSize = 4;
-            int maxSaltSize = 8;
-            // Generate a random number for the size of the salt.
-            Random random = new Random();
-            int saltSize = random.Next(minSaltSize, maxSaltSize);
-
-            // Allocate a byte array, which will hold the salt.
-            byte[] saltBytes = new byte[saltSize];
-
-            // Initialize a random number generator.
-            RNGCryptoServiceProvider rng = new RNGCryptoServiceProvider();
-
-            // Fill the salt with cryptographically strong byte values.
-            rng.GetNonZeroBytes(saltBytes);
-
-
-            // Because we support multiple hashing algorithms, we must define
-            // hash object as a common (abstract) base class. We will specify the
-            // actual hashing algorithm class later during object creation.
-            HashAlgorithm hash = new SHA256Managed();
-
-
-            byte[] saltHashBytes = hash.ComputeHash(saltBytes);
-            string saltHashString = Convert.ToBase64String(saltHashBytes).Substring(0, 4);
-
-
-
-
-            string finalHashString = HashSaltPw(hash, pwTextString, saltHashString);
-
-            // Copy hash bytes into resulting array.
-            string[] returnArray = { saltHashString, finalHashString };
-
-
-            if (!VerifyHash(pwTextString, saltHashString, finalHashString)) {
-                throw new Exception("wow ok fuck you");
-            }
-
-
-            return returnArray;
-        }
-         
-
-
-
-
-        /// <summary>
-        /// Returns the Hash of the password hash concatenated with the salt hash.
-        /// </summary>
-        /// <param name="hash">The hash algorithm.</param>
-        /// <param name="pwTextString">The pw text string.</param>
-        /// <param name="saltHashString">The salt hash string.</param>
-        /// <returns>The hack of the password concatenated with the salt hash.</returns>
-        private static string HashSaltPw(HashAlgorithm hash, string pwTextString, string saltHashString) {
-            // Convert plain text into a byte array.
-            byte[] pwTextBytes = Encoding.UTF8.GetBytes(pwTextString.Trim());
-
-
-            // Compute hash value of our plain text with appended salt.
-            byte[] pwTextHashBytes = hash.ComputeHash(pwTextBytes);
-            string pwHash = Convert.ToBase64String(pwTextHashBytes);
-
-            string saltAndPwHash = saltHashString + pwHash;
-            byte[] saltPwHashBytes = Encoding.UTF8.GetBytes(saltAndPwHash);
-
-            byte[] finalHashBytes = hash.ComputeHash(saltPwHashBytes);
-            string finalHashString = Convert.ToBase64String(finalHashBytes);
-            return finalHashString;
-        }
-
-
-
-
-        /**
-         * <summary>
-         * Compares a hash of the specified plain text value to a given hash
-         * value. Plain text is hashed with the same salt value as the original
-         * hash.
-         * </summary>
-         * <param name="pwTextString">
-         * Plain text to be verified against the specified hash. The function
-         * does not check whether this parameter is null.
-         * </param>
-         * <param name="salt">
-         * The salt used to encrypt the password.
-         * </param>
-         * <param name="expectedHashString">
-         * Base64-encoded hash value produced by ComputeHash function. This value
-         * includes the original salt appended to it.
-         * </param>
-         * <returns>
-         * If computed hash mathes the specified hash the function the return
-         * value is true; otherwise, the function returns false.
-         * </returns>
-         */
-        private static bool VerifyHash(string pwTextString, string salt, string expectedHashString) {
-            // Convert base64-encoded hash value into a byte array.
-
-            HashAlgorithm hash = new SHA256Managed();
-
-
-            // Convert plain text into a byte array.
-            byte[] pwTextBytes = Encoding.UTF8.GetBytes(pwTextString.Trim());
-
-
-            // Compute hash value of our plain text with appended salt.
-            byte[] pwTextHashBytes = hash.ComputeHash(pwTextBytes);
-            string pwHash = Convert.ToBase64String(pwTextHashBytes);
-
-            string saltAndPwHash = salt + pwHash;
-            byte[] saltPwHashBytes = Encoding.UTF8.GetBytes(saltAndPwHash);
-
-            byte[] finalHashBytes = hash.ComputeHash(saltPwHashBytes);
-            string finalHashString = Convert.ToBase64String(finalHashBytes);
-
-            return (expectedHashString == finalHashString);
-        }
-
-
-
-
-
         /// <summary>
         /// Gets the irc password for the bot (so that its not stored publicly in the code).
         /// </summary>
@@ -4383,15 +3871,7 @@ namespace FurkiebotCMR {
 
     internal class Program {
         private static void Main(string[] args) {
-
-            IRCConfig conf = new IRCConfig();
-            conf.name = FurkieBot.BOT_NAME;
-            conf.nick = FurkieBot.BOT_NAME;
-            conf.altNick = "FurkieBot_";
-            conf.port = 6667;
-            conf.server = "irc2.speedrunslive.com";
-            conf.pass = FurkieBot.GetIRCPass();
-            using (var bot = new FurkieBot(conf)) {
+            using (var bot = FurkieBot.Instance) {
                 bot.Connect();
                 bot.IRCWork();
             }
