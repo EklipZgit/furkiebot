@@ -21,14 +21,30 @@ using FurkiebotCMR;
 using DatabaseCMR;
 using UserCMR;
 using System.IO;
+using Newtonsoft.Json;
+using System.Threading;
 
 
 namespace MapCMR {
+    class JoinedMapData {
+        public Denial denial;
+        public CmrMap map;
+        public User mapper;
+        public User tester;
+
+        public JoinedMapData(CmrMap theMap, Denial theDenial, User theMapper, User theTester) {
+            this.denial = theDenial;
+            this.map = theMap;
+            this.mapper = theMapper;
+            this.tester = theTester;
+        }
+    }
+
 
     /// <summary>
     /// Denial objects to represent specific instances of denials
     /// </summary>
-    class Denial : DBObject {
+    class Denial : DBObject{
         public string Message;
         public ObjectId TesterId;
         public ObjectId MapId;
@@ -46,14 +62,14 @@ namespace MapCMR {
             DisplayedToMapper = displayedToMapper;
             CmrNo = cmrNo;
         }
-        
-        public Denial() {}
+
+        public Denial() { }
     }
 
     /// <summary>
     /// Class containing all the data about a map.
     /// </summary>
-    class CmrMap : DBObject {
+    class CmrMap : DBObject{
         private string name;
         private string nameLower;
         private int atlasId;
@@ -129,9 +145,11 @@ namespace MapCMR {
         }
 
     }
-    
-        
+
+
     class MapManager {
+        public const string MONGO_MAP_BACKUP_FILE_NAME = "MongoMapsBackupCmr";
+        public const string MONGO_DENIAL_BACKUP_FILE_NAME = "MongoDenialsBackupCmr";
         private static MongoCollection<CmrMap> Maps = DB.Database.GetCollection<CmrMap>(DB._MAP_TABLE_NAME);
         private static MongoCollection<Denial> Denials = DB.Database.GetCollection<Denial>(DB._DENIAL_TABLE_NAME);
         private static MapManager instance;
@@ -148,7 +166,7 @@ namespace MapCMR {
         }
             
         private FurkieBot fb = FurkieBot.Instance;
-        private UserManager UserMgr = UserManager.Instance;
+        private UserManager UserMan = UserManager.Instance;
 
 
         private IQueryable<CmrMap> lastMaps;
@@ -279,9 +297,9 @@ namespace MapCMR {
 
 
         /// <summary>
-        /// Gets the maps.
+        /// Gets the maps for the current CMR
         /// </summary>
-        /// <returns></returns>
+        /// <returns>The maps for the current cmr, sorted by modified timestamp</returns>
         public IQueryable<CmrMap> GetMaps() { return GetMaps(fb.cmrId); }
         /// <summary>
         /// Gets the maps.
@@ -398,7 +416,7 @@ namespace MapCMR {
             bool successful = false;
             foreach (CmrMap map in selected) {
                 if (!map.Accepted) {
-                    User testerUsr = UserMgr[tester];
+                    User testerUsr = UserMan[tester];
                     if (testerUsr != null) {
                         map.AcceptedById = testerUsr.Id;
                         map.Accepted = true;
@@ -426,7 +444,7 @@ namespace MapCMR {
             var selected = this[mapName];
             bool successful = false;
             if (selected.Accepted) {
-                User testerUsr = UserMgr[tester];
+                User testerUsr = UserMan[tester];
                 if (testerUsr != null) {
                     selected.Accepted = false;
                     if (denialMessage != null) {
@@ -491,7 +509,7 @@ namespace MapCMR {
             var selected = this[mapName];
             bool successful = false;
             if (!selected.Accepted) {
-                User testerUsr = UserMgr[tester];
+                User testerUsr = UserMan[tester];
                 if (testerUsr != null) {
                     selected.Accepted = false;
                     if (denialMessage != null) {
@@ -562,23 +580,189 @@ namespace MapCMR {
 
 
 
-        private void CheckMaps(object sender, FileSystemEventArgs e) {
-            if (maps != null) {
-                Dictionary<string, MapData> tocheck = DeserializeMaps(cmrId);
-                Dictionary<string, MapData> tocompare = maps;
+        /// <summary>
+        /// Gets the joined map data, useful for not having to manually join later.
+        /// </summary>
+        /// <returns>List of joined map data, sorted by map name.</returns>
+        public List<JoinedMapData> GetJoinedMapData() {
+            var maps = Maps.AsQueryable<CmrMap>()
+                .Where(m => m.CmrNo == fb.cmrId)
+                .OrderBy<CmrMap, ObjectId>(m => m.Id);
+            var denials = Maps.AsQueryable<Denial>()
+                .Where(m => m.CmrNo == fb.cmrId)
+                .OrderBy<Denial, ObjectId>(m => m.MapId);
+            var users = UserMan.GetUsers();
+            var joined =
+                from map in maps
+                join denial in denials on map.Id equals denial.MapId
+                join mapper in users on map.AuthorId equals mapper.Id
+                join tester in users on denial.TesterId equals tester.Id
+                orderby map.Name
+                select new JoinedMapData(map, denial, mapper, tester);
+            return joined.ToList();
+        }
 
-                if (mapsTemp != null) { tocompare = mapsTemp; } //in case we stored map changes in between furkiebot loop executions.
-                acceptedCount = 0;
-                pendingCount = 0;
+
+
+
+
+
+
+        /// <summary>
+        /// Writes the current maps and denials to the temp mapfile and denialfile. 
+        /// Used so FurkieBot can notify about changes that happened while he was offline.
+        /// </summary>
+        private void BackupMapState() { //TODO no idea if this works....
+            var maps = Maps.AsQueryable<CmrMap>()
+                .Where(m => m.CmrNo == fb.cmrId)
+                .OrderBy<CmrMap, ObjectId>(m => m.Id);
+            var denials = Maps.AsQueryable<Denial>()
+                .Where(m => m.CmrNo == fb.cmrId)
+                .OrderBy<Denial, ObjectId>(m => m.MapId);
+            WriteMaps(maps, fb.cmrId);
+            WriteDenials(denials, fb.cmrId);
+        }
+
+
+
+        /// <summary>
+        /// Writes the given maps to the temp map file for the provided CMR id number.
+        /// Used so FurkieBot can notify about changes that happened while he was offline.
+        /// </summary>
+        /// <param name="maps">The maps to write out to disk.</param>
+        /// <param name="cmrid">The current cmrid.</param>
+        private void WriteMaps(IQueryable<CmrMap> maps, int cmrid) {
+            List<CmrMap> mapList = maps.ToList();
+            string filepath = FurkieBot.MAPS_PATH + MONGO_MAP_BACKUP_FILE_NAME + cmrid + ".json"; // !! FILEPATH !!
+
+            string json = JsonConvert.SerializeObject(mapList, Newtonsoft.Json.Formatting.Indented);
+            System.IO.File.WriteAllText(filepath, json);
+        }
+
+
+
+        /// <summary>
+        /// Writes the given denials to the temp denial file for the provided CMR id number.
+        /// Used so FurkieBot can notify about changes that happened while he was offline.
+        /// </summary>
+        /// <param name="denials">The denials to write out to disk.</param>
+        /// <param name="cmrid">The current cmrid.</param>
+        private void WriteDenials(IQueryable<Denial> denials, int cmrid) {
+            List<Denial> denialList = denials.ToList();
+            string filepath = FurkieBot.MAPS_PATH + MONGO_DENIAL_BACKUP_FILE_NAME + cmrid + ".json"; // !! FILEPATH !!
+
+            string json = JsonConvert.SerializeObject(denialList, Newtonsoft.Json.Formatting.Indented);
+            System.IO.File.WriteAllText(filepath, json);
+        }
+
+
+
+
+
+
+
+
+        /// <summary>
+        /// Returns a copy of the last serialized mongo collection
+        /// </summary>
+        /// <param name="cmrid">The CMR identifier.</param>
+        /// <returns>The loaded map list. If the file doesnt exist, returns an empty maplist.</returns>
+        private IQueryable<CmrMap> DeserializeMaps(int cmrid) {
+
+            string mapsJsonPath = FurkieBot.MAPS_PATH + MONGO_MAP_BACKUP_FILE_NAME + cmrid + ".json";
+            int limit = 100;
+            int cur = 0;
+            if (File.Exists(mapsJsonPath)) {
+                while (true) { // loop waiting for file unlock
+                    cur++;
+                    if (cur > limit) {
+                        throw new Exception("Looped too long trying to load maps. Map file locked for too long?");
+                    }
+                    try {
+                        Console.WriteLine("Trying to load map file.");
+                        string[] mapsarray = File.ReadAllLines(mapsJsonPath);
+                        string jsonPending = string.Join("", mapsarray);
+                        return JsonConvert.DeserializeObject<List<CmrMap>>(jsonPending).AsQueryable<CmrMap>(); // initially loads the userlist from JSON
+                    } catch (System.IO.IOException e) {
+                        Console.WriteLine("Got an error trying to read file. Error: ");
+                        Console.WriteLine(e.StackTrace);
+                    }
+                    Thread.Sleep(5);
+                }
+            } else {
+                return null;
+            }
+        }
+
+
+
+
+
+
+
+
+        /// <summary>
+        /// Returns a copy of the last serialized mongo collection
+        /// </summary>
+        /// <param name="cmrid">The CMR identifier.</param>
+        /// <returns>The loaded map list. If the file doesnt exist, returns an empty maplist.</returns>
+        private IQueryable<Denial> DeserializeDenials(int cmrid) {
+
+            string mapsJsonPath = FurkieBot.MAPS_PATH + MONGO_DENIAL_BACKUP_FILE_NAME + cmrid + ".json";
+            int limit = 100;
+            int cur = 0;
+            if (File.Exists(mapsJsonPath)) {
+                while (true) { // loop waiting for file unlock
+                    cur++;
+                    if (cur > limit) {
+                        throw new Exception("Looped too long trying to load maps. Map file locked for too long?");
+                    }
+                    try {
+                        Console.WriteLine("Trying to load map file.");
+                        string[] mapsarray = File.ReadAllLines(mapsJsonPath);
+                        string jsonPending = string.Join("", mapsarray);
+                        return JsonConvert.DeserializeObject<List<Denial>>(jsonPending).AsQueryable<Denial>(); // initially loads the userlist from JSON
+                    } catch (System.IO.IOException e) {
+                        Console.WriteLine("Got an error trying to read file. Error: ");
+                        Console.WriteLine(e.StackTrace);
+                    }
+                    Thread.Sleep(5);
+                }
+            } else {
+                return null;
+            }
+        }
+
+
+
+
+        private void CheckMaps(object sender, FileSystemEventArgs e) {
+            var oldMaps = lastMaps;
+            var curMaps = GetMaps();
+            
+            var oldDenials = lastDenials;
+            var curDenials = GetDenials();
+
+            if (lastMaps != null && lastMaps.Count() > 0) {
+                int acceptedCount = 0;
+                int pendingCount = 0;
+                int deniedCount = 0;
                 string message;
-                foreach (KeyValuePair<string, MapData> entry in tocheck) {     // Notifies IRC about any state changes that have happened and sets the flag to reload maps.
-                    string key = entry.Key;
-                    MapData data = entry.Value;
-                    if (entry.Value.accepted) {
+                foreach (CmrMap curMap in curMaps) {     // Notifies IRC about any state changes that have happened and sets the flag to reload maps.
+                    CmrMap oldMap = oldMaps.Where(m => m.Id == curMap.Id).First();
+
+                    IQueryable<Denial> curMapDenials = curDenials.Where(d => d.MapId == curMap.Id).OrderBy<Denial, int>(d => d.Timestamp);
+                    IQueryable<Denial> oldMapDenials = oldDenials.Where(d => d.MapId == oldMap.Id).OrderBy<Denial, int>(d => d.Timestamp);
+
+                    if (curMap.Accepted) {
                         acceptedCount++;
                     } else {
                         pendingCount++;
                     }
+                    if (curMap.IsDenied)
+                        deniedCount++;
+
+
                     if (tocompare.ContainsKey(key)) {
                         if (tocompare[key].accepted == false && data.accepted == true) { // map has been approved.
                             acceptedCount++;
@@ -617,11 +801,12 @@ namespace MapCMR {
                     }
                 }
                 if (notifyReloadMaps) {
-                    mapsTemp = tocheck; // update the maps list to the new one.
+                    lastMaps = tocheck; // update the maps list to the new one.
                     Console.WriteLine("\nReloaded the map file.\n");
                 }
-            } else {
-                lastMaps = MapMan.GetMaps();
+            } else { // set last state to the current one.
+                lastMaps = GetMaps();
+                lastDenials = GetDenials();
             }
         }
 

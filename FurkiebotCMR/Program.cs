@@ -538,54 +538,6 @@ namespace FurkiebotCMR {
 
 
 
-        /// <summary>
-        /// Returns a the maplist for the specified CMRID deserialized from disk.
-        /// </summary>
-        /// <param name="cmrid">The CMR identifier.</param>
-        /// <returns>The loaded map list. If the file doesnt exist, returns an empty maplist.</returns>
-        private Dictionary<string, MapData> DeserializeMaps(int cmrid) {
-            
-            string mapsJsonPath = MAPS_PATH + cmrid + @"\maps.json";
-            int limit = 100;
-            int cur = 0;
-            if (File.Exists(mapsJsonPath)) {
-                while (true) { // loop waiting for file unlock
-                    cur++;
-                    if (cur > limit) {
-                        throw new Exception("Looped too long trying to load maps. Map file locked for too long?");
-                    }
-                    try {
-                        Console.WriteLine("Trying to load map file.");
-                        string[] mapsarray = File.ReadAllLines(mapsJsonPath);
-                        string jsonPending = string.Join("", mapsarray);
-                        return JsonConvert.DeserializeObject<Dictionary<string, MapData>>(jsonPending); // initially loads the userlist from JSON
-                    } catch (System.IO.IOException e) {
-                        Console.WriteLine("Got an error trying to read file. Error: ");
-                        Console.WriteLine(e.StackTrace);
-                    }
-                    Thread.Sleep(5);
-                }
-            } else {
-                return new Dictionary<string, MapData>();
-            }
-
-
-            // OLD
-                //string acceptedFiles = MAPS_PATH + cmrId + @"\accepted\accepted.json"; // !! FILEPATH !!
-                //string pendingFiles = MAPS_PATH + cmrId + @"\pending\pending.json"; // !! FILEPATH !!
-                //string[] arraypending = File.ReadAllLines(pendingFiles);
-                //string[] arrayaccepted = File.ReadAllLines(acceptedFiles);
-                //string jsonPending = string.Join("", arraypending);
-                //string jsonAccepted = string.Join("", arrayaccepted);
-
-                //pendingMaps = JsonConvert.DeserializeObject<List<MapData>>(jsonPending); // initially loads the userlist from JSON
-                //acceptedMaps = JsonConvert.DeserializeObject<List<MapData>>(jsonAccepted); // initially loads the userlist from JSON
-            // END OLD
-        }
-
-
-
-
 
         /// <summary>
         /// Gets the download link for the specified map name.
@@ -1584,7 +1536,7 @@ namespace FurkiebotCMR {
                         string ign_ex4 = parameter;
                         User user = UserMan[ign_ex4.Trim()];
                         if (user != null) {
-                            IGN ign = UserMan.GetIgns().Where<IGN>(i => i.IrcUserID == user.Id).First();
+                            IGN ign = UserMan.GetIgns().Where<IGN>(i => i.IrcUserId == user.Id).First();
                             if (ign != null) {
                                 Msg(chan, ColourChanger(user.Name, "03") + " > " + ColourChanger(ign.DustforceName, "03") + "");
                             } else {

@@ -8,7 +8,7 @@
     <ProjectGuid>{93F65EC1-DB86-4429-825D-F9AF2217881A}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>FurkiebotCMR</RootNamespace>
+    <RootNamespace>FurkieBotCMR</RootNamespace>
     <AssemblyName>FurkiebotCMR</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <TargetFrameworkProfile>

@@ -56,8 +56,5 @@ namespace DatabaseCMR {
                 return db;
             }
         }
-
-        private DB() {
-        }
     }
 }

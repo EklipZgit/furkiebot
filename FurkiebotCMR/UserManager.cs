@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Security.Permissions;
 using System.Security.Cryptography;
+using System.IO;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using MongoDB.Driver.Builders;
@@ -73,12 +74,12 @@ namespace UserCMR {
     /// </summary>
     class IGN : DBObject {
         public string DustforceName;
-        public ObjectId IrcUserID;
+        public ObjectId IrcUserId;
 
         public IGN(ObjectId id, string dustforceName, ObjectId ircUserId) {
             this.Id = id;
             this.DustforceName = dustforceName;
-            this.IrcUserID = ircUserId;
+            this.IrcUserId = ircUserId;
         }
 
         [BsonConstructor]
@@ -106,6 +107,7 @@ namespace UserCMR {
         }
             
         private FurkieBot fb = FurkieBot.Instance;
+        //private MongoCollection<User> usersLast;
 
         private UserManager() {
             if (!BsonClassMap.IsClassMapRegistered(typeof(User))) {
@@ -303,7 +305,7 @@ namespace UserCMR {
                     SaveUser(user);
                 }
                 fb.Notice(nickname, "Successfully registered your nick with FurkieBot! Dont forget your password. You can always re-register if you forget the password.");
-                fb.Notice(nickname, "You will now want to set your in-game dustforce name with FurkieBot. use \".setign <steam / drm-free name>\" to set your IGN with FurkieBot.");
+                fb.Notice(nickname, "You will now want to set your in-game dustforce name with FurkieBot. use \".setign dustforceLeaderboardName\" to set your IGN with FurkieBot.");
             } else {
                 fb.NoticeNotIdentified(nickname);
             }
@@ -376,9 +378,9 @@ namespace UserCMR {
         /// <param name="dustforceuser">The dustforceuser.</param>
         /// <returns>null if not found</returns>
         public User GetUserByIGN(string ign) {
-            ObjectId id = Igns.AsQueryable<User>()
-                .Where(c => c.NameLower == ign.ToLower())
-                .Select<User, ObjectId>(c => c.Id)
+            ObjectId id = Igns.AsQueryable<IGN>()
+                .Where(c => c.DustforceName == ign)
+                .Select<IGN, ObjectId>(c => c.IrcUserId)
                 .First();
             if (id != null) {
                 return this[id];
@@ -453,7 +455,7 @@ namespace UserCMR {
             } else {
                 ign = new IGN();
                 ign.DustforceName = dustforcename;
-                ign.IrcUserID = user.Id;
+                ign.IrcUserId = user.Id;
                 SaveIgn(ign);
                 return true;
             }
@@ -499,6 +501,45 @@ namespace UserCMR {
             user.Notify = option;
             SaveUser(user);
         }
+
+
+
+
+        ///// <summary>
+        ///// Serializes the user data to disk.
+        ///// </summary>
+        //private void WriteUsers() {
+        //    if (userlist != null) {
+        //        ignoreChangedUserlist = true;
+        //        string json = JsonConvert.SerializeObject(userlist, Newtonsoft.Json.Formatting.Indented);
+
+        //        File.WriteAllText(FurkieBot.DATA_PATH + @"Userlist\userlisttemp.json", json); // !! FILEPATH !!
+        //    } else {
+        //        throw new Exception("Null userlist attempting to be written");
+        //    }
+        //}
+
+
+
+        ///// <summary>
+        ///// Gets the user list and returns it.
+        ///// </summary>
+        ///// <returns>The current userlist loaded from disk.</returns>
+        //private Dictionary<string, PlayerInfo> getUserList() {
+        //    string filepath = FurkieBot.USERLIST_PATH;
+
+        //    while (true) {
+        //        try {
+        //            string[] jsonarray = File.ReadAllLines(filepath);
+        //            string json = string.Join("", jsonarray);
+        //            return JsonConvert.DeserializeObject<Dictionary<string, PlayerInfo>>(json); // initially loads the userlist from JSON
+        //        } catch (System.IO.IOException e) {
+        //            Console.WriteLine("Got an error trying to read the userlist. Error: ");
+        //            Console.WriteLine(e.StackTrace);
+        //        }
+        //        Thread.Sleep(5);
+        //    }
+        //}
 
 
 
