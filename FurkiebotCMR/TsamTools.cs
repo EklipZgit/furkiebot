@@ -6,43 +6,37 @@ using System.Net;
 using Newtonsoft.Json;
 
 
-namespace AtlasTools {
+namespace TsamTools {
     /// <summary>
-    /// Struct for values returned by querying the recent atlas maps.
+    /// Struct for values returned by querying leaderboard records
     /// </summary>
-    public struct AtlasMapResult {
+    public struct TsamLeaderboardResult {
         public string name;
         public string urlName;
         public string clean_name;
         public int id;
     }
 
-
     /// <summary>
-    /// Nothing, yet. Will be a struct for leaderboard entries when I get bored and implement this stuff.
-    /// </summary>
-    public struct LeaderboardEntry {
-    }
-
-
-    /// <summary>
-    /// Class containing static Atlas Tools methods.
+    /// Class containing static Tsam Tools methods.
     /// </summary>
     public class Atlas {
-        static string RECENT_MAPS_URL = @"http://df.hitboxteam.com/backend6/maps.php?sort=new&offset=0&max=30";
+        static string RECENT_MAPS_URL = @"";
 
 
         /// <summary>
-        /// Gets the recent map list from atlas.
+        /// ---
         /// </summary>
-        /// <returns>A list of AtlasMapResult structs.</returns>
-        public static List<AtlasMapResult> GetRecentMapList() {
+        /// <returns>A list of TsamLeaderboardResult structs. Lots to be changed and stuff</returns>
+        public static List<TsamLeaderboardResult> GetRecentMapList()
+        {
             string textFromFile = (new WebClient()).DownloadString(RECENT_MAPS_URL);
 
-            List<AtlasMapResult> preResult = JsonConvert.DeserializeObject<List<AtlasMapResult>>(textFromFile);
-            List<AtlasMapResult> results = new List<AtlasMapResult>();
-            foreach (AtlasMapResult map in preResult) {
-                AtlasMapResult toAdd;
+            List<TsamLeaderboardResult> preResult = JsonConvert.DeserializeObject<List<TsamLeaderboardResult>>(textFromFile);
+            List<TsamLeaderboardResult> results = new List<TsamLeaderboardResult>();
+            foreach (TsamLeaderboardResult map in preResult)
+            {
+                TsamLeaderboardResult toAdd;
                 string mapName = map.name;
                 int lastIndex = mapName.LastIndexOf('-');
                 toAdd.id = int.Parse(mapName.Substring(lastIndex + 1, mapName.Length - lastIndex - 1));
