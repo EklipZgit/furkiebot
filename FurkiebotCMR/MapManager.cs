@@ -153,7 +153,9 @@ namespace MapCMR {
         private static MongoCollection<CmrMap> Maps = DB.Database.GetCollection<CmrMap>(DB._MAP_TABLE_NAME);
         private static MongoCollection<Denial> Denials = DB.Database.GetCollection<Denial>(DB._DENIAL_TABLE_NAME);
         private static MapManager instance;
+        //Used to lock the singleton-creation code for this class.
         private static object _instanceLock = new Object();
+        private static object _mapfileLock = new Object();
         public static MapManager Instance {
             get {
                 lock (_instanceLock) {
@@ -174,6 +176,7 @@ namespace MapCMR {
         private FileSystemWatcher mapsWatcher;
 
         private MapManager() {
+            //register the mapping between the CmrMap class and MongoDB documents.
             if (!BsonClassMap.IsClassMapRegistered(typeof(CmrMap))) {
                 BsonClassMap.RegisterClassMap<CmrMap>(cm => {
                     //for private stuff, have constructor with below form
@@ -189,6 +192,7 @@ namespace MapCMR {
                     //cm.MapProperty(c => c.AnotherProperty);
                 });
             }
+            //register the mapping between the Denial class and MongoDB documents.
             if (!BsonClassMap.IsClassMapRegistered(typeof(Denial))) {
                 BsonClassMap.RegisterClassMap<Denial>(cm => {
                     cm.AutoMap();
@@ -200,16 +204,21 @@ namespace MapCMR {
             mapsWatcher.Path = FurkieBot.MAPS_UPDATE_PATH;
             mapsWatcher.NotifyFilter = NotifyFilters.LastWrite
                | NotifyFilters.FileName | NotifyFilters.DirectoryName;
+            //register CheckMaps to be called any time the MAPS_UPDATE_PATH is modified. 
+            //(this file is simply used to notify MapManager that it needs to recheck the mongoDB database,
+            //since you cant register events to watch a mongoDB).
             mapsWatcher.Changed += new FileSystemEventHandler(CheckMaps);
             mapsWatcher.EnableRaisingEvents = true;
-            lastMaps = GetMaps();
-            lastDenials = GetDenials();
+            
+            lastMaps = DeserializeMaps(fb.cmrId);
+            lastDenials = DeserializeDenials(fb.cmrId);
+            CheckMaps();
         }
 
 
 
         /// <summary>
-        /// Gets the <see cref="CmrMap"/> with the specified identifier from the Maps Mongo Collection
+        /// Indexer by ObjectId, gets the <see cref="CmrMap"/> with the specified identifier from the Maps Mongo Collection
         /// </summary>
         /// <param name="id">The identifier of the map to find.</param>
         /// <returns>The Map with that ID. Null if non-existent</returns>
@@ -223,7 +232,7 @@ namespace MapCMR {
 
 
         /// <summary>
-        /// Gets the <see cref="CmrMap"/> with the specified name out of the Maps mongocollection.
+        /// Indexer by string (mapname), gets the <see cref="CmrMap"/> with the specified name out of the Maps mongocollection.
         /// </summary>
         /// <param name="name">The name of the map to find</param>
         /// <returns>The Map by that name. Null if non-existent</returns>
@@ -735,79 +744,141 @@ namespace MapCMR {
 
 
 
-
+        private void CheckMaps() {
+            CheckMaps(null, null);
+        }
         private void CheckMaps(object sender, FileSystemEventArgs e) {
-            var oldMaps = lastMaps;
-            var curMaps = GetMaps();
-            
-            var oldDenials = lastDenials;
-            var curDenials = GetDenials();
+            lock (_mapfileLock) {
+                var oldMaps = lastMaps;
+                var curMaps = GetMaps();
 
-            if (lastMaps != null && lastMaps.Count() > 0) {
-                int acceptedCount = 0;
-                int pendingCount = 0;
-                int deniedCount = 0;
-                string message;
-                foreach (CmrMap curMap in curMaps) {     // Notifies IRC about any state changes that have happened and sets the flag to reload maps.
-                    CmrMap oldMap = oldMaps.Where(m => m.Id == curMap.Id).First();
+                var oldDenials = lastDenials;
+                var curDenials = GetDenials();
 
-                    IQueryable<Denial> curMapDenials = curDenials.Where(d => d.MapId == curMap.Id).OrderBy<Denial, int>(d => d.Timestamp);
-                    IQueryable<Denial> oldMapDenials = oldDenials.Where(d => d.MapId == oldMap.Id).OrderBy<Denial, int>(d => d.Timestamp);
-
-                    if (curMap.Accepted) {
-                        acceptedCount++;
-                    } else {
-                        pendingCount++;
+                if (lastMaps != null && lastMaps.Count() > 0) {
+                    //ensure it wasnt a blank stored file.
+                    int acceptedCount = 0;
+                    int pendingCount = 0;
+                    int deniedCount = 0;
+                    string message;
+                    HashSet<CmrMap> oldMapSet = new HashSet<CmrMap>();
+                    foreach(CmrMap oldMap in oldMaps) {
+                        oldMapSet.Add(oldMap);
                     }
-                    if (curMap.IsDenied)
-                        deniedCount++;
+                    foreach (CmrMap curMap in curMaps) {     // Notifies IRC about any state changes that have happened.
+                        CmrMap oldMap = oldMaps.Where(m => m.Id == curMap.Id).First();
 
+                        IQueryable<Denial> curMapDenials = curDenials.Where(d => d.MapId == curMap.Id).OrderBy<Denial, int>(d => d.Timestamp);
+                        IQueryable<Denial> oldMapDenials = oldDenials.Where(d => d.MapId == oldMap.Id).OrderBy<Denial, int>(d => d.Timestamp);
+                        if (oldMap != null) {
+                            oldMapSet.Remove(oldMap);
+                            if (curMap.Accepted) {
+                                acceptedCount++;
+                                if (!oldMap.Accepted) {
+                                    //Map was just approved.
+                                    message = "Map \"" + curMap.Name + "\" by " + UserMan[curMap.AuthorId].Name + " approved by " + UserMan[curMap.AcceptedById];
+                                    fb.MsgChans(message);
+                                }
+                            } else if (oldMap.LastModified != curMap.LastModified) {
+                                message = "Map \"" + curMap.Name + "\" by " + UserMan[curMap.AuthorId].Name
+                                        + (curMap.LastModified == oldMap.LastModified ? " is no longer an approved map." : " has been resubmitted and must be re-tested");
+                                fb.MsgChans(message);
+                                fb.MsgTesters(message + ". Download " + GetDownloadLink(curMap.Name) + FurkieBot.SEP + " Approve at " + FurkieBot.TEST_LINK);
 
-                    if (tocompare.ContainsKey(key)) {
-                        if (tocompare[key].accepted == false && data.accepted == true) { // map has been approved.
-                            acceptedCount++;
-                            pendingCount--;
-                            message = "Map \"" + data.name + "\" by " + data.author + " approved by " + data.acceptedBy;
-                            MsgChans(message);
-                            notifyReloadMaps = true;
-                        } else if (tocompare[key].accepted == true && data.accepted == false) {  // map has been unapproved.
-                            pendingCount++;
-                            acceptedCount--;
-                            message = "Map \"" + data.name + "\" by " + data.author + " removed from approved map list";
-                            MsgChans(message);
-                            MsgTesters(message + ". Download " + GetDownloadLink(data.name) + SEP + " Approve at " + TEST_LINK);
-                            notifyReloadMaps = true;
-                        } else if (tocompare[key].timestamp != data.timestamp) { // map has been resubmitted
-                            if (tocompare[key].accepted == true) {  // resubmit of an approved map
+                            } else {
                                 pendingCount++;
-                                acceptedCount--;
-                                data.accepted = false;
-                                message = "Map \"" + data.name + "\" by " + data.author + " removed from approved map list";
-                                MsgChans(message);
-                                MsgTesters(message + ". Download " + GetDownloadLink(data.name) + SEP + " Approve at " + TEST_LINK);
-                            } else { // is a resubmit of a pending map
-                                message = "Map \"" + data.name + "\" by " + data.author + " resubmitted";
-                                MsgChans(message);
-                                MsgTesters(message + ". Download " + GetDownloadLink(data.name) + SEP + " Approve at " + TEST_LINK);
+                                if (oldMap.Accepted && !curMap.IsDenied) {
+                                    //Accepted map was resubmitted
+                                    message = "Map \"" + curMap.Name + "\" by " + UserMan[curMap.AuthorId].Name +
+                                        (curMap.LastModified == oldMap.LastModified ? " is no longer an approved map." : " has been resubmitted and must be re-tested");
+                                    fb.MsgChans(message);
+                                    fb.MsgTesters(message + ". Download " + GetDownloadLink(curMap.Name) + FurkieBot.SEP + " Approve at " + FurkieBot.TEST_LINK);
+                                }
                             }
-                            notifyReloadMaps = true;
+                            if (curMap.IsDenied) {
+                                deniedCount++;
+                                if (!oldMap.IsDenied) {
+                                    //Map has been denied, find reason.
+                                    //TODO linq to find max denial timestamp ??
+                                    foreach (Denial curDenial in curMapDenials.OrderBy(d => d.Timestamp)) {
+                                        var matches =
+                                            from oldDenial in oldDenials
+                                            where oldDenial.Id == curDenial.Id
+                                            select oldDenial;
+                                        if (matches.Count() == 0) {
+                                            //then this denial is the cause for the new denial
+                                            User mapper = UserMan[curMap.AuthorId];
+                                            fb.Msg(mapper.Name, "Your map, \"" + curMap.Name + "\" has been denied for the following reason:  "
+                                                + FurkieBot.BoldText(curDenial.Message) + FurkieBot.SEP
+                                                + "Please fix the issue and reupload the fixed map to the CMR site. "
+                                                + FurkieBot.BoldText("Make sure to submit with the same map name."));
+
+                                            if (fb.IsIdentified(mapper.Name)) {
+                                                //mapper is guaranteed to be in IRC
+                                                curDenial.DisplayedToMapper = true;
+                                                SaveDenial(curDenial);
+                                            }
+                                        } else if (matches.First().Timestamp != curDenial.Timestamp) {
+                                            Console.WriteLine("Denial modified, but not notifying ????");
+                                        }
+                                    }
+                                }
+                            } else {
+                                //map not currently denied
+                                if (oldMap.IsDenied) {
+                                    // map has been approved, should already be handled
+                                }
+                            }
+                        } else {
+                            //oldMap was null, curMap is newly submitted 
+                            if (curMap.Accepted) {
+                                acceptedCount++;
+                                Console.WriteLine("Wtf new map added and already accepted????");
+                                
+                                message = "Map \"" + curMap.Name + "\" by " + UserMan[curMap.AuthorId] + " submitted for testing";
+                                fb.MsgChans(message);
+                                fb.MsgTesters(message + ". Download " + GetDownloadLink(curMap.Name) + FurkieBot.SEP + " Approve at " + FurkieBot.TEST_LINK);
+                            } else {
+
+                            }
+                            if (curMap.IsDenied) {
+                                deniedCount++;
+                            }
                         }
-                    } else { //Map is newly submitted
-                        pendingCount++;
-                        message = "Map \"" + data.name + "\" by " + data.author + " submitted for testing";
-                        MsgChans(message);
-                        MsgTesters(message + ". Download " + GetDownloadLink(data.name) + SEP + " Approve at " + TEST_LINK);
-                        notifyReloadMaps = true;
+                        
                     }
+                    if (oldMapSet.Count() > 0) {
+                        //Maps remaining in the set were deleted, since all the maps in curMaps have been removed from this set.
+                        message = "Map removed from this CMR: ";
+                        foreach (CmrMap deleted in oldMapSet) {
+                            message += "\"" + deleted.Name + "\" by " + UserMan[deleted.AuthorId] + FurkieBot.SEP;
+                        }
+                        message = message.Substring(0, message.Length - 3);
+                        fb.MsgChans(message);
+                        fb.MsgTesters(message);
+                    }
+                } else { // set last state to the current one.
+                    lastMaps = GetMaps();
+                    lastDenials = GetDenials();
+                    WriteDenials(lastDenials, fb.cmrId);
+                    WriteMaps(lastMaps, fb.cmrId);
                 }
-                if (notifyReloadMaps) {
-                    lastMaps = tocheck; // update the maps list to the new one.
-                    Console.WriteLine("\nReloaded the map file.\n");
-                }
-            } else { // set last state to the current one.
-                lastMaps = GetMaps();
-                lastDenials = GetDenials();
-            }
+            } //end lock
+        }
+
+
+
+
+
+
+
+        /// <summary>
+        /// Gets the download link for the specified map name.
+        /// </summary>
+        /// <param name="mapname">The mapname.</param>
+        /// <returns></returns>
+        public static string GetDownloadLink(string mapname) {
+            return FurkieBot.DOWNLOAD_LINK + mapname.Replace(" ", "%20");
         }
 
 

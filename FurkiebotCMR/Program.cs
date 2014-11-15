@@ -537,21 +537,6 @@ namespace FurkiebotCMR {
 
 
 
-
-
-        /// <summary>
-        /// Gets the download link for the specified map name.
-        /// </summary>
-        /// <param name="mapname">The mapname.</param>
-        /// <returns></returns>
-        public static string GetDownloadLink(string mapname) {
-            return DOWNLOAD_LINK + mapname.Replace(" ", "%20");
-        }
-
-
-
-
-
         /// <summary>
         /// Calling this causes FurkieBot to connect via the configuration that FurkieBot was initialized with.
         /// </summary>
@@ -2991,17 +2976,14 @@ namespace FurkiebotCMR {
 
 
 
-        static string BoldText(string s) {
+        public static string BoldText(string s) {
             string text = s;
             text = (char)2 + s + (char)2;
             return text;
         }
 
 
-
-        static string ColourChanger(string s, string colour) //Used to colourcode text in irc
-        {
-            /* MIRC COLOURS           
+        /* MIRC COLOURS           
              * 00 white            
              * 01 black            
              * 02 blue (navy)            
@@ -3019,6 +3001,9 @@ namespace FurkiebotCMR {
              * 14 grey
              * 15 light grey (silver)
             */
+        public static string ColourChanger(string s, string colour) //Used to colourcode text in irc
+        {
+            
             string text = s;
             text = (char)3 + colour + s + (char)3;
             return text;

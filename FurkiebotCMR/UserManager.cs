@@ -136,6 +136,9 @@ namespace UserCMR {
                     .First<User>();
             }
         }
+        public User GetUser(ObjectId id) {
+            return this[id];
+        }
 
 
         /// <summary>
@@ -149,6 +152,9 @@ namespace UserCMR {
                     .Where(u => u.NameLower == name.ToLower().Trim())
                     .First();
             }
+        }
+        public User GetUser(String name) {
+            return this[name];
         }
 
 
