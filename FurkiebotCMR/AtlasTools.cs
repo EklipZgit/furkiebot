@@ -30,6 +30,7 @@ namespace AtlasTools {
     /// </summary>
     public class Atlas {
         static string RECENT_MAPS_URL = @"http://df.hitboxteam.com/backend6/maps.php?sort=new&offset=0&max=30";
+        static string LEADERBOARD_URL = @"fuck everything";
 
 
         /// <summary>

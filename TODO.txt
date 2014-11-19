@@ -8,7 +8,6 @@ IMMEDIATE
 	When testers join IRC, notify them with download links to untested maps etc
 
 FUTURE
-	Make .acceptoverride command that admins can perform to force accept a map w/o being tester.
 	.startcmr and .cmr dont use correct map count?
 	when race is open, .cmr should list race channel.
 	DQ's
@@ -19,7 +18,6 @@ FUTURE
 		maps count should update correctly now? idk?
 
 	Allow mappers to see the maps they've uploaded, and also delete uploaded maps.
-	Furkiebot code to properly handle deletes. Idk how. (done within furkiebot .deletemap command, but not when syncing and a map has been deleted from outside furkiebot)
 
 
 
@@ -39,6 +37,7 @@ etc.
 
 DONE
 
+	~Make .acceptoverride command that admins can perform to force accept a map w/o being tester.
 ~Fix so that tester gets notified when pending maps are overwritten 
 ~remove map command. Pls.
 

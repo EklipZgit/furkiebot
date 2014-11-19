@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using AtlasTools;
+using MapCMR;
 
 namespace FurkiebotCMR {
     public delegate void NotifyCallback(List<AtlasMapResult> updatedList);
@@ -16,6 +17,7 @@ namespace FurkiebotCMR {
         private readonly object _checkingLock = new Object();
 
         private FurkieBot furkiebot;
+        private MapManager MapMan;
         private Thread checkerThread;
         private int uploadedCount;
         private bool exit = false;
@@ -28,6 +30,7 @@ namespace FurkiebotCMR {
             furkiebot = fb;
             checkerThread = null;
             uploadedCount = 0;
+            MapMan = MapManager.Instance;
         }
 
 
@@ -63,29 +66,22 @@ namespace FurkiebotCMR {
             while (!exit) {
                 lock (_checkingLock) {  //This lock ensures that when stopChecking is locked (so, while this is not sleeping) the thread will not be terminated.
                                         //Thus ensuring that this / furkiebot will not be left in an undefined state.
-                    List<AtlasMapResult> maps = Atlas.GetRecentMapList();
+                    List<AtlasMapResult> atlasMaps = Atlas.GetRecentMapList();
 
-                    lock (furkiebot._updatingMapsLock) {
-                        Dictionary<string, MapData> curMaps = furkiebot.GetMaps();
-                        bool altered = false;
-                        foreach (AtlasMapResult result in maps) {
-                            string name = result.clean_name.Trim().ToLower();
-                            if (curMaps.ContainsKey(name) && (result.id != curMaps[name].id)) { //If the atlas map is in our list of maps, AND it hasn't yet been id'd....
-                                MapData temp = curMaps[name];
-                                temp.id = result.id;
-                                if (curMaps[name].id <= 0) {   //Newly uploaded map
-                                    uploadedCount++;
-                                    furkiebot.MessageRacechan("CMR map #" + uploadedCount + " uploaded to Atlas: " + ATLAS_MAP_URL + result.id + FurkieBot.SEP + @"Install: " + GetMapInstallUrl(result.id, result.urlName) + FurkieBot.SEP + (furkiebot.AcceptedCount - uploadedCount) + " left to be uploaded!");
-                                } else {                                    //reuploaded map
-                                    furkiebot.MessageRacechan("CMR map REUPLOADED to Atlas: " + ATLAS_MAP_URL + result.id + FurkieBot.SEP + @"Install: " + GetMapInstallUrl(result.id, result.urlName) + FurkieBot.SEP + "DELETE THE OLD ONE FROM YOUR CUSTOM MAPS DIRECTORY" + FurkieBot.SEP + (furkiebot.AcceptedCount - uploadedCount) + " left to be uploaded!");
-                                }
-                                curMaps[name] = temp;
-                                altered = true;
+                    foreach (AtlasMapResult result in atlasMaps) {
+                        string name = result.clean_name.Trim().ToLower();
+                        CmrMap map = MapMan[name];
+                        if (map != null && (result.id != map.AtlasID)) { //If the atlas map is in our list of maps, AND it hasn't yet been id'd....
+                            
+                            map.AtlasID = result.id;
+                            map.Name = result.clean_name;
+                            if (MapMan[name].AtlasID <= 0) {   //Newly uploaded map
+                                uploadedCount++;
+                                furkiebot.MessageRacechan(FurkieBot.FormatNumber(uploadedCount) + " map uploaded to Atlas, " + (furkiebot.AcceptedCount - uploadedCount) + " left to be uploaded!" + FurkieBot.SEP + @"Install: " + GetMapInstallUrl(result.id, result.urlName) + FurkieBot.SEP + ATLAS_MAP_URL + result.id);
+                            } else {                                    //reuploaded map
+                                furkiebot.MessageRacechan("CMR map REUPLOADED to Atlas, " + (furkiebot.AcceptedCount - uploadedCount) + " left to be uploaded!" + FurkieBot.SEP + @"Install: " + GetMapInstallUrl(result.id, result.urlName) + FurkieBot.SEP + "DELETE THE OLD ONE FROM YOUR CUSTOM MAPS DIRECTORY" + FurkieBot.SEP + ATLAS_MAP_URL + result.id);
                             }
-                        }
-
-                        if (altered) {
-                            furkiebot.SetMaps(curMaps);
+                            MapMan.SaveMap(map);
                         }
                     }
                 }

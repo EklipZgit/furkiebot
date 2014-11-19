@@ -14,6 +14,9 @@ using Newtonsoft.Json;
 using System.Linq;
 using Newtonsoft.Json.Linq;
 using FurkiebotCMR;
+using AtlasTools;
+using UserCMR;
+using MapCMR;
 
 namespace TraxBusterCMR {
 
@@ -31,6 +34,9 @@ namespace TraxBusterCMR {
         private NetworkStream ns = null;
         private StreamReader sr = null;
         private StreamWriter sw = null;
+        private UserManager UserMan = UserManager.Instance;
+        private MapManager MapMan = MapManager.Instance;
+
 
 
         public TraxBuster(IRCConfig config, FurkieBot furkiebot) {
@@ -83,7 +89,7 @@ namespace TraxBusterCMR {
 
 
         public void IRCWork() {
-            string sep = ColourChanger(" | ", "07");
+            string sep = FurkieBot.ColourChanger(" | ", "07");
 
             int cmrid = 35;
             DataTable maps = UpdateJsonToDtMaps(cmrid).Copy();
@@ -144,7 +150,7 @@ namespace TraxBusterCMR {
 
 
                         case ":.exit":
-                            if (furkiebot.IsAdmin(nickname.ToLower(), nickname)) {
+                            if (UserMan.IsAdmin(nickname.ToLower())) {
                                 this.exit = true;
                             }
                             break;
@@ -158,13 +164,13 @@ namespace TraxBusterCMR {
 
                     switch (command) {
                         case ":.join001":
-                            if (StringCompareNoCaps(nickname, FurkieBot.BOT_NAME) || furkiebot.IsAdmin(nickname.ToLower(), nickname)) {
+                            if (StringCompareNoCaps(nickname, FurkieBot.BOT_NAME) || UserMan.IsAdmin(nickname.ToLower(), nickname)) {
                                 sendData("JOIN", ex[4]);
                             }
                             break;
 
                         case ":.proofcall":
-                            if (StringCompareNoCaps(nickname, FurkieBot.BOT_NAME) || furkiebot.IsAdmin(nickname, nickname)) {
+                            if (StringCompareNoCaps(nickname, FurkieBot.BOT_NAME) || UserMan.IsAdmin(nickname, nickname)) {
                                 Console.WriteLine("Proofcall START for " + ex[4]);
                                 string[] proofcallData = new string[maps.Rows.Count];
                                 string[] ex2;
@@ -187,7 +193,7 @@ namespace TraxBusterCMR {
                                             }
                                         }
                                     } else {
-                                        Console.WriteLine("Invalid map data!");
+                                        Console.WriteLine("TRAXBUSTER: Invalid map data!");
                                     }
                                     i++;
                                 }
@@ -204,6 +210,8 @@ namespace TraxBusterCMR {
             }
         } /* IRCWork() */
 
+
+
         public void Dispose() {
             if (sr != null)
                 sr.Close();
@@ -215,6 +223,8 @@ namespace TraxBusterCMR {
                 IRCConnection.Close();
         } /* Dispose() */
 
+
+
         static int GetCmrId() {
             int res;
             string filepath = @"C:\CMR\Data\CMR_ID.txt";
@@ -222,46 +232,18 @@ namespace TraxBusterCMR {
             return res;
         }
 
-        static string[] StringSplitter(string s, string v) //Seperate a string in an array of strings
-        {
+
+        //Seperate a string in an array of strings
+        static string[] StringSplitter(string s, string v) { 
             string[] separators = { @v };
             string value = @s;
             string[] words = value.Split(separators, StringSplitOptions.RemoveEmptyEntries);
             return words;
         } /* StringSplitter() */
 
-        static string BoldText(string s) {
-            string text = s;
-            text = (char)2 + s + (char)2;
-            return text;
-        }
 
-        static string ColourChanger(string s, string colour) //Used to colourcode text in irc
-        {
-            //0 white
-            //1 black
-            //2 blue (navy)
-            //3 green
-            //4 red
-            //5 brown (maroon)
-            //6 purple
-            //7 orange (olive)
-            //8 yellow
-            //9 light green (lime)
-            //10 teal (a green/blue cyan)
-            //11 light cyan (cyan) (aqua)
-            //12 light blue (royal)
-            //13 pink (light purple) (fuchsia)
-            //14 grey
-            //15 light grey (silver)
-
-            string text = s;
-            text = (char)3 + colour + s + (char)3;
-            return text;
-        } /* ColourChanger */
-
-        static string RandomCharGenerator(int length, int type) //type 1 = chars and digits, type 2 = digits, type 3 = dice
-        {
+        //type 1 = chars and digits, type 2 = digits, type 3 = dice
+        static string RandomCharGenerator(int length, int type) { 
             string valid = "";
             if (type == 1) {
                 valid = "abcdefghijklmnopqrstuvwxyz1234567890";
@@ -332,42 +314,6 @@ namespace TraxBusterCMR {
             return dt;
         }
 
-        static string CheckSSTest(string user, string mapname, int mapid) {
-            string res = "";
-            int page = 0;
-
-            while (res == "") {
-                string json = ReadApiLeaderboardToJson(mapname, mapid, page);
-
-                JObject rss = JObject.Parse(json);
-
-                if (json == "{\"error\":\"Level not found.\"}") {
-                    res = "Level not found.";
-                } else {
-                    if (rss["best_scores"].ToString() != "[]") {
-                        var query =
-                            from p in rss["best_scores"]
-                            where (string)p["name"] == user
-                            select new {
-                                finesse = (string)p["score_finesse"],
-                                thoroughness = (string)p["score_thoroughness"],
-                                timestamp = UnixTimeStampToDateTime((double)p["timestamp"])
-                            };
-
-                        foreach (var item in query) {
-                            res = mapname + "," + item.finesse + item.thoroughness + "," + item.timestamp;
-                        }
-
-                        if (res == "") {
-                            page++;
-                        }
-                    } else {
-                        res = mapname + @",No Score,No Time";
-                    }
-                }
-            }
-            return res;
-        }
 
         static bool CheckSS(string racer, int cmrid) {
             DataTable maps;
@@ -393,53 +339,5 @@ namespace TraxBusterCMR {
             dtDateTime = dtDateTime.AddSeconds(unixTimeStamp).ToLocalTime();
             return dtDateTime;
         }
-
-        static DataTable UpdateJsonUserlist() {
-            string filepath = @"C:\Users\Furkan Pham\Documents\FurkieBot\Data\Userlist\userlist.json";
-            string[] jsonarray = File.ReadAllLines(filepath);
-            string json = string.Join("", jsonarray);
-
-            DataSet ds = JsonConvert.DeserializeObject<DataSet>(json);
-
-            DataTable dt = ds.Tables["userlist"];
-
-            return dt;
-        }
-
-        static string[] GetUserInfo(string ircuser) //[0] = irc; [1] = df; [2] = rating
-        {
-            string[] res = { "", "", "" };
-            DataTable dt = UpdateJsonUserlist();
-
-            for (int i = 0; i < dt.Rows.Count; i++) {
-                string ircname = dt.Rows[i]["ircname"].ToString();
-                string dustforcename = dt.Rows[i]["dustforcename"].ToString();
-                string rating = dt.Rows[i]["rating"].ToString();
-                if (ircuser.ToLower() == ircname) {
-                    res[0] = ircname;
-                    res[1] = dustforcename;
-                    res[2] = rating;
-                    i = dt.Rows.Count;
-                }
-            }
-            return res;
-        }
-        static string GetUserIrc(string dustforceuser) {
-            string res = "";
-            DataTable dt = UpdateJsonUserlist();
-
-            for (int i = 0; i < dt.Rows.Count; i++) {
-                string ircname = dt.Rows[i]["ircname"].ToString();
-                string dustforcename = dt.Rows[i]["dustforcename"].ToString();
-                if (dustforceuser == dustforcename) {
-                    res = dustforcename;
-                    i = dt.Rows.Count;
-                }
-            }
-            return res;
-        }
-        static string GetUserIgn(string ircuser) { return GetUserInfo(ircuser)[1]; }
-        static int GetUserRating(string ircuser) { return Convert.ToInt32(GetUserInfo(ircuser)[2]); }
-
     } /* IRCBot */
 }

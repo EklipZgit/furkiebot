@@ -285,7 +285,7 @@ namespace UserCMR {
         /// </summary>
         /// <param name="nickname">The nickname.</param>
         /// <param name="password">The password.</param>
-        public void AttemptRegistration(string nickname, string password) {
+        public bool AttemptRegistration(string nickname, string password) {
             User user = this[nickname];
             bool wasNull = false;
             if (user == null) {
@@ -307,13 +307,15 @@ namespace UserCMR {
                 } else {
                     user.Salt = hashes[0];
                     user.Password = hashes[1];
-                    user.Name = nickname;
+                    user.Name = nickname; //Overwrite name w/ new capitalization
                     SaveUser(user);
                 }
                 fb.Notice(nickname, "Successfully registered your nick with FurkieBot! Dont forget your password. You can always re-register if you forget the password.");
                 fb.Notice(nickname, "You will now want to set your in-game dustforce name with FurkieBot. use \".setign dustforceLeaderboardName\" to set your IGN with FurkieBot.");
+                return true;
             } else {
                 fb.NoticeNotIdentified(nickname);
+                return false;
             }
         }
 

@@ -49,16 +49,16 @@ namespace FurkiebotCMR {
         public string altNick;
     } /* IRCConfig */
 
-    struct MapData {
-        public string name;
-        public int id;
-        public string filepath;
-        public string author;
-        public string acceptedBy;
-        public bool accepted;
-        public string timestamp;
-        public bool forceid;
-    }
+    //struct MapData {
+    //    public string name;
+    //    public int id;
+    //    public string filepath;
+    //    public string author;
+    //    public string acceptedBy;
+    //    public bool accepted;
+    //    public string timestamp;
+    //    public bool forceid;
+    //}
 
 
     /// <summary>
@@ -2233,10 +2233,10 @@ namespace FurkiebotCMR {
             } else {    //increment slap count from same user.
                 repeatPastas++;
             }
+            User targUser = UserMan[target];
 
-
-            if (userlist.ContainsKey(target.ToLower())) {
-                target = userlist[target.ToLower()].ircname;
+            if (targUser != null) {
+                target = targUser.Name;
             }
 
 
@@ -2342,23 +2342,21 @@ namespace FurkiebotCMR {
             if (repeatSlaps < allowedSlaps) {
                 Random r = new Random();
                 int choice = r.Next(18);
+                User toSlap = UserMan[nameToSlap.ToLower()];
+                User slapper = UserMan[nickname.ToLower()];
 
-
-                if (userlist.ContainsKey(nameToSlap.ToLower())) {
-                    nameToSlap = userlist[nameToSlap.ToLower()].ircname;
+                if (toSlap != null) { //get the targets name properly capitalized, if it is in our DB.
+                    nameToSlap = toSlap.Name;
                 }
 
-                if (nameToSlap.ToLower() == "furkiebot") {      //they told furkiebot to slap himself
-                    nameToSlap = nickname;
-
-                } else if (nameToSlap.ToLower() == "glados") {      //they told furkiebot to slap GLaDOS
+                if (nameToSlap.ToLower() == "glados") {      //they told furkiebot to slap GLaDOS
                     Msg(chan, ACT + @"ACTION angrily beats " + nickname + " with a frozen drumstick." + ACT);
                     Msg(chan, "Why would you even suggest that, you heartless shell of a person?");
 
                 } else if (nameToSlap == "me" || nickname.ToLower() == nameToSlap.ToLower()) {  //person is trying to slap themselves.
                     Msg(chan, ACT + @"ACTION uses " + nickname + "'s own hands to slap them. \"STOP HITTING YOURSELF, STOP HITTING YOURSELF!\"" + ACT);
 
-                } else if (IsAdmin(nameToSlap.ToLower(), nickname)) {   //trying to slap an admin
+                } else if (UserMan.IsAdmin(nameToSlap.ToLower(), nickname)) {   //trying to slap an admin
                     Msg(chan, ACT + @"ACTION slaps " + nickname + ". Don't be like that!" + ACT);
 
                 } else if (nameToSlap.ToLower() == "jerseymilker") {
@@ -2367,12 +2365,16 @@ namespace FurkiebotCMR {
 
 
                 } else {    //proceed with normal slap handling.
+                    if (nameToSlap.ToLower() == "furkiebot") {      //they told furkiebot to slap himself, slap them.
+                        nameToSlap = nickname;
+
+                    } 
                     switch (choice) {
                         case 0:
                             Msg(chan, ACT + @"ACTION slaps " + nameToSlap + " with " + nickname + "'s favorite game console." + ACT);
                             break;
                         case 1:
-                            if (IsAdmin(nickname.ToLower(), nickname)) {
+                            if (slapper.Admin) {
                                 goto case 4;
                             } else {
                                 Msg(chan, "Only cool people are allowed to .slap people. Go slap yourself, " + nickname + ".");
@@ -2386,14 +2388,14 @@ namespace FurkiebotCMR {
                             Msg(chan, ACT + @"ACTION slaps " + nameToSlap + " with vigor." + ACT);
                             break;
                         case 4:
-                            if (IsAdmin(nickname.ToLower(), nickname)) {
+                            if (slapper.Admin) {
                                 Msg(chan, ACT + @"ACTION slaps " + nameToSlap + " with his cold, metal bot-hand." + ACT);
                             } else {
                                 Msg(chan, "Only cool people are allowed to .slap people. Go slap yourself, " + nickname + ".");
                             }
                             break;
                         case 5:
-                            if (IsAdmin(nickname.ToLower(), nickname)) {
+                            if (slapper.Admin) {
                                 goto case 6;
                             } else {
                                 Msg(chan, ACT + @"ACTION slaps " + nickname + ". BE NICE." + ACT);
@@ -2421,15 +2423,15 @@ namespace FurkiebotCMR {
                             Msg(chan, "Gross. I'm not touching that.");
                             break;
                         case 13:
-                            if (IsAdmin(nickname.ToLower(), nickname)) {
+                            if (slapper.Admin) {
                                 goto case 7;
                             } else {
                                 Msg(chan, "Wow. " + nickname + " is a jerk, are you all seeing this?");
                             }
                             break;
                         case 14:
-                            Msg(chan, ACT + "ACTION chants: \"He's the F to the U, R-K-I-E-Bot, FurkieBot can slap you with just a thought.\"" + ACT);
-                            Msg(chan, ACT + @"ACTION smacks " + nameToSlap + " with a resounding thud on the last note of the cheer." + ACT);
+                            Msg(chan, ACT + "ACTION chants: \"He's the F to the U, R-K-I-E-Bot, FurkieBot will slap you without a thought.\"" + ACT);
+                            Msg(chan, ACT + @"ACTION slaps " + nameToSlap + " with a resounding smack on the last note of the cheer." + ACT);
                             break;
                         case 15:
                             Msg(chan, MOLLY);
@@ -2444,6 +2446,7 @@ namespace FurkiebotCMR {
                     }
                 }
             } else {
+                //abusing .slap, ignore the command.
                 return;
             }
 
@@ -2478,7 +2481,7 @@ namespace FurkiebotCMR {
         /// <returns></returns>
         private bool AddEntrant(string racer) //Used to add a racer to entrants
         {
-            racers.Rows.Add(racer, 6, 0, 0, 0, 0, "", getUserRating(racer)); //name, status, hour, min, sec, 10th sec, comment, rating
+            racers.Rows.Add(racer, 6, 0, 0, 0, 0, "", UserMan.GetUserRating(racer)); //name, status, hour, min, sec, 10th sec, comment, rating
             return true;
         } /* AddEntrant */
 
@@ -2487,10 +2490,10 @@ namespace FurkiebotCMR {
 
 
 
-        private long CmrMapCount(int cmrid) //Used to count the amount of maps on the current CMR
+        private int CmrMapCount(int cmrid) //Used to count the amount of maps on the current CMR
         {
-            Dictionary<string, MapData> maplist = DeserializeMaps(cmrid);
-            return maplist.Count;
+            var maps = MapMan.GetMaps(cmrid);
+            return maps.Count();
         } /* CountMapsInCMR() */
 
 
@@ -3284,6 +3287,25 @@ namespace FurkiebotCMR {
             DataTable dt = ds.Tables["scorelist"];
 
             return dt;
+        }
+
+
+        public static string FormatNumber(int number) {
+            if (number == 0) {
+                return "" + number;
+            } else if (number > 10 && number < 20) {
+                return number + "th";
+            } else {
+                if (number % 10 == 1) {
+                    return number + "st";
+                } else if (number % 10 == 2) {
+                    return number + "nd";
+                } else if (number % 10 == 3) {
+                    return number + "rd";
+                } else {
+                    return number + "th";
+                }
+            }
         }
 
 
