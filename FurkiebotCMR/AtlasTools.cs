@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Net;
 using Newtonsoft.Json;
-
+using MapCMR;
 
 namespace AtlasTools {
     /// <summary>
@@ -20,6 +20,7 @@ namespace AtlasTools {
 
     /// <summary>
     /// Nothing, yet. Will be a struct for leaderboard entries when I get bored and implement this stuff.
+	/// TODO
     /// </summary>
     public struct LeaderboardEntry {
     }
@@ -29,16 +30,15 @@ namespace AtlasTools {
     /// Class containing static Atlas Tools methods.
     /// </summary>
     public class Atlas {
-        static string RECENT_MAPS_URL = @"http://df.hitboxteam.com/backend6/maps.php?sort=new&offset=0&max=30";
-        static string LEADERBOARD_URL = @"fuck everything";
+        static string RECENT_MAPS_URL = @"http://df.hitboxteam.com/backend6/maps.php?sort=new&offset=0&max=";
 
 
         /// <summary>
         /// Gets the recent map list from atlas.
         /// </summary>
         /// <returns>A list of AtlasMapResult structs.</returns>
-        public static List<AtlasMapResult> GetRecentMapList() {
-            string textFromFile = (new WebClient()).DownloadString(RECENT_MAPS_URL);
+        public static List<AtlasMapResult> GetRecentMapList(int num = 30) {
+            string textFromFile = (new WebClient()).DownloadString(RECENT_MAPS_URL + num);
 
             List<AtlasMapResult> preResult = JsonConvert.DeserializeObject<List<AtlasMapResult>>(textFromFile);
             List<AtlasMapResult> results = new List<AtlasMapResult>();
@@ -69,4 +69,48 @@ namespace AtlasTools {
         //    Console.ReadLine();
         //}
     }
+
+
+	/// <summary>
+	/// Not yet fully implemented, TODO check up on how leaderboard entries are returned from th
+	/// the Atlas Server.
+	/// @author Travis Drake
+	/// </summary>
+	public class LeaderboardFetcher : IDisposable {
+		private WebClient webClient;
+
+		public List<LeaderboardEntry> this[CmrMap map] {
+			get {
+				return GetLeaderboard(map.Name, map.AtlasID);
+			}
+		}
+
+
+		public LeaderboardFetcher() {
+			webClient = new WebClient();
+		}
+
+
+		private List<LeaderboardEntry> GetLeaderboard(string mapname, int mapAtlasID) {
+			string json_data = string.Empty;
+
+			try {
+				json_data = webClient.DownloadString(GetLeaderboardUrl(mapname, mapAtlasID));
+			} catch (Exception) { }
+
+			return JsonConvert.DeserializeObject<List<LeaderboardEntry>>(json_data);
+		}
+
+
+		private static string GetLeaderboardUrl(string mapname, int mapAtlasID) {
+			string realname = mapname.Replace(" ", "-").Trim();
+			return @"http://df.hitboxteam.com/backend6/scores.php?level=" + realname + "-" + mapAtlasID + "&offset=0&max=100";
+		}
+
+
+
+		public void Dispose() {
+			webClient.Dispose();
+		}
+	}
 }

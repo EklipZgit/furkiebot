@@ -342,6 +342,14 @@ namespace UserCMR {
 
 
 
+		/// <summary>
+		/// Runs all the code necessary in UserManager when resetting a CMR.
+		/// </summary>
+		public void ResetCmr() {
+			ResetTesters();
+		}
+
+
         /// <summary>
         /// Gets a Queryable list of testers.
         /// </summary>

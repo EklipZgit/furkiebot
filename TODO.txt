@@ -1,6 +1,7 @@
 IMMEDIATE
 	~Fix map list not getting reset when CMR is updated to new CMR
-	Fix bug where maps published to atlas that havent been accepted yet are still registered in the race channel. **Account for maps accepted while race channel is open** in AtlasChecker
+	Fix bug where maps published to atlas that havent been accepted yet are still registered in the race channel. in AtlasChecker
+	Account for maps accepted while race channel is open in AtlasChecker
 	Fix bug where maps with capitals in their names are not recognized by AtlasChecker ???? why shouldnt this all be case insensitive? :<<<<
 	Check for .forceid == true before allowing a published atlas map to overwrite a maps mapid in AtlasChecker
 	.maps needs to print author along with map names again
