@@ -63,6 +63,7 @@
     <Compile Include="AtlasTools.cs" />
     <Compile Include="Buster.cs" />
     <Compile Include="FurkieDB.cs" />
+    <Compile Include="IRaceManager.cs" />
     <Compile Include="UserManager.cs" />
     <Compile Include="MapManager.cs" />
     <Compile Include="Program.cs" />
