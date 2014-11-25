@@ -831,7 +831,7 @@ namespace FurkiebotCMR {
                 string[] ex;
                 string data;
 
-                data = sr.ReadLineTime;
+                data = sr.ReadLine();
 
 
                 char[] charSeparator = new char[] { ' ' };
