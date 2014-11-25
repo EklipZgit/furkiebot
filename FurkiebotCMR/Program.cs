@@ -152,7 +152,7 @@ namespace FurkiebotCMR {
         private AtlasChecker checker;
 
         
-
+		//add timestamp checking, put ircwork in another thread to poll periodically
         private int acceptedCount;
         private int pendingCount;
 
@@ -834,7 +834,7 @@ namespace FurkiebotCMR {
                 string[] ex;
                 string data;
 
-                data = sr.ReadLine();
+                data = sr.ReadLineTime;
 
 
                 char[] charSeparator = new char[] { ' ' };
@@ -2054,7 +2054,7 @@ namespace FurkiebotCMR {
             sendData("MODE", realRacingChan + " +t");
             Msg("TRAXBUSTER", ".join001 " + realRacingChan);
             NotifyCmrStarting();
-            checker = new AtlasChecker(this);
+            checker = new AtlasChecker();
             checker.StartChecking();
         }
 

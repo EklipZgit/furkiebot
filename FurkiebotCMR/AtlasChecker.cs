@@ -26,8 +26,8 @@ namespace FurkiebotCMR {
         /// Initializes a new instance of the <see cref="AtlasChecker"/> class.
         /// </summary>
         /// <param name="fb">A reference to FurkieBot.</param>
-        public AtlasChecker(FurkieBot fb) {
-            furkiebot = fb;
+        public AtlasChecker() {
+            furkiebot = FurkieBot.Instance;
             checkerThread = null;
             uploadedCount = 0;
             MapMan = MapManager.Instance;

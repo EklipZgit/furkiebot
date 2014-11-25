@@ -92,7 +92,6 @@ namespace TraxBusterCMR {
             string sep = FurkieBot.ColourChanger(" | ", "07");
 
             int cmrid = 35;
-            DataTable maps = UpdateJsonToDtMaps(cmrid).Copy();
 
             string[] ex;
             string data;
@@ -163,47 +162,57 @@ namespace TraxBusterCMR {
                     string command = ex[3]; //grab the command sent
 
                     switch (command) {
-                        case ":.join001":
-                            if (StringCompareNoCaps(nickname, FurkieBot.BOT_NAME) || UserMan.IsAdmin(nickname.ToLower(), nickname)) {
+                        case ":.join":
+                            if (StringCompareNoCaps(nickname, FurkieBot.BOT_NAME) || UserMan.IsAdmin(nickname, nickname)) {
                                 sendData("JOIN", ex[4]);
                             }
                             break;
 
                         case ":.proofcall":
-                            if (StringCompareNoCaps(nickname, FurkieBot.BOT_NAME) || UserMan.IsAdmin(nickname, nickname)) {
-                                Console.WriteLine("Proofcall START for " + ex[4]);
-                                string[] proofcallData = new string[maps.Rows.Count];
-                                string[] ex2;
-                                string list = "";
-                                bool undone = false;
+							string racer = ex[4].Trim();
+							if (StringCompareNoCaps(nickname, FurkieBot.BOT_NAME) || UserMan.IsAdmin(nickname, nickname)) {
+								Console.WriteLine("Proofcall START for " + ex[4]);
 
-                                char[] seperator = new char[] { ',' };
 
-                                int i = 0;
-                                foreach (DataRow dr in maps.Rows) {
-                                    proofcallData[i] = CheckSSTest(ex[4], dr["mapname"].ToString(), Convert.ToInt32(dr["mapid"]));
-                                    ex2 = proofcallData[i].Split(seperator, 3);
-                                    if (proofcallData[i] != "Level not found.") {
-                                        Console.WriteLine(ex2[0] + " = " + ex2[1]);
-                                        if (ex2[1] != "SS") {
-                                            list += ex2[0] + ", ";
-                                            if (!undone) {
-                                                sendData("PRIVMSG", "FurkieBot " + ".forceundone " + ex[4].Trim());
-                                                undone = true;
-                                            }
-                                        }
-                                    } else {
-                                        Console.WriteLine("TRAXBUSTER: Invalid map data!");
-                                    }
-                                    i++;
-                                }
-                                if (list != "") {
-                                    sendData("PRIVMSG", "FurkieBot " + ".sayracechan " + ex[4] + " doesn't have an SS on the following maps: " + list.TrimEnd(',', ' '));
-                                } else {
-                                    //Do Nothing
-                                }
-                                Console.WriteLine("Proofcall END");
-                            }
+							}
+
+
+							// **OLD**  **OLD**  **OLD**  **OLD**  **OLD**  **OLD**  **OLD**  **OLD**  **OLD**  
+
+							//if (StringCompareNoCaps(nickname, FurkieBot.BOT_NAME) || UserMan.IsAdmin(nickname, nickname)) {
+							//	Console.WriteLine("Proofcall START for " + ex[4]);
+							//	string[] proofcallData = new string[maps.Rows.Count];
+							//	string[] ex2;
+							//	string list = "";
+							//	bool undone = false;
+
+							//	char[] seperator = new char[] { ',' };
+
+							//	int i = 0;
+							//	foreach (DataRow dr in maps.Rows) {
+							//		proofcallData[i] = CheckSS(ex[4], dr["mapname"].ToString(), Convert.ToInt32(dr["mapid"]));
+							//		ex2 = proofcallData[i].Split(seperator, 3);
+							//		if (proofcallData[i] != "Level not found.") {
+							//			Console.WriteLine(ex2[0] + " = " + ex2[1]);
+							//			if (ex2[1] != "SS") {
+							//				list += ex2[0] + ", ";
+							//				if (!undone) {
+							//					sendData("PRIVMSG", "FurkieBot " + ".forceundone " + ex[4].Trim());
+							//					undone = true;
+							//				}
+							//			}
+							//		} else {
+							//			Console.WriteLine("TRAXBUSTER: Invalid map data!");
+							//		}
+							//		i++;
+							//	}
+							//	if (list != "") {
+							//		furkiebot.Msg(FurkieBot.BOT_NAME, ".sayracechan " + ex[4] + " doesn't have an SS on the following maps: " + list.TrimEnd(',', ' '));
+							//	} else {
+							//		//Do Nothing
+							//	}
+							//	Console.WriteLine("Proofcall END");
+							//}
                             break;
                     }
                 }

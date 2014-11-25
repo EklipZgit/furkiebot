@@ -20,7 +20,7 @@ namespace AtlasTools {
 
     /// <summary>
     /// Nothing, yet. Will be a struct for leaderboard entries when I get bored and implement this stuff.
-	/// TODO
+	/// TODO need this done for SS checking........
     /// </summary>
     public struct LeaderboardEntry {
     }
@@ -43,7 +43,7 @@ namespace AtlasTools {
             List<AtlasMapResult> preResult = JsonConvert.DeserializeObject<List<AtlasMapResult>>(textFromFile);
             List<AtlasMapResult> results = new List<AtlasMapResult>();
             foreach (AtlasMapResult map in preResult) {
-                AtlasMapResult toAdd;
+                AtlasMapResult toAdd = new AtlasMapResult();
                 string mapName = map.name;
                 int lastIndex = mapName.LastIndexOf('-');
                 toAdd.id = int.Parse(mapName.Substring(lastIndex + 1, mapName.Length - lastIndex - 1));
@@ -79,6 +79,14 @@ namespace AtlasTools {
 	public class LeaderboardFetcher : IDisposable {
 		private WebClient webClient;
 
+		/// <summary>
+		/// Indexer to get a <see cref="List{LeaderboardEntry}" /> of <see cref="LeaderboardEntry" />'s.
+		/// </summary>
+		/// <value>
+		/// The <see cref="List{LeaderboardEntry}" />.
+		/// </value>
+		/// <param name="map">The map whose leaderboard entries to retrieve.</param>
+		/// <returns></returns>
 		public List<LeaderboardEntry> this[CmrMap map] {
 			get {
 				return GetLeaderboard(map.Name, map.AtlasID);
@@ -92,23 +100,59 @@ namespace AtlasTools {
 
 
 		private List<LeaderboardEntry> GetLeaderboard(string mapname, int mapAtlasID) {
+			//TODO somethings wrong with this, I'm not sure the JSON has just a list including both types of results.
+			int LIMIT = 5;
 			string json_data = string.Empty;
-
-			try {
-				json_data = webClient.DownloadString(GetLeaderboardUrl(mapname, mapAtlasID));
-			} catch (Exception) { }
-
-			return JsonConvert.DeserializeObject<List<LeaderboardEntry>>(json_data);
+			bool success = false;
+			int attempts = 0;
+			while (!success && attempts < LIMIT) {
+				try {
+					attempts++;
+					json_data = webClient.DownloadString(GetLeaderboardUrl(mapname, mapAtlasID));
+					success = true;
+				} catch (Exception) { }
+			}
+			if (success) {
+				return JsonConvert.DeserializeObject<List<LeaderboardEntry>>(json_data);
+			} else {
+				throw new Exception("Could not successfully retrieve the leaderboard page. Max retry attempts exceeded.");
+			}
 		}
 
 
-		private static string GetLeaderboardUrl(string mapname, int mapAtlasID) {
+		private List<LeaderboardEntry> GetScoreLeaderboard(string mapname, int mapAtlasID) {
+			//TODO figure out leaderboard formatting when I have internet access. Or save a page.....
+			throw new NotImplementedException();
+			return GetLeaderboard(mapname, mapAtlasID);
+		}
+
+
+		private List<LeaderboardEntry> GetTimeLeaderboard(string mapname, int mapAtlasID) {
+			//TODO figure out leaderboard formatting when I have internet access. Or save a page.....
+			throw new NotImplementedException();
+			return GetLeaderboard(mapname, mapAtlasID);
+		}
+
+
+		/// <summary>
+		/// Gets the leaderboard URL formatted properly given the map name, map ID, and optional entry offset and result count.
+		/// </summary>
+		/// <param name="mapname">The maps name.</param>
+		/// <param name="mapAtlasID">The maps atlas ID number.</param>
+		/// <param name="offset">The offset.</param>
+		/// <param name="count">The count.</param>
+		/// <returns>The formatted URL to be retrieved.</returns>
+		private static string GetLeaderboardUrl(string mapname, int mapAtlasID, int offset = 0, int count = 100) {
 			string realname = mapname.Replace(" ", "-").Trim();
-			return @"http://df.hitboxteam.com/backend6/scores.php?level=" + realname + "-" + mapAtlasID + "&offset=0&max=100";
+			return @"http://df.hitboxteam.com/backend6/scores.php?level=" + realname + "-" + mapAtlasID + "&offset=" + offset + "&max=" + count;
 		}
 
 
 
+		/// <summary>
+		/// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+		/// ^ yeah that
+		/// </summary>
 		public void Dispose() {
 			webClient.Dispose();
 		}
