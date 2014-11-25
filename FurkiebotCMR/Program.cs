@@ -411,7 +411,6 @@ namespace FurkiebotCMR {
                 User author = UserMan[map.AuthorId];
                 mapString += "\"" + map.Name + "\" by " + author.Name + SEP;
                 acceptedcount++;
-                //toSay += "\" by " + entry.Value.author;       // TODO comment back in if we want authors in maplist.
             }
 
             if (acceptedcount > 0) {
@@ -443,7 +442,6 @@ namespace FurkiebotCMR {
                 Denial denial = MapMan.GetLatestDenialByMap(map.Id);
                 mapString += "\"" + map.Name + "\" by " + author.Name + " denied because \"" + denial.Message + "\"" + SEP;
                 deniedCount++;
-                //toSay += "\" by " + entry.Value.author;       // TODO comment back in if we want authors in maplist.
             }
 
             if (deniedCount > 0) {
@@ -528,7 +526,6 @@ namespace FurkiebotCMR {
                 if (IsIdentified(admin.NameLower, admin.Name)) {
                     adminString += admin.Name + SEP;
                     adminCount++;
-                    //toSay += "\" by " + entry.Value.author;       // TODO comment back in if we want authors in maplist.
                 }
             }
 
