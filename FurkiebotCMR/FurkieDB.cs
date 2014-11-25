@@ -1,4 +1,9 @@
-﻿using System;
+﻿/**
+ * FurkieDB.cs
+ * File containing the Database connection junk to connect to a MongoDB.
+ * @author Travis Drake
+ */
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -23,12 +28,12 @@ using MapCMR;
 
 
 namespace DatabaseCMR {
-    class DBObject {
+	public class DBObject {
         [BsonId]
         public ObjectId Id;
     }
-        
-    static class DB {
+
+	public static class DB {
         private const string _CONNECTION_STRING = "mongodb://localhost";
         private const string _DB_NAME = "CmrDB";
         public const string _USER_TABLE_NAME = "Users";

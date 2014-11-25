@@ -1,4 +1,9 @@
-﻿using System;
+﻿/**
+ * UserManager.cs
+ * Manager class for the Users from the database.
+ * @Author Travis Drake
+ */
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -29,7 +34,7 @@ namespace UserCMR {
     /// <summary>
     /// Class containing all the data about a User.
     /// </summary>
-    class User : DBObject {
+	public class User : DBObject {
         private string nameLower;
         private string name;
 
@@ -72,7 +77,7 @@ namespace UserCMR {
     /// <summary>
     /// An In-Game-Name class to encompass the values stored in the database.
     /// </summary>
-    class IGN : DBObject {
+	public class IGN : DBObject {
         public string DustforceName;
         public ObjectId IrcUserId;
 
@@ -90,7 +95,7 @@ namespace UserCMR {
     /// <summary>
     /// A Singleton class to manage Users in the Database.
     /// </summary>
-    class UserManager {
+	public class UserManager {
         private MongoCollection<User> Users = DB.Database.GetCollection<User>(DB._USER_TABLE_NAME);
         private MongoCollection<IGN> Igns = DB.Database.GetCollection<IGN>(DB._IGN_TABLE_NAME);
         private static UserManager instance;
@@ -682,6 +687,5 @@ namespace UserCMR {
 
             return (expectedHashString == finalHashString);
         }
-
     }
 }

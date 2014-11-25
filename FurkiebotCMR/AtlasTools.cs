@@ -1,4 +1,10 @@
-﻿using System;
+﻿/**
+ * AtlasTools.cs
+ * Utilities for the Dustforce Atlas. Contains several utility classes, read each for their
+ * respective use details.
+ * @author Travis Drake
+ */
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;

@@ -1,4 +1,11 @@
-﻿using System;
+﻿/**
+ * Buster.cs
+ * Class for the secondary IRC bot, TRAXBUSTER. Used in races to disqualify
+ * participants who did not actually complete all the maps. May be replaced
+ * in the future by a simple FurkieBot thread.
+ * @author Furkan Pham (Furkiepurkie)
+ */
+using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Net.Sockets;
@@ -91,8 +98,6 @@ namespace TraxBusterCMR {
         public void IRCWork() {
             string sep = FurkieBot.ColourChanger(" | ", "07");
 
-            int cmrid = 35;
-
             string[] ex;
             string data;
 
@@ -172,7 +177,7 @@ namespace TraxBusterCMR {
 							string racer = ex[4].Trim();
 							if (StringCompareNoCaps(nickname, FurkieBot.BOT_NAME) || UserMan.IsAdmin(nickname, nickname)) {
 								Console.WriteLine("Proofcall START for " + ex[4]);
-
+								//TODO now that Leaderboard grabbing stuff is done....
 
 							}
 

@@ -1,4 +1,9 @@
-﻿using System;
+﻿/**
+ * MapManager.cs
+ * Manager class for the cmr maps in the database.
+ * @Author Travis Drake
+ */
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -27,7 +32,7 @@ using System.Threading;
 
 
 namespace MapCMR {
-    class JoinedMapData {
+    public class JoinedMapData {
         public Denial denial;
         public CmrMap map;
         public User mapper;
@@ -45,7 +50,7 @@ namespace MapCMR {
     /// <summary>
     /// Denial objects to represent specific instances of denials
     /// </summary>
-    class Denial : DBObject{
+    public class Denial : DBObject{
         public string Message;
         public ObjectId TesterId;
         public ObjectId MapId;
@@ -70,7 +75,7 @@ namespace MapCMR {
     /// <summary>
     /// Class containing all the data about a map.
     /// </summary>
-    class CmrMap : DBObject{
+    public class CmrMap : DBObject{
         private string name;
         private string nameLower;
         private int atlasId;
@@ -148,7 +153,7 @@ namespace MapCMR {
     }
 
 
-    class MapManager {
+    public class MapManager {
         public const string MONGO_MAP_BACKUP_FILE_NAME = "MongoMapsBackupCmr";
         public const string MONGO_DENIAL_BACKUP_FILE_NAME = "MongoDenialsBackupCmr";
         private static MongoCollection<CmrMap> Maps = DB.Database.GetCollection<CmrMap>(DB._MAP_TABLE_NAME);
@@ -868,11 +873,6 @@ namespace MapCMR {
         }
 
 
-
-
-
-
-
         /// <summary>
         /// Gets the download link for the specified map name.
         /// </summary>
@@ -881,7 +881,5 @@ namespace MapCMR {
         public static string GetDownloadLink(string mapname) {
             return FurkieBot.DOWNLOAD_LINK + mapname.Replace(" ", "%20");
         }
-
-
     }
 }

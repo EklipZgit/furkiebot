@@ -1,4 +1,10 @@
-﻿using System;
+﻿/**
+ * AtlasChecker.cs
+ * Threaded checker class used to monitor map uploads on atlas, to automatically identify when accepted maps
+ * have been published.
+ * @Author Travis Drake
+ */
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;

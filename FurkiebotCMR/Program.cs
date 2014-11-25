@@ -153,8 +153,8 @@ namespace FurkiebotCMR {
 
         
 		//add timestamp checking, put ircwork in another thread to poll periodically
-        private int acceptedCount;
-        private int pendingCount;
+		//private int acceptedCount;
+		//private int pendingCount;
 
 
         /// <summary>
@@ -337,14 +337,14 @@ namespace FurkiebotCMR {
 
         public int PendingCount {
             get {
-                return pendingCount;
+                return MapMan.GetPendingMaps(cmrId).Count();
             }
         }
 
 
         public int AcceptedCount {
             get {
-                return acceptedCount;
+                return MapMan.GetAcceptedMaps(cmrId).Count();
             }
         }
 
