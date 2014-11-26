@@ -10,7 +10,7 @@
  * IRC CODES https://www.alien.net.au/irc/irc2numerics.html
  */
 
-//#define FB_DEBUG  //If defined furkiebot will use debug channels and shit.
+#define FB_DEBUG  //If defined furkiebot will use debug channels and shit.
 
 using System;
 using System.Collections.Generic;
@@ -326,15 +326,6 @@ namespace FurkiebotCMR {
 
 
 
-        /// <summary>
-        /// Messages the racechan. Intended to be called by outside classes and threads to cause FurkieBot to notify the race channel about specific things.
-        /// </summary>
-        /// <param name="message">The message for the race channel</param>
-        public void MessageRacechan(string message) {
-            sendData("PRIVMSG", " " + realRacingChan + " :" + message);
-        }
-
-
         public int PendingCount {
             get {
                 return MapMan.GetPendingMaps(cmrId).Count();
@@ -646,6 +637,13 @@ namespace FurkiebotCMR {
         /// <param name="toNotice">To notice.</param>
         /// <returns>Whether or not the nick is identified.</returns>
         public bool IsIdentified(string nick, string toNotice = null) {
+			lock (UserMan) {
+				lock (UserMan) {
+					lock (UserMan) {
+
+					}
+				}
+			}
             lock (_whoisLock) {
                 if (identlist.ContainsKey(nick) && identlist[nick]) {
                     Console.WriteLine("Successfully identified " + nick);
@@ -774,6 +772,14 @@ namespace FurkiebotCMR {
             //sendData("PRIVMSG", realRacingChan + " :" + message);
         }
 
+
+		/// <summary>
+		/// Messages the racechan. Intended to be called by outside classes and threads to cause FurkieBot to notify the race channel about specific things.
+		/// </summary>
+		/// <param name="message">The message for the race channel</param>
+		public void MessageRacechan(string message) {
+			sendData("PRIVMSG", " " + realRacingChan + " :" + message);
+		}
 
 
         /// <summary>
@@ -3519,14 +3525,13 @@ namespace FurkiebotCMR {
 
 
     internal class Program {
-        private static void Main(string[] args) {
-            using (var bot = FurkieBot.Instance) {
-                bot.Connect();
-                bot.IRCWork();
-            }
-            Console.WriteLine("Furkiebot quit/crashed");
-            Console.ReadLine();
-
-        } /* Main() */
+		private static void Main(string[] args) {
+			using (FurkieBot bot = FurkieBot.Instance) {
+				bot.Connect();
+				bot.IRCWork();
+			}
+			Console.WriteLine("Furkiebot quit/crashed");
+			Console.ReadLine();
+		} /* Main() */
     } /* Program */
 }

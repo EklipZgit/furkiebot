@@ -247,6 +247,7 @@ namespace MapCMR {
                 return Maps.AsQueryable()
                     .Where(u => u.NameLower == name.ToLower().Trim() && u.CmrNo == fb.cmrId)
                     .First();
+				
             }
         }
 
@@ -256,7 +257,7 @@ namespace MapCMR {
         /// </summary>
         /// <returns>All denials ever</returns>
         public IQueryable<Denial> GetAllDenials() {
-            return Denials.AsQueryable<Denial>().OrderBy<Denial, int>(c => c.Timestamp);
+			return Denials.AsQueryable<Denial>().OrderBy<Denial, int>(c => c.Timestamp);
         }
 
 
