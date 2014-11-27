@@ -153,6 +153,8 @@ namespace FurkiebotCMR {
 
         
 		//add timestamp checking, put ircwork in another thread to poll periodically
+		public DateTime lastInputTime = DateTime.UtcNow;
+
 		//private int acceptedCount;
 		//private int pendingCount;
 
@@ -838,7 +840,7 @@ namespace FurkiebotCMR {
                 string data;
 
                 data = sr.ReadLine();
-
+				lastInputTime = DateTime.UtcNow;
 
                 char[] charSeparator = new char[] { ' ' };
                 ex = data.Split(charSeparator, 5);
@@ -3524,11 +3526,112 @@ namespace FurkiebotCMR {
 
 
 
+
     internal class Program {
+		//if furkiebot hasnt recieved a message from the server after this many seconds,
+		//begin attempting to reconnect to the server.
+		const int TIMEOUT_AFTER_SECONDS = 150;
+
+		//how often to check if furkiebot hasnt recieved anything from IRC server recently.
+		const int CHECK_TIMEOUT_EVERY_MS = 15		//seconds
+										 * 1000;	//milliseconds
+
+		//How long to wait between reconnect attempts. TODO auto increment this somehow?
+		const int RECONNECT_INTERVAL_MS = 10		//seconds
+										* 1000;     //milliseconds
+		
+		//quit after furkiebot has thrown this many exceptions
+		const int MAX_EXCEPTIONS_BEFORE_QUIT = 1;
+
+		//quit after furkiebot has tried to reconnect this many times in a row and failed.
+		const int MAX_CONSECUTIVE_RECONNECT_FAILURES = 100;
+
+		private static Thread FurkieBotIrcWork { get; set; }
+		private static bool crashed;
+		private static int exceptionCount = 0;
+		private static int disconnectCount = 0;
+		private static List<string> exceptionMessages;
+
+		private static void FurkiebotTimeoutChecker(int timeoutAfterSeconds) {
+		}
+
+		private static void PrintExceptions() {
+			int counter = 0;
+			foreach (string s in exceptionMessages) {
+				Console.WriteLine("Exception " + counter + ":  " + s + "\n\n");
+			}
+		}
+
+		private static void RunBot() {
+			FurkieBot.Instance.Connect();
+			try {
+				FurkieBot.Instance.IRCWork();
+			} catch (Exception e) {
+				exceptionCount++;
+				exceptionMessages.Add(e.Message + "\r\n" + e.StackTrace);
+				crashed = true;
+			}
+		}
+
 		private static void Main(string[] args) {
+			exceptionMessages = new List<string>();
 			using (FurkieBot bot = FurkieBot.Instance) {
-				bot.Connect();
-				bot.IRCWork();
+				FurkieBotIrcWork = new Thread(RunBot);
+				FurkieBotIrcWork.Start();
+				Thread.Sleep(1000); // dickbutt. Makes sure to give the bot ample time to connect.
+
+
+
+				TimeSpan timeout_span = TimeSpan.FromSeconds(TIMEOUT_AFTER_SECONDS);
+				bool exit = false;
+				while (!exit) {
+					if (!FurkieBotIrcWork.IsAlive && (!crashed)) {
+						//bot terminated normally ???
+						Console.WriteLine("Bot terminated gracefully.");
+						exit = true;
+					} else if (crashed) {
+						FurkieBotIrcWork.Join();
+						if (exceptionCount >= MAX_EXCEPTIONS_BEFORE_QUIT) {
+							Console.WriteLine("FurkieBot reached the exception limit.");
+							PrintExceptions();
+							exit = true;
+						} else {
+							FurkieBotIrcWork = new Thread(RunBot);
+							FurkieBotIrcWork.Start();
+							crashed = false;
+							Thread.Sleep(1000); // dickbutt. Makes sure to give the bot ample time to connect.
+						}
+					} else if (bot.lastInputTime + timeout_span < DateTime.UtcNow) {
+						//Then furkiebot has timed out. Attempt reconnects.
+						Console.WriteLine("HOLY SHIT WE TIMED OUT ATTEMPT RECONNECT PANIC PANIC PANIC");
+						disconnectCount++;
+						int attemptNumber = 0;
+						bool success = false;
+
+						FurkieBotIrcWork.Abort();
+
+						while (attemptNumber <= MAX_CONSECUTIVE_RECONNECT_FAILURES && (!success)) {
+							attemptNumber++;
+							Thread.Sleep(RECONNECT_INTERVAL_MS);
+							try {
+								bot.Connect();
+								success = true;
+							} catch (Exception e) {
+								Console.WriteLine("Attempt #" + attemptNumber + ", yo dawg we threw an exception trying to reconnect after a disconnect:\n" + e.Message + "\n" + e.StackTrace);
+							}
+						}
+						if (success) {
+							FurkieBotIrcWork = new Thread(RunBot);
+							FurkieBotIrcWork.Start();
+							crashed = false;
+							Thread.Sleep(1000);
+						} else {
+							Console.WriteLine("MAX_CONSECUTIVE_RECONNECT_FAILURES exceeded (" + MAX_CONSECUTIVE_RECONNECT_FAILURES + "). Terminating...");
+							exit = true;
+						}
+					}
+					Thread.Sleep(CHECK_TIMEOUT_EVERY_MS);
+				}
 			}
 			Console.WriteLine("Furkiebot quit/crashed");
 			Console.ReadLine();

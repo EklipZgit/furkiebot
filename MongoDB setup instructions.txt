@@ -29,8 +29,9 @@ ONLY DO THIS IF YOU WANT THIS DB TO AUTOSTART WITH WINDOWS
 			sc.exe create MongoDB binPath= "\"C:\CMR\bin\mongod.exe\" --service --config=\"C:\CMR\mongod.cfg\"" DisplayName= "CMR MongoDB" start= "auto"
 
 to run mongodb server but not install it as a service, open command prompt and
-	cd C:\CMR\Mongo\bin
-	mongod.exe --config C:\CMR\Mongo\mongod.cfg
+
+cd C:\CMR\Mongo\bin
+mongod.exe --config C:\CMR\Mongo\mongod.cfg
 
 (You shouldnt need to do this...) IF VS DOESNT RECOGNIZE THINGS IN THE PROJECT, YOU MAY NEED TO:
 	open Tools -> Library Package Manager -> Package Manager Console    in Visual Studio Tools dropdown

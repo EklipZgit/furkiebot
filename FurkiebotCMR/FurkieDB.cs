@@ -70,9 +70,10 @@ namespace DatabaseCMR {
                     if (db == null) {
                         MongoClient client = new MongoClient(_CONNECTION_STRING);
                         MongoServer server = client.GetServer();
-#if DB_CLONE_PRODUCTION_TO_DEBUG
-						MongoDatabase prod = server.GetDatabase(_PRODUCTION_DB_NAME_DO_NOT_USE);
+#if DB_CLONE_PRODUCTION_TO_DEBUG  &&  DB_DEBUG
 						if (_PRODUCTION_DB_NAME_DO_NOT_USE != _DB_NAME) {
+							//copy production database into debug database.
+							MongoDatabase prod = server.GetDatabase(_PRODUCTION_DB_NAME_DO_NOT_USE);
 							server.DropDatabase(_DB_NAME);
 							db = server.GetDatabase(_DB_NAME);
 							foreach (string collectionName in prod.GetCollectionNames()) {
@@ -84,10 +85,10 @@ namespace DatabaseCMR {
 								}
 							}
 						} else {
-							db = server.GetDatabase(_DB_NAME);
+							Console.WriteLine("Could not copy production database to test database because they are the same DB name.");
 						}
 #endif
-                        db = server.GetDatabase(_DB_NAME); // "CmrDB" is the name of the database
+                        db = server.GetDatabase(_DB_NAME);
                     }
                 }
                 return db;
