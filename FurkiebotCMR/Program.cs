@@ -137,6 +137,7 @@ namespace FurkiebotCMR {
         public const string WIKI_LINK = @"https://github.com/EklipZgit/furkiebot/wiki";
         public const string MAP_PACK_LINK = @"http://redd.it/279zmi";
         public const string INFO_LINK = URL_BASE;
+		public const string UPLOAD_INFO = @"Upload maps: " + UPLOAD_LINK + SEP + "CMR info: " + INFO_LINK + SEP + @"Command list: " + WIKI_LINK + SEP + "FurkieBot announce channel: #DFcmr";
         #endregion
 
 
@@ -392,32 +393,108 @@ namespace FurkiebotCMR {
 
 
 
-        /// <summary>
-        /// Outputs the current CMR accepted map status to the provided channel.
-        /// </summary>
-        /// <param name="chan">The channel. If empty or null, output to both main channels.</param>
-        private void OutputAccepted(string chan) {
-            string toSay = "";
-            string mapString = "";
-            int acceptedcount = 0;
-            foreach (CmrMap map in MapMan.GetAcceptedMaps()) {
-                User author = UserMan[map.AuthorId];
-                mapString += "\"" + map.Name + "\" by " + author.Name + SEP;
-                acceptedcount++;
-            }
+		/// <summary>
+		/// Outputs the current CMR accepted map status to the provided channel.
+		/// </summary>
+		/// <param name="chan">The channel. If empty or null, output to both main channels.</param>
+		private void OutputAccepted(string chan) {
+			string toSay = "";
+			string mapString = "";
+			int acceptedcount = 0;
+			foreach (CmrMap map in MapMan.GetAcceptedMaps()) {
+				User author = UserMan[map.AuthorId];
+				mapString += "\"" + map.Name + "\" by " + author.Name + SEP;
+				acceptedcount++;
+			}
 
-            if (acceptedcount > 0) {
-                mapString = mapString.Substring(0, mapString.Length - SEP.Length);
-            }
+			if (acceptedcount > 0) {
+				mapString = mapString.Substring(0, mapString.Length - SEP.Length);
+			}
 
-            toSay += acceptedcount + " maps accepted: " + mapString;
-            if (chan == null || chan == "" || chan == " ") {
-                Msg(mainchannel, toSay);
-                Msg(cmrchannel, toSay);
-            } else {
-                Msg(chan, toSay);
-            }
-        }
+			toSay += acceptedcount + " maps accepted: " + mapString;
+			if (chan == null || chan == "" || chan == " ") {
+				Msg(mainchannel, toSay);
+				Msg(cmrchannel, toSay);
+			} else {
+				Msg(chan, toSay);
+			}
+		}
+
+
+
+
+		/// <summary>
+		/// Outputs the status of the maps uploaded by the user for this particular CMR.
+		/// </summary>
+		/// <param name="chan">The channel. If empty or null, output to both main channels.</param>
+		private void OutputUsersMaps(string chan, string userName) {
+			string toSay = "";
+			string mapString = "";
+
+			User user = UserMan[userName];
+			if (user != null) {
+				var maps = MapMan.GetMaps().Where(m => m.AuthorId == user.Id).OrderBy(m => m.LastModified);
+				var accepted = maps.Where(m => m.Accepted);
+				var denied = maps.Where(m => m.IsDenied == true);
+				var pending = maps.Where(m => m.Accepted == false && m.IsDenied == false);
+				int acceptedcount = 0;
+				foreach (CmrMap map in accepted) {
+					mapString += "\"" + map.Name + "\"" + SEP;
+					acceptedcount++;
+				}
+
+				if (acceptedcount > 0) {
+					mapString = mapString.Substring(0, mapString.Length - SEP.Length);
+					toSay += acceptedcount + " maps accepted: " + mapString;
+					if (chan == null || chan == "" || chan == " ") {
+						Msg(mainchannel, toSay);
+						Msg(cmrchannel, toSay);
+					} else {
+						Msg(chan, toSay);
+					}
+				}
+
+
+				int pendingcount = 0;
+				mapString = "";
+				toSay = "";
+				foreach (CmrMap map in pending) {
+					mapString += "\"" + map.Name + "\"" + SEP;
+					pendingcount++;
+				}
+
+				if (pendingcount > 0) {
+					mapString = mapString.Substring(0, mapString.Length - SEP.Length);
+					toSay += pendingcount + " maps pending: " + mapString;
+					if (chan == null || chan == "" || chan == " ") {
+						Msg(mainchannel, toSay);
+						Msg(cmrchannel, toSay);
+					} else {
+						Msg(chan, toSay);
+					}
+				}
+
+
+				int deniedcount = 0;
+				mapString = "";
+				toSay = "";
+				foreach (CmrMap map in denied) {
+					mapString += "\"" + map.Name + "\" for reason: " + MapMan.GetDenialsByMap(map.Id).First().Message + SEP;
+					deniedcount++;
+				}
+
+				if (deniedcount > 0) {
+					mapString = mapString.Substring(0, mapString.Length - SEP.Length);
+					toSay += deniedcount + " maps denied: " + mapString;
+					if (chan == null || chan == "" || chan == " ") {
+						Msg(mainchannel, toSay);
+						Msg(cmrchannel, toSay);
+					} else {
+						Msg(chan, toSay);
+					}
+				}
+			}
+		}
 
 
 
@@ -1015,7 +1092,7 @@ namespace FurkiebotCMR {
                         if (!StringCompareNoCaps(chan, realRacingChan)) {
                             //FurkieBot commands for the main channel
                             Msg(chan, @"Commands: .cmr" + SEP + ".maps" + SEP + ".startcmr" + SEP + ".ign " + BoldText("ircname") + SEP + ".setign " + BoldText("in-game name") + SEP + ".mappack" + SEP + ".pending" + SEP + ".accepted");
-                            Msg(chan, @"Upload maps: " + UPLOAD_LINK + SEP + "CMR info: " + INFO_LINK + SEP + @"Command list: " + WIKI_LINK + SEP + "FurkieBot announce channel: #DFcmr");
+                            Msg(chan, UPLOAD_INFO);
                             Msg(chan, @".help register" + SEP + ".help tester" + SEP + ".help othercommands");
 
                         } else {            // FurkieBot commands for race channel
@@ -1034,6 +1111,20 @@ namespace FurkiebotCMR {
                         OutputCMRinfo(chan, cmrtime, cmrtimeString, nick);
                         break;
                         #endregion
+
+					case ":.upload":
+					case ":.submit":
+					case ":.submitmap":
+						Msg(chan, UPLOAD_INFO);
+						break;
+
+					case ":.uploads":
+					case ":.submitted":
+					case ":.mymaps":
+					case ":.myuploads":
+					case ":.mysubmitted":
+						OutputUsersMaps(chan, nick);
+						break;
 
                     case ":.startcmr+": // Used for testing purposes, forces the start of a race without having to worry about the date and time, make sure to use this command when mainchannel is NOT #dustforce
                         if (UserMan.IsAdmin(nickLower, nick)) {
@@ -1644,7 +1735,11 @@ namespace FurkiebotCMR {
                     case ":.deletemap":
                     case ":.delmap": //used to remove a map from the .cmrmaps command list
                         #region
-                        if (UserMan.IsAdmin(nickLower, nick) || UserMan.IsTester(nickLower, nick)) {
+						CmrMap map = MapMan[parameter];
+						if ((map != null && IsIdentified(nickLower) && map.AuthorId == UserMan[nickLower].Id) ||
+							UserMan.IsAdmin(nickLower, nick) || UserMan.IsTester(nickLower, nick)) {
+							//if the user is the maps author, or an admin, or a tester.
+
                             if (MapMan.DeleteMap(parameter.ToLower(), nick)) {
                                 Msg(chan, "Map removed.");
                             } else {

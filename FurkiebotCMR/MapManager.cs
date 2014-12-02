@@ -471,7 +471,7 @@ namespace MapCMR {
         /// <param name="tester">The tester.</param>
         /// <param name="denialMessage">The denial message.</param>
         /// <param name="isAdmin">if set to <c>true</c> [is admin].</param>
-        /// <returns></returns>
+        /// <returns>A bool indicating whether the operation was successful or not</returns>
         public bool Unaccept(string mapName, string tester, string denialMessage = null, bool isAdmin = false) {
 
             var selected = this[mapName];
