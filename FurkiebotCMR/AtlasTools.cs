@@ -251,7 +251,7 @@ namespace AtlasTools {
 		}
 
 		public string GetAtlasMapUrl(int mapid) {
-			return "lolfuck" + mapid;
+			return "lolfuck" + mapid; //TODO get real map url prefix
 		}
 
 		public void Dispose() {

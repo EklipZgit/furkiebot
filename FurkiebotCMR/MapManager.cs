@@ -222,32 +222,49 @@ namespace MapCMR {
         }
 
 
+		/// <summary>
+		/// Gets a <see cref="CmrMap"/> by object identifier.
+		/// </summary>
+		/// <param name="id">The identifier of the map to retrieve.</param>
+		/// <returns>The map by that ID. Null if non-existent.</returns>
+		public CmrMap GetMapByObjectId(ObjectId id) {
+			return Maps.AsQueryable<CmrMap>()
+				.Where<CmrMap>(u => u.Id == id)
+				.First<CmrMap>();
+		}
+
 
         /// <summary>
-        /// Indexer by ObjectId, gets the <see cref="CmrMap"/> with the specified identifier from the Maps Mongo Collection
+        /// Indexer by ObjectId, just calls GetMapByObjectId(id);
         /// </summary>
         /// <param name="id">The identifier of the map to find.</param>
         /// <returns>The Map with that ID. Null if non-existent</returns>
         public CmrMap this[ObjectId id] {
             get {
-                return Maps.AsQueryable<CmrMap>()
-                    .Where<CmrMap>(u => u.Id == id)
-                    .First<CmrMap>();
+				return GetMapByObjectId(id);
             }
         }
 
 
+		/// <summary>
+		/// Gets a <see cref="CmrMap"/> by name.
+		/// </summary>
+		/// <param name="name">The name of the map to retrieve.</param>
+		/// <returns>The first map result.</returns>
+		public CmrMap GetMapByName(string name) {
+			return Maps.AsQueryable()
+				.Where(u => u.NameLower == name.ToLower().Trim() && u.CmrNo == fb.cmrId)
+				.First();				
+		}
+
         /// <summary>
-        /// Indexer by string (mapname), gets the <see cref="CmrMap"/> with the specified name out of the Maps mongocollection.
+        /// Indexer by string (mapname), just calls GetMapByName(name);
         /// </summary>
         /// <param name="name">The name of the map to find</param>
         /// <returns>The Map by that name. Null if non-existent</returns>
         public CmrMap this[string name] {
             get {
-                return Maps.AsQueryable()
-                    .Where(u => u.NameLower == name.ToLower().Trim() && u.CmrNo == fb.cmrId)
-                    .First();
-				
+				return GetMapByName(name);
             }
         }
 
@@ -751,9 +768,17 @@ namespace MapCMR {
 
 
 
+		/// <summary>
+		/// Just calls the parameterized version of the method with nulls. <see mref="CheckMaps(object sender, FileSystemEventArgs e)"/>
+		/// </summary>
         private void CheckMaps() {
             CheckMaps(null, null);
         }
+		/// <summary>
+		/// A beautiful function to check the state of the database. Or something. Its terrible.
+		/// </summary>
+		/// <param name="sender">The sender.</param>
+		/// <param name="e">The <see cref="FileSystemEventArgs"/> instance containing the event data.</param>
         private void CheckMaps(object sender, FileSystemEventArgs e) {
             lock (_mapfileLock) {
                 var oldMaps = lastMaps;
@@ -772,7 +797,8 @@ namespace MapCMR {
                     foreach(CmrMap oldMap in oldMaps) {
                         oldMapSet.Add(oldMap);
                     }
-                    foreach (CmrMap curMap in curMaps) {     // Notifies IRC about any state changes that have happened.
+                    foreach (CmrMap curMap in curMaps) {     
+						// Notifies IRC about any state changes that have happened.
                         CmrMap oldMap = oldMaps.Where(m => m.Id == curMap.Id).First();
 
                         IQueryable<Denial> curMapDenials = curDenials.Where(d => d.MapId == curMap.Id).OrderBy<Denial, int>(d => d.Timestamp);

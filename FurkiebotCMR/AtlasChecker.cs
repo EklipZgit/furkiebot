@@ -77,14 +77,15 @@ namespace FurkiebotCMR {
                     foreach (AtlasMapResult result in atlasMaps) {
                         string name = result.clean_name.Trim().ToLower();
                         CmrMap map = MapMan[name];
-                        if (map != null && (result.id != map.AtlasID)) { //If the atlas map is in our list of maps, AND it hasn't yet been id'd....
+                        if (map != null && map.Accepted == true && map.IsAtlasIdForced == false && (result.id != map.AtlasID)) { 
+							//If the atlas map is in our list of maps, AND is an accepted map, AND not forced, AND it hasn't yet been id'd....
                             
                             map.AtlasID = result.id;
                             map.Name = result.clean_name;
                             if (MapMan[name].AtlasID <= 0) {   //Newly uploaded map
                                 uploadedCount++;
                                 furkiebot.MessageRacechan(FurkieBot.FormatNumber(uploadedCount) + " map uploaded to Atlas, " + (furkiebot.AcceptedCount - uploadedCount) + " left to be uploaded!" + FurkieBot.SEP + @"Install: " + GetMapInstallUrl(result.id, result.urlName) + FurkieBot.SEP + ATLAS_MAP_URL + result.id);
-                            } else {                                    //reuploaded map
+                            } else {                           //reuploaded map
                                 furkiebot.MessageRacechan("CMR map REUPLOADED to Atlas, " + (furkiebot.AcceptedCount - uploadedCount) + " left to be uploaded!" + FurkieBot.SEP + @"Install: " + GetMapInstallUrl(result.id, result.urlName) + FurkieBot.SEP + "DELETE THE OLD ONE FROM YOUR CUSTOM MAPS DIRECTORY" + FurkieBot.SEP + ATLAS_MAP_URL + result.id);
                             }
                             MapMan.SaveMap(map);

@@ -2198,11 +2198,13 @@ namespace FurkiebotCMR {
             //Veryfying whether it is Saturday and if the time matches with CMR time
             DateTime saturday;
             if (DateTime.Now.DayOfWeek != DayOfWeek.Saturday) {
+				//???
                 if (cmrtime.ToString(@"%h\:mm\:ss") == cmrtimeString)
                     saturday = GetNextDateForDay(DateTime.Now, DayOfWeek.Saturday).Date;
                 else
                     saturday = DateTime.Now.Date;
             } else {
+				//Is saturday? ??
                 saturday = DateTime.Now.Date;
             }
             DateTime cmrday = saturday.Date + cmrtime;
@@ -2212,34 +2214,46 @@ namespace FurkiebotCMR {
             string nextCmrM = duration.Minutes.ToString();
             string nextCmrS = duration.Seconds.ToString();
 
-            if (CmrAcceptedCount(cmrId) < MIN_MAPS) { //If there are less than 6 maps submitted
-                Msg(chan, "" + "Upcoming race is Custom Map Race " + cmrId + ". There are only " + MapMan.GetAcceptedMaps().Count() + " maps currently accepted, and we need at least " + MIN_MAPS + ".");
-                Msg(chan, "" + "It will happen on Saturday, " + saturday.Month + "-" + saturday.Day.ToString() + @" at 6:30 pm GMT  ( conversion to your time here: http://www.timebie.com/std/gmt.php?q=18.5 )");
-            } else {
+            if (CmrAcceptedCount(cmrId) < MIN_MAPS) { 
+				//If there are less than 6 maps submitted
+                Msg(chan, "Upcoming race is Custom Map Race " + cmrId + ". There are only " + MapMan.GetAcceptedMaps().Count() + " maps currently accepted, and we need at least " + MIN_MAPS + ".");
+
+				Msg(chan, "Race channel can be opened in "
+					+ ColourChanger(nextCmrD + " days, "
+					+ nextCmrH + " hours, "
+					+ nextCmrM + " minutes and "
+					+ nextCmrS + " seconds", "03") + ".");
+			} else {
+				//Enough maps
+				Msg(chan, "Upcoming race is Custom Map Race " + cmrId + ". There are " + MapMan.GetAcceptedMaps().Count() + " maps currently accepted.");
+				//Msg(chan, "It will happen on Saturday, " + saturday.Month + "-" + saturday.Day.ToString() + @" at 6:30 pm GMT  ( conversion to your time here: http://www.timebie.com/std/gmt.php?q=18.5 )");
+           
+
                 Console.WriteLine(DateTime.Now.TimeOfDay + "\t" + DateTime.Now.Date.ToString("dddd"));
-                if (DateTime.Now.TimeOfDay < cmrtime && DateTime.Now.Date.ToString("dddd") == "Saturday") { //If it isnt CMR time yet
-                    Msg(chan, "" + "We have enough maps to start Custom Map Race " + cmrId + ", race can be initiated in "
+                if (DateTime.Now.TimeOfDay < cmrtime && DateTime.Now.Date.ToString("dddd") == "Saturday") { 
+					//If it isnt CMR time yet
+                    Msg(chan, "Race channel can opened in "
                         + ColourChanger(nextCmrD + " days, "
                         + nextCmrH + " hours, "
                         + nextCmrM + " minutes and "
                         + nextCmrS + " seconds", "03") + ".");
-                } else //If starting a race is possible
-                                {
+                } else { 
+					//If starting a race is possible
                     string extraS = "";
                     if (CountEntrants() > 1) {
                         extraS = "s";
                     }
-                    if (cmrStatus == "closed") //CMR race not opened yet
-                                    {
-                        Msg(chan, "Custom Map Race " + cmrId + " is available.");
+                    if (cmrStatus == "closed") {
+						//CMR race not opened yet
+                        Msg(chan, "Custom Map Race " + cmrId + " is available to be started.");
                     }
-                    if (cmrStatus == "open") //CMR race opened
-                                    {
+                    if (cmrStatus == "open") {
+						//CMR race opened
                         Msg(chan, "Entry currently " + ColourChanger("OPEN", "03") + " for Custom Map Race " + cmrId + ". Join the CMR at " + ColourChanger(realRacingChan, "04") + ". " + CountEntrants() + " entrants" + extraS);
                     }
-                    if (cmrStatus == "racing") //CMR race ongoing
-                                    {
-                        sendData("NOTICE", nickname + " :Custom Map Race " + cmrId + " is currently " + ColourChanger("In Progress", "12") + " at " + ColourChanger(realRacingChan, "04") + ". " + CountEntrants() + " entrant" + extraS);
+                    if (cmrStatus == "racing") {
+						//CMR race ongoing
+                        Msg(chan, "Custom Map Race " + cmrId + " is currently " + ColourChanger("In Progress", "12") + " at " + ColourChanger(realRacingChan, "04") + ". " + CountEntrants() + " entrant" + extraS);
                     }
                 }
             }
