@@ -6,18 +6,10 @@ FUTURE
 	DQ's
 
 	Traxbuster stuff. 
-		~Auto add maps from atlas.
 		Display map download links when .maps is used in racechannel
 		maps count should update correctly now? idk?
 
 	Allow mappers to see the maps they've uploaded, and also delete uploaded maps.
-
-
-
-
-
-
-
 
 
 
