@@ -11,12 +11,13 @@ using System.Text;
 using System.Net;
 using Newtonsoft.Json;
 using MapCMR;
+using System.Web;
 
 namespace AtlasTools {
     /// <summary>
     /// Class for values returned by querying the recent atlas maps, as returned by the Hitbox API in JSON.
     /// </summary>
-    public class AtlasMapResult {
+    public class AtlasRecentMapResult {
         public string name;
         public string urlName;
 		/// <summary>
@@ -25,15 +26,6 @@ namespace AtlasTools {
         public string clean_name;
         public int id;
     }
-
-
-	/// <summary>
-	/// Class representing all of the information obtainable by querying a specific maps atlas page.
-	/// TODO not done.
-	/// </summary>
-	public class AtlasMap {
-
-	}
 
 
     /// <summary>
@@ -90,13 +82,13 @@ namespace AtlasTools {
 		/// <returns>
 		/// A list of AtlasMapResult structs.
 		/// </returns>
-        public static List<AtlasMapResult> GetRecentMapList(int num = 30) {
+        public static List<AtlasRecentMapResult> GetRecentMapList(int num = 30) {
             string textFromFile = (new WebClient()).DownloadString(GetRecentMapsUrl(num));
 
-            List<AtlasMapResult> preResult = JsonConvert.DeserializeObject<List<AtlasMapResult>>(textFromFile);
-            List<AtlasMapResult> results = new List<AtlasMapResult>();
-            foreach (AtlasMapResult map in preResult) {
-                AtlasMapResult toAdd = new AtlasMapResult();
+            List<AtlasRecentMapResult> preResult = JsonConvert.DeserializeObject<List<AtlasRecentMapResult>>(textFromFile);
+            List<AtlasRecentMapResult> results = new List<AtlasRecentMapResult>();
+            foreach (AtlasRecentMapResult map in preResult) {
+                AtlasRecentMapResult toAdd = new AtlasRecentMapResult();
                 string mapName = map.name;
                 int lastIndex = mapName.LastIndexOf('-');
                 toAdd.id = int.Parse(mapName.Substring(lastIndex + 1, mapName.Length - lastIndex - 1));
@@ -244,6 +236,82 @@ namespace AtlasTools {
 		}
 	}
 
+
+	/// <summary>
+	/// Class representing all of the information obtainable by querying a specific maps atlas page.
+	/// TODO not done.
+	/// </summary>
+	public class AtlasMap {
+		public string Name { get; set; }
+		public string Author { get; set; }
+		public DateTime TimeStamp { get; set; }
+		public TimeSpan Age { get; }
+		public string[] Tags { get; set; }
+		public string Description { get; set; }
+		public double Rating { get; set; }
+		public int RatingVotes { get; set; }
+		public double Difficulty { get; set; }
+		public int DifficultyVotes { get; set; }
+		
+
+	}
+
+
+	public class AtlasComment {
+		#region EXAMPLE
+		/**
+<div class="qa-a-list-item hentry answer" id="aCOMMENT_ID">
+	<form method="POST" action="../ATLAS_ID/outflow">
+		<div class="qa-a-item-main">
+			<div class="comment-left">
+				<div class="avatar-comment pull-left centered">
+					------- Avatar
+					<span class="qa-a-item-avatar">
+						<a href="../user/ShurykaN" class="qa-avatar-link"><img src="../?qa=image&amp;qa_blobid=2532377085645455136&amp;qa_size=60" width="60" height="60" class="qa-avatar-image"></a>
+					</span>
+				</div>
+				<div class="pull-left muted comment-poster-info">
+					------- Author and Timestamp
+					<div class="comment-poster-content">
+						<strong><span class="vcard author"><a href="../user/ShurykaN" class="qa-user-link url nickname">ShurykaN</a></span></strong>
+						<br>said <span class="published"><span class="value-title" title="2014-12-01T23:30:49+0000"></span>1 day</span> ago
+					</div>
+				</div>
+				<div class="comment-cap"></div>
+				<div style="clear:both;"></div>
+			</div>
+			<div class="comment-right well">
+				<div class="qa-a-item-content">
+					<a name="COMMENT_ID"></a><span class="entry-content">Byronyello your maps are always a joy to play!</span>
+				</div>
+				<div class="qa-a-item-buttons">
+					<input name="aCOMMENT_ID_doflag" onclick="return qa_answer_click(COMMENT_ID, 17158, this);" value="flag" title="flag this comment as spam or inappropriate" type="submit" class="button-links super-muted">
+					<input name="aCOMMENT_ID_docomment" onclick="return qa_toggle_element('cCOMMENT_ID')" value="reply" title="reply directly to this comment" type="submit" class="button-links super-muted">
+				</div>
+			</div>
+									
+			<div class="qa-a-item-c-list" style="display:none;" id="cCOMMENT_ID_list">
+			</div> <!-- END qa-c-list -->
+									
+								
+	</div></form> <!-- END qa-a-item-main -->
+	<div class="qa-a-item-clear">
+	</div>
+</div>
+		 */
+		#endregion
+
+		public string Author { get; set; }
+		public string Content { get; set; } //<div class="qa-a-item-content"><a name="17159"></a><span class="entry-content">CONTENT</span>
+		public int CommentId { get; set; } //(SEE CONTENT) <a name="17159"></a>
+											
+		public DateTime TimeStamp { get; set; }
+		public TimeSpan Age { get; }
+
+		public string AuthorImage { get; set; }//  "/?qa=image&qa_blobid=2532377085645455136&qa_size=60"  //THE FUCK IS THIS SHIT?
+		
+	}
+
 	/// <summary>
 	/// A class to retrieve additional information about a map. Useful for things like parsing info about random maps, etc.
 	/// Parses information from the HTML in a custom map's Atlas page.
@@ -256,8 +324,15 @@ namespace AtlasTools {
 			webClient = new WebClient();
 		}
 
+		public AtlasMap FetchMapInfo(int atlasId) {
+			string atlasHtml = webClient.DownloadString(GetAtlasMapUrl(atlasId));
+
+			//breakdown of search process....
+			
+		}
+
 		public string GetAtlasMapUrl(int mapid) {
-			return "lolfuck" + mapid; //TODO get real map url prefix
+			return "http://atlas.dustforce.com/" + mapid;
 		}
 
 		public void Dispose() {

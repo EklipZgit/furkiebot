@@ -13,7 +13,7 @@ using AtlasTools;
 using MapCMR;
 
 namespace FurkiebotCMR {
-    public delegate void NotifyCallback(List<AtlasMapResult> updatedList);
+    public delegate void NotifyCallback(List<AtlasRecentMapResult> updatedList);
 
     class AtlasChecker {
         public const int CHECK_EVERY_SECONDS = 5;
@@ -72,9 +72,9 @@ namespace FurkiebotCMR {
             while (!exit) {
                 lock (_checkingLock) {  //This lock ensures that when stopChecking is locked (so, while this is not sleeping) the thread will not be terminated.
                                         //Thus ensuring that this / furkiebot will not be left in an undefined state.
-                    List<AtlasMapResult> atlasMaps = Atlas.GetRecentMapList();
+                    List<AtlasRecentMapResult> atlasMaps = Atlas.GetRecentMapList();
 
-                    foreach (AtlasMapResult result in atlasMaps) {
+                    foreach (AtlasRecentMapResult result in atlasMaps) {
                         string name = result.clean_name.Trim().ToLower();
                         CmrMap map = MapMan[name];
 
