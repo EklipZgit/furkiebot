@@ -77,16 +77,33 @@ namespace FurkiebotCMR {
                     foreach (AtlasMapResult result in atlasMaps) {
                         string name = result.clean_name.Trim().ToLower();
                         CmrMap map = MapMan[name];
+
                         if (map != null && map.Accepted == true && map.IsAtlasIdForced == false && (result.id != map.AtlasID)) { 
 							//If the atlas map is in our list of maps, AND is an accepted map, AND not forced, AND it hasn't yet been id'd....
-                            
+
+							CmrMap mapById = MapMan.GetMapByAtlasId(result.id);
+
+							if (map.Id != mapById.Id) {
+								//Then we have a map with conflicting ID's.
+								string msg1 = "Map uploaded to atlas that matches a racemaps name, but whose atlasID conflicts with another existing maps AtlasID.";
+								string msg2 = "Existing map: " + mapById.ToString();
+								string msg3 = "Current Racemap: " + map.ToString();
+								//No reason to panic racechan since in this exception case I'm proceeding with the map add anyway.
+								//furkiebot.MessageRacechan(msg1);
+								furkiebot.Msg("EklipZ", msg1);
+								//furkiebot.MessageRacechan(msg2);
+								furkiebot.Msg("EklipZ", msg2);
+								//furkiebot.MessageRacechan(msg3);
+								furkiebot.Msg("EklipZ", msg3);
+							}
+
                             map.AtlasID = result.id;
                             map.Name = result.clean_name;
                             if (MapMan[name].AtlasID <= 0) {   //Newly uploaded map
                                 uploadedCount++;
                                 furkiebot.MessageRacechan(FurkieBot.FormatNumber(uploadedCount) + " map uploaded to Atlas, " + (furkiebot.AcceptedCount - uploadedCount) + " left to be uploaded!" + FurkieBot.SEP + @"Install: " + GetMapInstallUrl(result.id, result.urlName) + FurkieBot.SEP + ATLAS_MAP_URL + result.id);
                             } else {                           //reuploaded map
-                                furkiebot.MessageRacechan("CMR map REUPLOADED to Atlas, " + (furkiebot.AcceptedCount - uploadedCount) + " left to be uploaded!" + FurkieBot.SEP + @"Install: " + GetMapInstallUrl(result.id, result.urlName) + FurkieBot.SEP + "DELETE THE OLD ONE FROM YOUR CUSTOM MAPS DIRECTORY" + FurkieBot.SEP + ATLAS_MAP_URL + result.id);
+								furkiebot.MessageRacechan("CMR map REUPLOADED to Atlas.  DELETE THE OLD ONE FROM YOUR CUSTOM MAPS DIRECTORY" + FurkieBot.SEP + (furkiebot.AcceptedCount - uploadedCount) + " left to be uploaded!" + FurkieBot.SEP + @"Install: " + GetMapInstallUrl(result.id, result.urlName) + FurkieBot.SEP + ATLAS_MAP_URL + result.id);
                             }
                             MapMan.SaveMap(map);
                         }

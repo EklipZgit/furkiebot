@@ -150,6 +150,20 @@ namespace MapCMR {
             isIdForced = false;
         }
 
+
+		/// <summary>
+		/// Returns a <see cref="System.String" /> that represents this instance.
+		/// </summary>
+		/// <returns>
+		/// A <see cref="System.String" /> that represents this instance.
+		/// </returns>
+		public override string ToString() {
+			return "\"" + Name + "\" by " + UserManager.Instance[AuthorId].Name + 
+				", AtlasId: " + atlasId + (IsAtlasIdForced ? " FORCED" : "") + 
+				", for CMR #" + CmrNo + ", ObjectId: " + Id.ToString() +
+				", " + (Accepted ? "accepted" : "not accepted") +
+				", " + (IsDenied ? "denied" : "not denied");
+		}
     }
 
 
@@ -267,6 +281,22 @@ namespace MapCMR {
 				return GetMapByName(name);
             }
         }
+
+
+
+		/// <summary>
+		/// Gets a map based on a provided atlasId number.
+		/// </summary>
+		/// <param name="atlasId">The atlas ID number for the map.</param>
+		/// <returns>The most recent map with that ID number, or null if no match is found.</returns>
+		public CmrMap GetMapByAtlasId(int atlasId) {
+			return
+				(from map in GetMaps()
+				where map.AtlasID == atlasId
+				orderby map.LastModified
+				select map)
+				.FirstOrDefault();
+		}
 
 
         /// <summary>
@@ -639,7 +669,7 @@ namespace MapCMR {
 
 
 
-
+		
 
         /// <summary>
         /// Writes the current maps and denials to the temp mapfile and denialfile. 

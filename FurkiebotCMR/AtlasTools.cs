@@ -19,6 +19,9 @@ namespace AtlasTools {
     public class AtlasMapResult {
         public string name;
         public string urlName;
+		/// <summary>
+		/// The clean_name from hitboxes API, no idea what the difference is between name and clean_name.
+		/// </summary>
         public string clean_name;
         public int id;
     }
@@ -26,7 +29,7 @@ namespace AtlasTools {
 
 	/// <summary>
 	/// Class representing all of the information obtainable by querying a specific maps atlas page.
-	/// todo not done.
+	/// TODO not done.
 	/// </summary>
 	public class AtlasMap {
 
@@ -80,10 +83,13 @@ namespace AtlasTools {
 		}
 
 
-        /// <summary>
-        /// Gets the recent map list from atlas.
-        /// </summary>
-        /// <returns>A list of AtlasMapResult structs.</returns>
+		/// <summary>
+		/// Gets the recent map list from atlas.
+		/// </summary>
+		/// <param name="num">The number of recent maps to return. Default 30.</param>
+		/// <returns>
+		/// A list of AtlasMapResult structs.
+		/// </returns>
         public static List<AtlasMapResult> GetRecentMapList(int num = 30) {
             string textFromFile = (new WebClient()).DownloadString(GetRecentMapsUrl(num));
 

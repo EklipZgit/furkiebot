@@ -1,16 +1,17 @@
 IMMEDIATE
-	Fix bug where maps with capitals in their names are not recognized by AtlasChecker ???? why shouldnt this all be case insensitive? :<<<<
+	Fix bug where maps with capitals in their names are not recognized by AtlasChecker ???? why shouldnt this all be case insensitive? :<<<<  TEST IF FIXED
 	When testers join IRC, notify them with download links to untested maps etc
 	Seperate mongoDB feeder that eats old save files and spits out mongo.
 
 FUTURE
+	When maps are deleted, archive them to a seperate deletedmaps mongo collection.
 	DQ's
 
 	Traxbuster stuff. 
 		Display map download links when .maps is used in racechannel
 		maps count should update correctly now? idk?
+		replace with FurkieBot functionality, no real reason to have a seperate bot at this point.
 
-	Allow mappers to see the maps they've uploaded, and also delete uploaded maps.
 
 
 
@@ -22,6 +23,7 @@ etc.
 
 
 DONE
+	~Allow mappers to see the maps they've uploaded, and also delete uploaded maps.
 ~Check for .forceid == true before allowing a published atlas map to overwrite a maps mapid in AtlasChecker
 ~.maps needs to print author along with map names again
 ~make slap only occur when toSlap parameter is less than 3 words or something

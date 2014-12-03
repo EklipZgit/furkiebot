@@ -1091,8 +1091,9 @@ namespace FurkiebotCMR {
                     case ":.furkiebot": //FurkieBot Commands
                         if (!StringCompareNoCaps(chan, realRacingChan)) {
                             //FurkieBot commands for the main channel
-                            Msg(chan, @"Commands: .cmr" + SEP + ".maps" + SEP + ".startcmr" + SEP + ".ign " + BoldText("ircname") + SEP + ".setign " + BoldText("in-game name") + SEP + ".mappack" + SEP + ".pending" + SEP + ".accepted");
-                            Msg(chan, UPLOAD_INFO);
+							Msg(chan, @"General commands: .cmr" + SEP + ".maps" + SEP + ".startcmr" + SEP + ".ign " + BoldText("ircname") + SEP + ".setign " + BoldText("in-game name") + SEP + ".mappack" + SEP + ".pending" + SEP + ".accepted");
+							Msg(chan, @"Map maker commands: .mymaps" + SEP + ".removemap YourMapsName" + SEP);
+							Msg(chan, UPLOAD_INFO);
                             Msg(chan, @".help register" + SEP + ".help tester" + SEP + ".help othercommands");
 
                         } else {            // FurkieBot commands for race channel
