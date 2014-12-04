@@ -265,7 +265,7 @@ namespace AtlasTools {
 		<div class="qa-a-item-main">
 			<div class="comment-left">
 				<div class="avatar-comment pull-left centered">
-					------- Avatar
+					------- Avatar image
 					<span class="qa-a-item-avatar">
 						<a href="../user/ShurykaN" class="qa-avatar-link"><img src="../?qa=image&amp;qa_blobid=2532377085645455136&amp;qa_size=60" width="60" height="60" class="qa-avatar-image"></a>
 					</span>
@@ -291,10 +291,9 @@ namespace AtlasTools {
 			</div>
 									
 			<div class="qa-a-item-c-list" style="display:none;" id="cCOMMENT_ID_list">
-			</div> <!-- END qa-c-list -->
-									
-								
-	</div></form> <!-- END qa-a-item-main -->
+			</div> <!-- END qa-c-list -->							
+		</div>
+	</form> <!-- END qa-a-item-main -->
 	<div class="qa-a-item-clear">
 	</div>
 </div>
@@ -326,9 +325,130 @@ namespace AtlasTools {
 
 		public AtlasMap FetchMapInfo(int atlasId) {
 			string atlasHtml = webClient.DownloadString(GetAtlasMapUrl(atlasId));
-
+			//if (isValidMap) { } //TODO figure out how to check if its a valid map result.
+			AtlasMap theMap = new AtlasMap();
+			//BufferedReader
 			//breakdown of search process....
-			
+			/**
+<div class="map paper map-page-main">
+	<div class="map-header">
+		<div class="map-info">
+			<h1><a class="dark-link" href="../4439/outflow">Outflow</a></h1>
+			<div class="map-info-stats">
+				<div class="map-info-stats-left">
+					<div class="name-area">
+						<div class="pull-left avatar-main">
+							<span class="qa-q-view-avatar">
+								<a href="../user/Byronyello" class="qa-avatar-link"><img src="../?qa=image&amp;qa_blobid=10666441705912608421&amp;qa_size=32" width="32" height="32" class="qa-avatar-image"></a>
+							</span>
+						</div>
+						<div class="pull-left">
+							<span class="muted">by </span><strong><a href="http://atlas.dustforce.com/user/Byronyello">Byronyello</a></strong>
+							<br><span class="muted">created 1 day ago</span>
+						</div>
+						<div style="clear:both;"></div>
+					</div>
+					<a href="http://dustworth.com/level/Outflow-4439"><b>Leaderboards</b></a><br>
+					<span class="muted">79 views | 
+						95 downloads							
+					</span>
+					<br>						
+				</div>
+				<div class="map-info-stats-right">
+					<p>
+						<span class="subtle-header">Rating</span>
+						<br>
+						<span id="vote_r4439" class="rating-slider rating-quality pointer  score-4.25 state-3 user-vote-0 vote-count-16 total-68" title="Score: 4.25">
+							<i class="rater rating-1 icon-heart"></i>
+							<i class="rater rating-2 icon-heart"></i>
+							<i class="rater rating-3 icon-heart"></i>
+							<i class="rater rating-4 icon-heart"></i>
+							<i class="rater rating-5 icon-heart heart-dull"></i>
+						</span>
+						<span class="muted vote-count-label">/ 16 votes </span>
+					</p>
+					<p>
+						<span class="subtle-header">Difficulty</span>
+						<br>
+						<span id="vote_d4439" class="rating-slider rating-difficulty pointer  score-2.875 state-3 user-vote-0 vote-count-8 total-23" title="Score: 2.88">
+							<i class="rater rating-1 icon-fire"></i>
+							<i class="rater rating-2 icon-fire"></i>
+							<i class="rater rating-3 icon-fire"></i>
+							<i class="rater rating-4 icon-fire fire-dull"></i>
+							<i class="rater rating-5 icon-fire fire-dull"></i>
+						</span>
+						<span class="muted vote-count-label">/ 8 votes </span>
+					</p>
+				</div>
+			</div>
+			<div class="tag-area">
+				<div class="subtle-header">Tags</div>
+				<a title="find more maps with the tag 'underground'" href="../tag/underground"><span class="label label-normal">underground</span></a>
+				<a title="find more maps with the tag 'short'" href="../tag/short"><span class="label label-short">short</span></a>
+				<a title="find more maps with the tag 'city'" href="../tag/city"><span class="label label-city">city</span></a>
+				<a title="find more maps with the tag 'forest'" href="../tag/forest"><span class="label label-forest">forest</span></a>
+				<a title="find more maps with the tag 'medium difficulty'" href="../tag/medium-difficulty"><span class="label label-normal">medium difficulty</span></a>
+			</div>
+		</div>
+		<div class="map-image-holder">
+			<div id="outflow" class="map-image" style="background-image:url('http://atlas.dustforce.com/gi/maps/Outflow-4439.png')">					
+			</div>
+		</div>
+	</div>
+	<hr>
+	<div class="map-body">
+		<div class="map-sidebar">
+			<div class="centered well map-installer">
+				<h1 class="map-installer-header compact">get this map <abbr class="map-help muted" title="If you have Dustforce installed, the map will automatically be downloaded and installed to the map directory.">?</abbr></h1>
+				<div class="install-button-area">
+					<a href="dustforce://installPlay/4439/Outflow" class="btn btn-primary btn-large btn-installer" title="click to launch Dustforce and play this map">
+						<i class="icon icon-white icon-share-alt"></i> install and play
+					</a>
+					<div class="button-seperator-break compact"><br></div>
+					<a href="dustforce://install/4439/Outflow" class="btn btn-primary btn-large btn-installer" title="click to download and install this map in the background">
+						<i class="icon icon-white icon-download nudge-down"></i> install only
+					</a>
+				</div>
+				<span class="muted">
+					<a href="http://atlas.dustforce.com/gi/downloader.php?id=4439" title="Put this file in your 'dustforce/user/levels/' directory">direct file download</a>
+				</span>
+			</div>
+			<div class="share-area centered">
+				<a class="custom-button custom-button-twitter" href="javascript:popup('http://twitter.com/intent/tweet?url=http%3A%2F%2Fatlas.dustforce.com%2F4439%2Foutflow&text=check%20out%20this%20Dustforce%20map', 'twitter','600','300');" title="Tweet this map"></a>
+				<a class="custom-button custom-button-facebook" href="javascript:popup('http://www.facebook.com/sharer.php?u=http%3A%2F%2Fatlas.dustforce.com%2F4439%2Foutflow&t=check%20out%20this%20Dustforce%20map', 'facebook','670','350');" title="Share this map on Facebook"></a>
+				<a class="custom-button custom-button-google" href="javascript:popup('https://plusone.google.com/_/+1/confirm?hl=en&url=http%3A%2F%2Fatlas.dustforce.com%2F4439%2Foutflow', 'google','445','195');" title="Share this map on Google Plus"></a>
+			</div>
+		</div>
+		<div class="map-content">
+			<div class="map-description">
+				<div class="subtle-header">map notes</div>
+				<div class="map-description-contents">
+					<a name="17158"></a><span class="entry-content">My 14th map. It's taken a while to complete this thing, I can tell you that. I had finalised the gameplay around one and a half months ago (indeed, I started work on this map before <a href="http://atlas.dustforce.com/4314/abandonware" target="_blank"><strong>Abandonware</strong></a> had released). However, I had not then finished the visuals of the map, and somehow <strong>Outflow</strong> has managed to take out so much time from me to just get it to look how I wanted. Thankfully, I am now finished - though I do indeed have a new map in the pipeline, so there's that to look forward to. Finally, as always, there's a not-very-well-hidden apple that is just waiting to be unceremoniously found!</span>
+				</div>
+				<div class="qa-q-view hentry question" id="q17158">
+					<form method="POST" action="../4439/outflow">
+						<div class="qa-q-view-main">
+							<div class="qa-q-view-buttons">
+								<input name="q_doflag" value="flag" title="flag this map as spam or inappropriate" type="submit" class="button-links super-muted">
+									<input type="hidden" name="qa_click" value="">
+														
+													
+							</div>
+											
+						<div class="qa-c-form">
+						</div> <!-- END qa-c-form -->
+
+					</div></form> <!-- END qa-q-view-main -->
+					<div class="qa-q-view-clear">
+					</div>
+				</div> <!-- END qa-q-view -->
+
+			</div>
+		</div>
+		<div style="clear:both;"></div>
+	</div>
+</div>
+			*/
 		}
 
 		public string GetAtlasMapUrl(int mapid) {
