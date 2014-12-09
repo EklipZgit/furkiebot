@@ -245,7 +245,11 @@ namespace AtlasTools {
 		public string Name { get; set; }
 		public string Author { get; set; }
 		public DateTime TimeStamp { get; set; }
-		public TimeSpan Age { get; }
+        public TimeSpan Age {
+            get {
+                return DateTime.UtcNow - TimeStamp;
+            }
+        }
 		public string[] Tags { get; set; }
 		public string Description { get; set; }
 		public double Rating { get; set; }
@@ -305,7 +309,11 @@ namespace AtlasTools {
 		public int CommentId { get; set; } //(SEE CONTENT) <a name="17159"></a>
 											
 		public DateTime TimeStamp { get; set; }
-		public TimeSpan Age { get; }
+        public TimeSpan Age {
+            get {
+                return DateTime.UtcNow - TimeStamp;
+            }
+        }
 
 		public string AuthorImage { get; set; }//  "/?qa=image&qa_blobid=2532377085645455136&qa_size=60"  //THE FUCK IS THIS SHIT?
 		
@@ -449,6 +457,7 @@ namespace AtlasTools {
 	</div>
 </div>
 			*/
+            return new AtlasMap();
 		}
 
 		public string GetAtlasMapUrl(int mapid) {

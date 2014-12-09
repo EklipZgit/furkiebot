@@ -14,11 +14,6 @@ using MongoDB.Driver;
 using MongoDB.Driver.Builders;
 using MongoDB.Driver.GridFS;
 using MongoDB.Driver.Linq;
-using MongoDB.Bson;
-using MongoDB.Driver;
-using MongoDB.Driver.Builders;
-using MongoDB.Driver.GridFS;
-using MongoDB.Driver.Linq;
 using MongoDB.Bson.IO;
 using MongoDB.Bson.Serialization;
 using MongoDB.Bson.Serialization.Attributes;
@@ -62,6 +57,9 @@ namespace DatabaseCMR {
         private static object _instanceLock = new Object();
 
         public static int UnixTimestamp { get { return (int)(DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1))).TotalSeconds; } }
+
+
+
 
 
         public static MongoDatabase Database {
