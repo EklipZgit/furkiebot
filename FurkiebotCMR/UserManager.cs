@@ -174,6 +174,26 @@ namespace UserCMR {
 
 
         /// <summary>
+        /// Adds the user to the database. Returns whether or not the user 
+        /// </summary>
+        /// <param name="user">The user.</param>
+        /// <returns>Whether the operation was successful.</returns>
+        public bool AddUser(User user) {
+            if (user.Id != null) {
+                Console.WriteLine("Trying to add a user whose ID has already been set ????");
+                User dupe = this[user.Id];
+                Console.WriteLine("currently in db\n" + dupe.ToString());
+                Console.WriteLine("attempting to add\n" + user.ToString());
+                Console.WriteLine("NOT ADDING TO DATABASE");
+                return false;
+            }
+            Users.Save(user);
+            return true;
+        }
+
+
+
+        /// <summary>
         /// Saves the ign to the Igns table.
         /// </summary>
         /// <param name="user">The ign.</param>

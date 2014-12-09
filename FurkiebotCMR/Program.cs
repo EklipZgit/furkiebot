@@ -49,35 +49,6 @@ namespace FurkiebotCMR {
         public string altNick;
     } /* IRCConfig */
 
-    //struct MapData {
-    //    public string name;
-    //    public int id;
-    //    public string filepath;
-    //    public string author;
-    //    public string acceptedBy;
-    //    public bool accepted;
-    //    public string timestamp;
-    //    public bool forceid;
-    //}
-
-
-    /// <summary>
-    /// Player info struct containing all information about a player.
-    /// </summary>
-    public struct PlayerInfo {
-        public string ircname;
-        public string dustforcename;
-        public string streamurl;
-        public bool tester;
-        public bool trusted;
-        public bool admin;
-        public bool notify;
-        public int rating;
-        public int randmaprating;
-        public string password;
-        public string salt;
-    }
-
     /// <summary>
     /// A FurkieBot IRC bot.
     /// Singleton, get with .Instance
@@ -137,7 +108,7 @@ namespace FurkiebotCMR {
         public const string WIKI_LINK = @"https://github.com/EklipZgit/furkiebot/wiki";
         public const string MAP_PACK_LINK = @"http://redd.it/279zmi";
         public const string INFO_LINK = URL_BASE;
-		public const string UPLOAD_INFO = @"Upload maps: " + UPLOAD_LINK + SEP + "CMR info: " + INFO_LINK + SEP + @"Command list: " + WIKI_LINK + SEP + "FurkieBot announce channel: #DFcmr";
+		public static string UPLOAD_INFO = @"Upload maps: " + UPLOAD_LINK + SEP + "CMR info: " + INFO_LINK + SEP + @"Command list: " + WIKI_LINK + SEP + "FurkieBot announce channel: #DFcmr";
         #endregion
 
 
@@ -3683,68 +3654,106 @@ namespace FurkiebotCMR {
 			}
 		}
 
+
+        public class Argument {
+            public string Command { get; set; }
+            public string Value { get; set; }
+            public List<Flag> Flags { get; set; }
+        }
+
+        public class Flag {
+            public string FlagVal { get; set; }
+            public string Param { get; set; }
+        }
+
+        public static HashSet<Argument> ParseArgs(string[] args) {
+            Console.WriteLine("Parsing Args:");
+            for (int i = 0; i < args.Length; i++) {
+                Console.WriteLine(i + "\"" + args[i] + "\"");
+            }
+
+            HashSet<Argument> arglist = new HashSet<Argument>();
+            string argString = args[0];
+            for (int i = 1; i < args.Length; i++) {
+                argString += " " + args[i];
+            }
+
+            return arglist;
+        }
+
 		private static void Main(string[] args) {
-			exceptionMessages = new List<string>();
-			using (FurkieBot bot = FurkieBot.Instance) {
-				FurkieBotIrcWork = new Thread(RunBot);
-				FurkieBotIrcWork.Start();
-				Thread.Sleep(1000); // dickbutt. Makes sure to give the bot ample time to connect.
+            HashSet<Argument> arglist = ParseArgs(args);
+
+
+            //if (args.Length > 0 && args[0].ToLower().Trim() == "migrate") {
+            if (true) {
+                //handle migrate command
+                DataMigrator.InitDBFromLocalFiles(false);
+            } else {
+                //run normally
+                exceptionMessages = new List<string>();
+                using (FurkieBot bot = FurkieBot.Instance) {
+                    FurkieBotIrcWork = new Thread(RunBot);
+                    FurkieBotIrcWork.Start();
+                    Thread.Sleep(1000); // dickbutt. Makes sure to give the bot ample time to connect.
 
 
 
-				TimeSpan timeout_span = TimeSpan.FromSeconds(TIMEOUT_AFTER_SECONDS);
-				bool exit = false;
-				while (!exit) {
-					if (!FurkieBotIrcWork.IsAlive && (!crashed)) {
-						//bot terminated normally ???
-						Console.WriteLine("Bot terminated gracefully.");
-						exit = true;
-					} else if (crashed) {
-						FurkieBotIrcWork.Join();
-						if (exceptionCount >= MAX_EXCEPTIONS_BEFORE_QUIT) {
-							Console.WriteLine("FurkieBot reached the exception limit.");
-							PrintExceptions();
-							exit = true;
-						} else {
-							FurkieBotIrcWork = new Thread(RunBot);
-							FurkieBotIrcWork.Start();
-							crashed = false;
-							Thread.Sleep(1000); // dickbutt. Makes sure to give the bot ample time to connect.
-						}
-					} else if (bot.lastInputTime + timeout_span < DateTime.UtcNow) {
-						//Then furkiebot has timed out. Attempt reconnects.
-						Console.WriteLine("HOLY SHIT WE TIMED OUT ATTEMPT RECONNECT PANIC PANIC PANIC");
-						disconnectCount++;
-						int attemptNumber = 0;
-						bool success = false;
+                    TimeSpan timeout_span = TimeSpan.FromSeconds(TIMEOUT_AFTER_SECONDS);
+                    bool exit = false;
+                    while (!exit) {
+                        if (!FurkieBotIrcWork.IsAlive && (!crashed)) {
+                            //bot terminated normally ???
+                            Console.WriteLine("Bot terminated gracefully.");
+                            exit = true;
+                        } else if (crashed) {
+                            FurkieBotIrcWork.Join();
+                            if (exceptionCount >= MAX_EXCEPTIONS_BEFORE_QUIT) {
+                                Console.WriteLine("FurkieBot reached the exception limit.");
+                                PrintExceptions();
+                                exit = true;
+                            } else {
+                                FurkieBotIrcWork = new Thread(RunBot);
+                                FurkieBotIrcWork.Start();
+                                crashed = false;
+                                Thread.Sleep(1000); // dickbutt. Makes sure to give the bot ample time to connect.
+                            }
+                        } else if (bot.lastInputTime + timeout_span < DateTime.UtcNow) {
+                            //Then furkiebot has timed out. Attempt reconnects.
+                            Console.WriteLine("HOLY SHIT WE TIMED OUT ATTEMPT RECONNECT PANIC PANIC PANIC");
+                            disconnectCount++;
+                            int attemptNumber = 0;
+                            bool success = false;
 
-						FurkieBotIrcWork.Abort();
+                            FurkieBotIrcWork.Abort();
 
-						while (attemptNumber <= MAX_CONSECUTIVE_RECONNECT_FAILURES && (!success)) {
-							attemptNumber++;
-							Thread.Sleep(RECONNECT_INTERVAL_MS);
-							try {
-								bot.Connect();
-								success = true;
-							} catch (Exception e) {
-								Console.WriteLine("Attempt #" + attemptNumber + ", yo dawg we threw an exception trying to reconnect after a disconnect:\n" + e.Message + "\n" + e.StackTrace);
-							}
-						}
-						if (success) {
-							FurkieBotIrcWork = new Thread(RunBot);
-							FurkieBotIrcWork.Start();
-							crashed = false;
-							Thread.Sleep(1000);
-						} else {
-							Console.WriteLine("MAX_CONSECUTIVE_RECONNECT_FAILURES exceeded (" + MAX_CONSECUTIVE_RECONNECT_FAILURES + "). Terminating...");
-							exit = true;
-						}
-					}
-					Thread.Sleep(CHECK_TIMEOUT_EVERY_MS);
-				}
-			}
-			Console.WriteLine("Furkiebot quit/crashed");
-			Console.ReadLine();
+                            while (attemptNumber <= MAX_CONSECUTIVE_RECONNECT_FAILURES && (!success)) {
+                                attemptNumber++;
+                                Thread.Sleep(RECONNECT_INTERVAL_MS);
+                                try {
+                                    bot.Connect();
+                                    success = true;
+                                } catch (Exception e) {
+                                    Console.WriteLine("Attempt #" + attemptNumber + ", yo dawg we threw an exception trying to reconnect after a disconnect:\n" + e.Message + "\n" + e.StackTrace);
+                                }
+                            }
+                            if (success) {
+                                FurkieBotIrcWork = new Thread(RunBot);
+                                FurkieBotIrcWork.Start();
+                                crashed = false;
+                                Thread.Sleep(1000);
+                            } else {
+                                Console.WriteLine("MAX_CONSECUTIVE_RECONNECT_FAILURES exceeded (" + MAX_CONSECUTIVE_RECONNECT_FAILURES + "). Terminating...");
+                                exit = true;
+                            }
+                        }
+                        Thread.Sleep(CHECK_TIMEOUT_EVERY_MS);
+                    }
+                }
+                Console.WriteLine("Furkiebot quit/crashed");
+                Console.ReadLine();
+            }
+			
 		} /* Main() */
     } /* Program */
 }

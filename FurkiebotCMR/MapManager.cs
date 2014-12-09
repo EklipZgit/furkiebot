@@ -440,6 +440,25 @@ namespace MapCMR {
             return result.DocumentsAffected > 0;
         }
 
+        /// <summary>
+        /// Adds the map to the map database.
+        /// </summary>
+        /// <param name="map">The map to add.</param>
+        /// <returns>Whether the add operation was successful.</returns>
+        public bool AddMap(CmrMap map) {
+            if (map.Id != null) {
+                Console.WriteLine("Trying to add a map that already has an ID ???? Map: " + map.Name);
+                CmrMap dupe = this[map.Id];
+                if (dupe != null) {
+                    Console.WriteLine("Duplicated map. Currently in DB:\n" + dupe.ToString());
+                    Console.WriteLine("Attempting to add:\n" + map.ToString());
+                }
+                Console.WriteLine("MAP NOT ADDED.");
+                return false;
+            }
+            return SaveMap(map);
+        }
+
 
 
         /// <summary>
