@@ -4,7 +4,7 @@
  * @author Travis Drake
  */
 #define DB_DEBUG  // if defined, will use debug database instead of production.
-#define DB_CLONE_PRODUCTION_TO_DEBUG // if defined, the debug database will be cloned from the production db.
+//#define DB_CLONE_PRODUCTION_TO_DEBUG // if defined, the debug database will be cloned from the production db.
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -30,20 +30,21 @@ using MapCMR;
 
 
 namespace DatabaseCMR {
-	public class DBObject {
-        [BsonId]
-        public ObjectId Id;
-    }
+    //public class DBObject {
+    //    [BsonId]
+    //    public ObjectId Id;
+    //}
 
 	public static class DB {
         private const string _CONNECTION_STRING = "mongodb://localhost";
-		private const string _PRODUCTION_DB_NAME_DO_NOT_USE = "CmrDB";
+		public const string _PRODUCTION_DB_NAME_DO_NOT_USE = "CmrDB";
+        public const string _DEBUG_DB_NAME_DO_NOT_USE = "DebugDB";
 
 				//FEEL FREE TO CHANGE THESE, ALL COLLECTIONS AND DATABASES WILL BE CREATED
 #if DB_DEBUG	//WHEN THEY ARE FIRST USED, SO YOU DONT NEED TO "INITIALIZE" A NEW DB OR ANYTHING
-		private const string _DB_NAME = "DebugDB";
+        public const string _DB_NAME = _DEBUG_DB_NAME_DO_NOT_USE;
 #else
-		private const string _DB_NAME = "CmrDB";
+		public const string _DB_NAME = _PRODUCTION_DB_NAME_DO_NOT_USE;
 #endif
         public const string _USER_TABLE_NAME = "Users";
         public const string _IGN_TABLE_NAME = "Igns";
@@ -51,8 +52,6 @@ namespace DatabaseCMR {
         public const string _DENIAL_TABLE_NAME = "Denials";
 
         private static MongoDatabase db;
-
-        private static FurkieBot fb = FurkieBot.Instance;
 
         private static object _instanceLock = new Object();
 

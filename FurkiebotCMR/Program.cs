@@ -3673,22 +3673,33 @@ namespace FurkiebotCMR {
             }
 
             HashSet<Argument> arglist = new HashSet<Argument>();
-            string argString = args[0];
-            for (int i = 1; i < args.Length; i++) {
-                argString += " " + args[i];
+            string argString = "";
+            for (int i = 0; i < args.Length - 1; i++) {
+                argString += args[i] + " ";
+            }
+            if (args.Length > 0) {
+                argString += args[args.Length - 1];
             }
 
             return arglist;
         }
 
+
+        public static void DumpMongoToFile() {
+            UserManager.Instance.DumpStateToFile(@"C:\CMR\MongoUserDump.txt");
+            MapManager.Instance.DumpStateToFile(@"C:\CMR\MongoMapDump.txt");
+
+        }
+
+
 		private static void Main(string[] args) {
             HashSet<Argument> arglist = ParseArgs(args);
-
-
+            MapManager.Instance.Init();
+            DumpMongoToFile();
             //if (args.Length > 0 && args[0].ToLower().Trim() == "migrate") {
             if (true) {
                 //handle migrate command
-                DataMigrator.InitDBFromLocalFiles(false);
+                DataMigrator.InitDBFromLocalFiles();
             } else {
                 //run normally
                 exceptionMessages = new List<string>();

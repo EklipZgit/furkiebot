@@ -34,11 +34,19 @@ namespace UserCMR {
     /// <summary>
     /// Class containing all the data about a User.
     /// </summary>
-	public class User : DBObject {
+    public class User {
+    //public class User : DBObject {
+        [BsonId]
+        public ObjectId Id;
         private string nameLower;
         private string name;
 
-        public string NameLower { get { return nameLower; } set { nameLower = value.Trim().ToLower(); } }
+        public string NameLower { 
+            get { return nameLower; }
+            private set {
+                nameLower = value;
+            } 
+        }
         /// <summary>
         /// Gets or sets the name. If setting, automatically sets NameLower as well.
         /// </summary>
@@ -71,13 +79,26 @@ namespace UserCMR {
             Streamurl = "";
             Name = "";
         }
+
+
+        public override string ToString() {
+            return Name + ", Admin: " + Admin + ", Tester: " + Tester + ", Trusted: " + Trusted + ", Notify: " + Notify;
+                //+ ", Password: " + Password + ", Salt: " + Salt;
+        }
+
+        internal string DebugString() {
+            return Id + "\nName: " + Name + ", NameLower: " + NameLower + ", Stream: " + Streamurl + ", Admin: " + Admin + ", Tester: " + Tester + ", Trusted: " + Trusted + ", Notify: " + Notify + ", Rating: " + Rating + ", RandmapRating: " + RandmapRating + ", Password: " + Password + ", Salt: " + Salt;
+        }
     }
 
 
     /// <summary>
     /// An In-Game-Name class to encompass the values stored in the database.
     /// </summary>
-	public class IGN : DBObject {
+    public class IGN {
+    //public class IGN : DBObject {
+        [BsonId]
+        public ObjectId Id;
         public string DustforceName;
         public ObjectId IrcUserId;
 
@@ -89,6 +110,14 @@ namespace UserCMR {
 
         [BsonConstructor]
         public IGN() {}
+
+        public override string ToString() {
+            return "DustforceName: " + DustforceName + ", IrcUserId: " + IrcUserId;
+        }
+
+        internal string DebugString() {
+            return Id + "\nDustforceName: " + DustforceName + ", IrcUserId: " + IrcUserId;
+        }
     }
 
 
@@ -96,8 +125,8 @@ namespace UserCMR {
     /// A Singleton class to manage Users in the Database.
     /// </summary>
 	public class UserManager {
-        private MongoCollection<User> Users = DB.Database.GetCollection<User>(DB._USER_TABLE_NAME);
-        private MongoCollection<IGN> Igns = DB.Database.GetCollection<IGN>(DB._IGN_TABLE_NAME);
+        private MongoCollection<User> Users;
+        private MongoCollection<IGN> Igns;
         private static UserManager instance;
         private static object _instanceLock = new Object();
         public static UserManager Instance {
@@ -110,8 +139,17 @@ namespace UserCMR {
                 return instance;
             }
         }
-            
-        private FurkieBot fb = FurkieBot.Instance;
+
+
+        private FurkieBot fb;
+        private FurkieBot FB {
+            get {
+                if (fb == null) {
+                    fb = FurkieBot.Instance;
+                }
+                return fb;
+            }
+        }
         //private MongoCollection<User> usersLast;
 
         private UserManager() {
@@ -126,8 +164,15 @@ namespace UserCMR {
                     cm.AutoMap();
                 });
             }
+            Users = DB.Database.GetCollection<User>(DB._USER_TABLE_NAME);
+            Igns = DB.Database.GetCollection<IGN>(DB._IGN_TABLE_NAME);
         }
 
+
+        public void GetNewCollectionReferences() {
+            Users = DB.Database.GetCollection<User>(DB._USER_TABLE_NAME);
+            Igns = DB.Database.GetCollection<IGN>(DB._IGN_TABLE_NAME);
+        }
 
         /// <summary>
         /// Gets the <see cref="User"/> with the specified identifier from the Users Mongo Collection
@@ -136,9 +181,15 @@ namespace UserCMR {
         /// <returns>The user with that ID.</returns>
         public User this[ObjectId id] {
             get {
-                return Users.AsQueryable<User>()
-                    .Where<User>(u => u.Id == id)
-                    .First<User>();
+                var query = Users.AsQueryable<User>()
+                    .Where<User>(u => u.Id == id);
+
+                try {
+                    return query.First();
+                } catch (NullReferenceException e) {
+                    //if no results in query ????
+                    return null;
+                }
             }
         }
         public User GetUser(ObjectId id) {
@@ -153,9 +204,15 @@ namespace UserCMR {
         /// <returns>The user by that name.</returns>
         public User this[string name] {
             get {
-                return Users.AsQueryable()
-                    .Where(u => u.NameLower == name.ToLower().Trim())
-                    .First();
+                var query = Users.AsQueryable()
+                    .Where(u => u.NameLower == name.ToLower().Trim());
+
+                try {
+                    return query.First();
+                } catch (NullReferenceException e) {
+                    //if no results in query ????
+                    return null;
+                }
             }
         }
         public User GetUser(String name) {
@@ -179,7 +236,7 @@ namespace UserCMR {
         /// <param name="user">The user.</param>
         /// <returns>Whether the operation was successful.</returns>
         public bool AddUser(User user) {
-            if (user.Id != null) {
+            if (user.Id != ObjectId.Empty) {
                 Console.WriteLine("Trying to add a user whose ID has already been set ????");
                 User dupe = this[user.Id];
                 Console.WriteLine("currently in db\n" + dupe.ToString());
@@ -236,10 +293,10 @@ namespace UserCMR {
                 if (user.Password != "" && user.Password != null) {
                     registered = true;
                 } else if (toNotify != null) {
-                    fb.Msg(toNotify, "User \"" + nick.ToLower() + "\" has not yet registered with FurkieBot.");
+                    FB.Msg(toNotify, "User \"" + nick.ToLower() + "\" has not yet registered with FurkieBot.");
                 }
             } else if (toNotify != null) {
-                fb.Msg(toNotify, "No user \"" + nick.ToLower() + "\" in Users database.");
+                FB.Msg(toNotify, "No user \"" + nick.ToLower() + "\" in Users database.");
             }
             return registered;
         }
@@ -254,10 +311,10 @@ namespace UserCMR {
         /// <returns>bool whether or not the nick is an admin.</returns>
         public bool IsAdmin(string nick, string toNotify = null) {
             bool isAdmin = false;
-            if (IsRegistered(nick, toNotify) && fb.IsIdentified(nick, toNotify)) {
+            if (IsRegistered(nick, toNotify) && FB.IsIdentified(nick, toNotify)) {
                 isAdmin = this[nick].Admin;
                 if (!isAdmin && toNotify != null) {
-                    fb.Msg(toNotify, "User \"" + nick.ToLower() + "\" is not an Admin.");
+                    FB.Msg(toNotify, "User \"" + nick.ToLower() + "\" is not an Admin.");
                 }
             } 
             return isAdmin;
@@ -273,7 +330,7 @@ namespace UserCMR {
         /// <param name="toNotify">To notify.</param>
         /// <returns></returns>
         public bool IsTester(string nick, string toNotify = null) {
-            if (fb.IsIdentified(nick, toNotify)) {
+            if (FB.IsIdentified(nick, toNotify)) {
                 if (IsRegistered(nick, toNotify)) {
                     return this[nick].Tester;
                 } 
@@ -290,7 +347,7 @@ namespace UserCMR {
         /// <param name="toNotify">To notify.</param>
         /// <returns></returns>
         public bool IsTrusted(string nick, string toNotify = null) {
-            if (fb.IsIdentified(nick, toNotify)) {
+            if (FB.IsIdentified(nick, toNotify)) {
                 if (IsRegistered(nick, toNotify)) {
                     return this[nick].Trusted;
                 } else {
@@ -319,7 +376,7 @@ namespace UserCMR {
                 wasNull = true;
             }
             string nickLower = user.NameLower;
-            if (fb.IsIdentified(nickLower, nickname)) {
+            if (FB.IsIdentified(nickLower, nickname)) {
                 string[] hashes = GeneratePasswordHashes(password.Trim());
                 if (!wasNull) {
                     
@@ -335,11 +392,11 @@ namespace UserCMR {
                     user.Name = nickname; //Overwrite name w/ new capitalization
                     SaveUser(user);
                 }
-                fb.Notice(nickname, "Successfully registered your nick with FurkieBot! Dont forget your password. You can always re-register if you forget the password.");
-                fb.Notice(nickname, "You will now want to set your in-game dustforce name with FurkieBot. use \".setign dustforceLeaderboardName\" to set your IGN with FurkieBot.");
+                FB.Notice(nickname, "Successfully registered your nick with FurkieBot! Dont forget your password. You can always re-register if you forget the password.");
+                FB.Notice(nickname, "You will now want to set your in-game dustforce name with FurkieBot. use \".setign dustforceLeaderboardName\" to set your IGN with FurkieBot.");
                 return true;
             } else {
-                fb.NoticeNotIdentified(nickname);
+                FB.NoticeNotIdentified(nickname);
                 return false;
             }
         }
@@ -359,10 +416,10 @@ namespace UserCMR {
             var testers = GetTesters().ToList<User>();
             foreach (User user in testers) {
                 user.Tester = false;
-                fb.Notice(user.Name, "Your tester status has been reset.");
+                FB.Notice(user.Name, "Your tester status has been reset.");
                 SaveUser(user);
             }
-            fb.MsgChans("All testers have been reset to non testers. If you want to be a tester for the next CMR use \".settester true\" provided you have tester permissions. If you try this and don't have permissions, ask an admin.");
+            FB.MsgChans("All testers have been reset to non testers. If you want to be a tester for the next CMR use \".settester true\" provided you have tester permissions. If you try this and don't have permissions, ask an admin.");
         }
 
 
@@ -422,8 +479,8 @@ namespace UserCMR {
             ObjectId id = Igns.AsQueryable<IGN>()
                 .Where(c => c.DustforceName == ign)
                 .Select<IGN, ObjectId>(c => c.IrcUserId)
-                .First();
-            if (id != null) {
+                .FirstOrDefault();
+            if (id != ObjectId.Empty) {
                 return this[id];
             } else {
                 Console.WriteLine("Got a null id after querying Igns...");
@@ -439,12 +496,19 @@ namespace UserCMR {
         /// <returns></returns>
         /// <exception cref="System.Exception">Found multiple entries in the Igns table matching:  + dustforcename</exception>
         public IGN GetIgnByDustforcename(string dustforcename) {
-            var query = Query.EQ("NameLower", dustforcename.ToLower().Trim());
-            var results = Igns.Find(query);
-            if (results.Count() > 1) {
-                throw new Exception("Found multiple entries in the Igns table matching: " + dustforcename);
+            dustforcename = dustforcename.Trim();
+            var query = 
+                from ign in Igns.AsQueryable()
+                where ign.DustforceName == dustforcename
+                select ign;
+            try {
+                if (query.Count() > 1) {
+                    throw new Exception("Found multiple entries in the Igns table matching: " + dustforcename);
+                }
+                return query.FirstOrDefault();
+            } catch (NullReferenceException e) {
+                return null;
             }
-            return results.First();
         }
 
 
@@ -462,7 +526,7 @@ namespace UserCMR {
                 if (matches.Count() > 1) {
                     throw new Exception("in GetUserIgn, multiple matches in Igns for user.Id: " + user.Id);
                 }
-                return matches.First<IGN>();
+                return matches.FirstOrDefault<IGN>();
             } else {
                 return null;
             }
@@ -483,7 +547,7 @@ namespace UserCMR {
                 User ignUser = GetUserByIGN(ign.DustforceName);
                 //if (!|| (dustforcelist[dustforceuser].ircname.ToLower() == ircLower)) {
                 if (ignUser != null && ignUser.Id != user.Id) {
-                    fb.Notice(ircuser, "That IGN is already registered to someone else. Perhaps you registered it under another IRC nickname? If this is an issue, ask an admin to use .deleteign on that IGN.");
+                    FB.Notice(ircuser, "That IGN is already registered to someone else. Perhaps you registered it under another IRC nickname? If this is an issue, ask an admin to use .deleteign on that IGN.");
                     return false;
                 } else { //ignUser was null, or it matches the expected userId. So update.
                     string oldname = ign.DustforceName;
@@ -544,6 +608,26 @@ namespace UserCMR {
         }
 
 
+
+
+
+
+        public void DumpStateToFile(string filepath) {
+            Console.WriteLine("Trying to dump UserManager's state to file: " + filepath);
+            string state = "";
+            state += "\n\n USERS\n\n";
+            foreach (User user in DB.Database.GetCollection<User>("Users").AsQueryable()) {
+                state += user.DebugString() + "\n";
+            }
+
+            state += "\n\n IGNS\n\n";
+            foreach (IGN ign in DB.Database.GetCollection<IGN>("Igns").AsQueryable()) {
+                state += ign.DebugString() + "\n";
+            }
+            
+
+            System.IO.File.WriteAllText(filepath, state);
+        }
 
 
         ///// <summary>
