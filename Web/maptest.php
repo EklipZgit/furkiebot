@@ -106,10 +106,10 @@ if (isLoggedIn()) {
 				echo '<p style="color:red;"> OH GOD, SOMETHING WENT TERRIBLY, TERRIBLY WRONG. DONT DO ANYTHING AND MESSAGE EKLIPZ IMMEDIATELY DETAILING EXACTLY WHAT YOU DID TO REACH THIS PAGE, WHAT YOU LOGGED IN AS, ETC. TELL HIM "maptest.php reports inconsistent user registration" AND TRY TO STOP HIM FROM SETTING HIMSELF ON FIRE</p>';
 			}
 		} else {
-			$_SESSION['redirect'] = "http://eklipz.us.to/cmr/maptest.php";
+			$_SESSION['redirect'] = "maptest.php";
 			$_SESSION['warning'] = "You need to log in before accessing the map testing page.";
 			session_write_close();
-			header( 'Location: http://eklipz.us.to/cmr/login.php' );
+			header( 'Location: login.php' );
 		}
 	?>
 		</div>

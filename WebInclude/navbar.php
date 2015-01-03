@@ -2,7 +2,7 @@
 <?php
 include_once "funcs.php";
 function displayNavbar($currentpage) {
-	$ek = "http://eklipz.us.to/cmr/";
+	$ek = "";
 
 	//THIS IS WHERE YOU ADD NEW PAGES. They will auto add to the sidebar.
 	$navlist = [

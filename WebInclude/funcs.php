@@ -120,4 +120,15 @@ function writeMaps($maps) {
 	fwrite($file, $json);
 }
 
+function cleanInput($input) {
+	$search = array(
+		'@<script[^>]*?>.*?</script>@si',   // Strip out javascript
+		'@<[\/\!]*?[^<>]*?>@si',            // Strip out HTML tags
+		'@<style[^>]*?>.*?</style>@siU',    // Strip style tags properly
+		'@<![\s\S]*?--[ \t\n\r]*>@',        // Strip multi-line comments
+		'/[\x00-\x1F\x80-\xFF]/'		 	//REGEX's OUT CONTROL CODES AND WHATNOT.
+	);
+	$output = preg_replace($search, '', $input);
+	return $output;
+}
 ?>

@@ -13,14 +13,14 @@ if (isset($_SESSION['loggedIn'])) {
 	} else if (count($temp) == 1) { //no file extensions.
 
 		$filename = $_POST["mapname"];
-		$mapname = preg_replace('/[\x00-\x1F\x80-\xFF]/', '', $filename); //REGEX's OUT CONTROL CODES AND WHATNOT.
+		$mapname = cleanInput($filename);
 		if ($_FILES["file"]["error"] > 0) {
 			echo '<p style="color: red;">ERROR UPLOADING. Return Code: " . $_FILES["file"]["error"] . "<br>';
 			echo "screenshot this to EklipZ in #DFcmr</p>";
 		} else if (trim($_POST['mapname']) == "" ) {
 			$_SESSION['warning'] = "You must submit a map with a proper map name.";
 			session_write_close();
-			header( 'Location: http://eklipz.us.to/cmr/map.php');
+			header( 'Location: map.php');
 		} else {
 			$maps = getMaps();
 			
@@ -54,18 +54,18 @@ if (isset($_SESSION['loggedIn'])) {
 			writeMaps($maps); //Save the array back to the map file.
 
 			$_SESSION['message'] = $_SESSION['message'] . "Thanks " . $_SESSION['usernameCase'] . '!<br>';
-			$_SESSION['warning'] = $_SESSION['warning'] . 'Make sure to idle in <a href="http://client01.chat.mibbit.com/#dustforce@irc2.speedrunslive.com">#dustforce IRC</a> off and on until your map has been accepted by a tester. You can check the status of your map by typing ".maps" in the IRC channel. <br>FurkieBot will announce when the tester accepts your map, or the tester will contact you via IRC if your map needs to be altered in some way. <br><br>You can always access the dustforce IRC via <a href="http://eklipz.us.to/cmr/irc.php">http://eklipz.us.to/cmr/irc.php</a>';
+			$_SESSION['warning'] = $_SESSION['warning'] . 'Make sure to idle in <a href="http://client01.chat.mibbit.com/#dustforce@irc2.speedrunslive.com">#dustforce IRC</a> off and on until your map has been accepted by a tester. You can check the status of your map by typing ".maps" in the IRC channel. <br>FurkieBot will announce when the tester accepts your map, or the tester will contact you via IRC if your map needs to be altered in some way. <br><br>You can always access the dustforce IRC via <a href="irc.php">irc.php</a>';
 			session_write_close();
-			header( 'Location: http://eklipz.us.to/cmr/map.php' );
+			header( 'Location: map.php' );
 		}
 	} else {
 		echo "uh oh you had a \".\" in the filename. Please, no files with extensions or \".\"'s";
 		echo "<br><a href=\"map.php\">Resubmit</a>";
 	}
 } else {
-	$_SESSION['redirect'] = "http://eklipz.us.to/cmr/map.php";
+	$_SESSION['redirect'] = "map.php";
 	$_SESSION['warning'] = "You need to log in before uploading maps.";
 	session_write_close();
-	header( 'Location: http://eklipz.us.to/cmr/login.php' );
+	header( 'Location: login.php' );
 }
 ?>

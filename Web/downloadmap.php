@@ -19,17 +19,17 @@ if (isLoggedIn()) {
 		} else {
 			$_SESSION['warning'] = "error, that file doesnt exist. pls.";
 			session_write_close();
-			header('Location: http://eklipz.us.to/cmr/maptest.php');
+			header('Location: maptest.php');
 			exit;
 		}
 	} else {		
 		include "../WebInclude/testeroption.php";
 	}
 } else {
-	$_SESSION['redirect'] = "http://eklipz.us.to/cmr/maptest.php";
+	$_SESSION['redirect'] = "maptest.php";
 	$_SESSION['warning'] = "You need to log in before downloading maps.";
 	session_write_close();
-	header( 'Location: http://eklipz.us.to/cmr/login.php' );
+	header( 'Location: login.php' );
 	exit;
 }
 ?>

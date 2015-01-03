@@ -75,7 +75,7 @@
 					You can either be there to upload your map to atlas when the race starts, or FurkieBot will publish your map for you (and give you credit) if you are not in the IRC channel within 10 minutes of the designated race time (20 minutes after the time listed).
 				</li>
 				<li class="ml">
-					You just need to register with FurkieBot <a href="http://eklipz.us.to/cmr/register.php">(More info here)</a> and then use the Map submission form on this site to submit your map!
+					You just need to register with FurkieBot <a href="register.php">(More info here)</a> and then use the Map submission form on this site to submit your map!
 				</li>
 				<li class="ml">
 					Maps do not need to be decorated before submission, but the gameplay should be done. When decorating after submission there can be severe penalties if you:

@@ -25,7 +25,7 @@ if (array_key_exists($username, $userarray)) {
 	{	
 		//		if ($DEBUG) { echo "bad password<br>";	}
 		$_SESSION['warning'] = "BAD PASSWORD";
-		header('Location: http://eklipz.us.to/cmr/login.php');
+		header('Location: login.php');
 	} else { // Logged in successfully.
 		session_regenerate_id();
 		$_SESSION['sess_user_id'] = $username;
@@ -46,13 +46,13 @@ if (array_key_exists($username, $userarray)) {
 		} else {
 			session_write_close();
 			//		if ($DEBUG) {echo "redirecting to index<br>";}
-			header('Location: http://eklipz.us.to/cmr');
+			header('Location: index.php');
 		}
 	}
 } else {
 	//		if ($DEBUG) {echo "user not in array, redirecting to login<br>";}
-	$_SESSION['warning'] = 'NOT A REGISTERED USERNAME, REGISTRATION INFO <a href="http://eklipz.us.to/cmr/register.php">HERE</a>';
+	$_SESSION['warning'] = 'NOT A REGISTERED USERNAME, REGISTRATION INFO <a href="register.php">HERE</a>';
 	session_write_close();
-	header('Location: http://eklipz.us.to/cmr/login.php');
+	header('Location: login.php');
 }
 ?>

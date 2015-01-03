@@ -22,14 +22,14 @@
 				$_SESSION['warning'] = "error, you tried to un-accept a file that doesnt exist.";
 			}
 			session_write_close();
-			header('Location: http://eklipz.us.to/cmr/maptest.php');
+			header('Location: maptest.php');
 		} else {
 			include "../WebInclude/testeroption.php";
 		}
 	} else {
-		$_SESSION['redirect'] = "http://eklipz.us.to/cmr/maptest.php";
+		$_SESSION['redirect'] = "maptest.php";
 		$_SESSION['warning'] = "You need to log in before testing maps.";
 		session_write_close();
-		header( 'Location: http://eklipz.us.to/cmr/login.php' );
+		header( 'Location: login.php' );
 	}
 ?>

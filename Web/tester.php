@@ -20,7 +20,7 @@
 
 <body>
 	<div class="skinny">
-		<?php displayNavbar("Map requirements"); ?>
+		<?php displayNavbar("Map Rules"); ?>
 		<div id="main">
 			<b>Temporary rules for being a map tester:</b><br><br>
 			<b>You MUST place the maps in your custom map folder to test, AND MAKE SURE YOU SEE S COMPLETION AT THE END OF THE MAP.</b><br>

@@ -34,7 +34,7 @@ include "../WebInclude/displaymessages.php";
 </form>
 
 <p>
-<b>Havent registered with FurkieBot yet? <a href="http://eklipz.us.to/cmr/register.php">REGISTER</a></b>
+<b>Havent registered with FurkieBot yet? <a href="register.php">REGISTER</a></b>
 </p>
 <p>Forgot your CMR password? Just follow the registration instructions above to register a new password. Don't worry, this wont reset your race history or anything like that.
 </p>

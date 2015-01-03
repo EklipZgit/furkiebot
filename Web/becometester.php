@@ -12,6 +12,6 @@ if (isTrusted()) {
 		$_SESSION['warning'] = "you're already a tester???";
 	}
 	session_write_close();
-	header("Location: http://eklipz.us.to/cmr/maptest.php");
+	header("Location: maptest.php");
 } 
 ?>

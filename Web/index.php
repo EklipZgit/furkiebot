@@ -3,7 +3,7 @@
 ?> 
 <html lang="en">
 <head>
-	<title>Home</title>
+	<title>FurkieBot Central</title>
 	<!-- Bootstrap core CSS -->
 	<link href="css/bootstrap.min.css" rel="stylesheet">
 	<!-- Custom styles for this template -->
@@ -11,7 +11,7 @@
 </head>
 <body>
 <div class="skinny">
-	<?php displayNavbar("Home"); ?>
+	<?php displayNavbar("FurkieBot Central"); ?>
 	<!--<br><br>
 	To register as an uploader, go <a href="register.php">here</a> (does not exist yet) -->
 	<b>The next CMR will be on Saturday, October 25'th at <a href="http://www.timebie.com/std/gmt.php?q=18.5">6:30 pm GMT.</a></b><br><br>
