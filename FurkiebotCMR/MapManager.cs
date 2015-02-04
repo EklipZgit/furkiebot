@@ -168,20 +168,20 @@ namespace MapCMR {
         }
 
 
-		/// <summary>
-		/// Returns a <see cref="System.String" /> that represents this instance.
-		/// </summary>
-		/// <returns>
-		/// A <see cref="System.String" /> that represents this instance.
-		/// </returns>
-		public override string ToString() {
+        /// <summary>
+        /// Returns a <see cref="System.String" /> that represents this instance.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.String" /> that represents this instance.
+        /// </returns>
+        public override string ToString() {
             User mapper = UserManager.Instance[AuthorId];
-			return "\"" + Name + "\" by " + (mapper != null ? mapper.Name : "null") + 
-				", AtlasId: " + atlasId + (IsAtlasIdForced ? " FORCED" : "") + 
-				", for CMR #" + CmrNo + ", ObjectId: " + Id.ToString() +
-				", " + (Accepted ? "accepted" : "not accepted") +
-				", " + (IsDenied ? "denied" : "not denied");
-		}
+            return "\"" + Name + "\" by " + (mapper != null ? mapper.Name : "null") + 
+                ", AtlasId: " + atlasId + (IsAtlasIdForced ? " FORCED" : "") + 
+                ", for CMR #" + CmrNo + ", ObjectId: " + Id.ToString() +
+                ", " + (Accepted ? "accepted" : "not accepted") +
+                ", " + (IsDenied ? "denied" : "not denied");
+        }
 
         internal string DebugString() {
             User tester = UserManager.Instance[AcceptedById];
@@ -277,15 +277,15 @@ namespace MapCMR {
         }
 
 
-		/// <summary>
-		/// Gets a <see cref="CmrMap"/> by object identifier.
-		/// </summary>
-		/// <param name="id">The identifier of the map to retrieve.</param>
-		/// <returns>The map by that ID. Null if non-existent.</returns>
-		public CmrMap GetMapByObjectId(ObjectId id) {
+        /// <summary>
+        /// Gets a <see cref="CmrMap"/> by object identifier.
+        /// </summary>
+        /// <param name="id">The identifier of the map to retrieve.</param>
+        /// <returns>The map by that ID. Null if non-existent.</returns>
+        public CmrMap GetMapByObjectId(ObjectId id) {
             Console.WriteLine(id.ToString());
-			var query = Maps.AsQueryable<CmrMap>()
-				.Where<CmrMap>(u => u.Id == id);
+            var query = Maps.AsQueryable<CmrMap>()
+                .Where<CmrMap>(u => u.Id == id);
             var debug = query.ToList();
             try {
                 return query.First();
@@ -293,7 +293,7 @@ namespace MapCMR {
                 //if no results in query ????
                 return null;
             }
-		}
+        }
 
 
         /// <summary>
@@ -303,18 +303,18 @@ namespace MapCMR {
         /// <returns>The Map with that ID. Null if non-existent</returns>
         public CmrMap this[ObjectId id] {
             get {
-				return GetMapByObjectId(id);
+                return GetMapByObjectId(id);
             }
         }
 
 
-		/// <summary>
-		/// Gets a <see cref="CmrMap"/> by name.
-		/// </summary>
-		/// <param name="name">The name of the map to retrieve.</param>
-		/// <returns>The first map result.</returns>
-		public CmrMap GetMapByName(string name) {
-			var query = Maps.AsQueryable()
+        /// <summary>
+        /// Gets a <see cref="CmrMap"/> by name.
+        /// </summary>
+        /// <param name="name">The name of the map to retrieve.</param>
+        /// <returns>The first map result.</returns>
+        public CmrMap GetMapByName(string name) {
+            var query = Maps.AsQueryable()
                 .Where(u => u.NameLower == name.ToLower().Trim() && u.CmrNo == FB.cmrId);
             try {
                 return query.First();
@@ -322,7 +322,7 @@ namespace MapCMR {
                 //if no results in query ????
                 return null;
             }
-		}
+        }
 
         /// <summary>
         /// Indexer by string (mapname), just calls GetMapByName(name);
@@ -331,22 +331,22 @@ namespace MapCMR {
         /// <returns>The Map by that name. Null if non-existent</returns>
         public CmrMap this[string name] {
             get {
-				return GetMapByName(name);
+                return GetMapByName(name);
             }
         }
 
 
 
-		/// <summary>
-		/// Gets a map based on a provided atlasId number.
-		/// </summary>
-		/// <param name="atlasId">The atlas ID number for the map.</param>
-		/// <returns>The most recent map with that ID number, or null if no match is found.</returns>
-		public CmrMap GetMapByAtlasId(int atlasId) {
-			var query =
-				(from map in GetMaps()
-				where map.AtlasID == atlasId
-				orderby map.LastModified
+        /// <summary>
+        /// Gets a map based on a provided atlasId number.
+        /// </summary>
+        /// <param name="atlasId">The atlas ID number for the map.</param>
+        /// <returns>The most recent map with that ID number, or null if no match is found.</returns>
+        public CmrMap GetMapByAtlasId(int atlasId) {
+            var query =
+                (from map in GetMaps()
+                where map.AtlasID == atlasId
+                orderby map.LastModified
                  select map);
             try {
                 return query.First();
@@ -354,7 +354,7 @@ namespace MapCMR {
                 //if no results in query ????
                 return null;
             }
-		}
+        }
 
 
         /// <summary>
@@ -362,7 +362,7 @@ namespace MapCMR {
         /// </summary>
         /// <returns>All denials ever</returns>
         public IQueryable<Denial> GetAllDenials() {
-			return Denials.AsQueryable<Denial>().OrderBy<Denial, int>(c => c.Timestamp);
+            return Denials.AsQueryable<Denial>().OrderBy<Denial, int>(c => c.Timestamp);
         }
 
 
@@ -748,7 +748,7 @@ namespace MapCMR {
 
 
 
-		
+        
 
         /// <summary>
         /// Writes the current maps and denials to the temp mapfile and denialfile. 
@@ -893,17 +893,17 @@ namespace MapCMR {
 
 
 
-		/// <summary>
-		/// Just calls the parameterized version of the method with nulls. <see mref="CheckMaps(object sender, FileSystemEventArgs e)"/>
-		/// </summary>
+        /// <summary>
+        /// Just calls the parameterized version of the method with nulls. <see mref="CheckMaps(object sender, FileSystemEventArgs e)"/>
+        /// </summary>
         private void CheckMaps() {
             CheckMaps(null, null);
         }
-		/// <summary>
-		/// A beautiful function to check the state of the database. Or something. Its terrible.
-		/// </summary>
-		/// <param name="sender">The sender.</param>
-		/// <param name="e">The <see cref="FileSystemEventArgs"/> instance containing the event data.</param>
+        /// <summary>
+        /// A beautiful function to check the state of the database. Or something. Its terrible.
+        /// </summary>
+        /// <param name="sender">The sender.</param>
+        /// <param name="e">The <see cref="FileSystemEventArgs"/> instance containing the event data.</param>
         private void CheckMaps(object sender, FileSystemEventArgs e) {
             if (e != null && e.FullPath == FurkieBot.MAPS_PATH) {
                 lock (_mapfileLock) {
