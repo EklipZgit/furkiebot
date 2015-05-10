@@ -8,13 +8,12 @@ using RedditSharp;
 
 namespace FurkiebotCMR
 {
-    class RedditManager {
+    public class RedditManager {
         private FurkieBot furkiebot;
         private Reddit reddit = new Reddit();
         private List<String> postIds = new List<String>();
 
         public RedditManager(string username, string password) {
-            furkiebot = FurkieBot.Instance;
             HasLoggedIn(username, password);
             GenerateList();
         }
@@ -31,7 +30,7 @@ namespace FurkiebotCMR
         }
 
         private void GenerateList() {
-            var subreddit = reddit.GetSubreddit("/r/test");
+            var subreddit = reddit.GetSubreddit("/r/dustforce");
             foreach (var post in subreddit.New.Take(25)) {
                 postIds.Add(post.Id);
             }
@@ -39,15 +38,19 @@ namespace FurkiebotCMR
         }
 
         public void CheckForNewPosts() {
-            var subreddit = reddit.GetSubreddit("/r/test");
-            foreach (var post in subreddit.New.Take(5)) {
-                if(!postIds.Contains(post.Id)) {
-                    furkiebot.Msg("#dustforcee", "New Reddit post: \"" + post.Title + "\" by " + post.Author + " - " + post.Shortlink);
-                    
-                    postIds.Add(post.Id);
-
-                    Thread.Sleep(5000);
+            while (true) {
+                if (furkiebot == null) {
+                    furkiebot = FurkieBot.Instance;
                 }
+                var subreddit = reddit.GetSubreddit("/r/dustforce");
+                foreach (var post in subreddit.New.Take(5)) {
+                    if (!postIds.Contains(post.Id)) {
+                        furkiebot.Msg("#dustforcee", "New Reddit post: \"" + post.Title + "\" by " + post.Author + " - " + post.Shortlink);
+
+                        postIds.Add(post.Id);
+                    }
+                }
+                Thread.Sleep(30000);
             }
         }
     }

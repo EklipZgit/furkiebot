@@ -203,6 +203,8 @@ namespace FurkiebotCMR {
         Stopwatch stahpwatch; //Timer used for races
         Stopwatch countdown; //Timer used to countdown a race
 
+        public RedditManager reddit;
+        public Thread redditThread;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="FurkieBot"/> class.
@@ -211,7 +213,9 @@ namespace FurkiebotCMR {
         private FurkieBot(IRCConfig config) {
             this.config = config;   // Create a new FileSystemWatcher and set its properties.
 
-            RedditManager reddit = new RedditManager("FurkieBot", @"jwlKQP.jTNdxfRNetpeB9kyu;~qL{Zk/&E/0f`V8JD>WF8j0U\hC*)mDAW}V{A9W");
+            reddit = new RedditManager("FurkieBot", @"jwlKQP.jTNdxfRNetpeB9kyu;~qL{Zk/&E/0f`V8JD>WF8j0U\hC*)mDAW}V{A9W");
+            redditThread = new Thread(() => reddit.CheckForNewPosts());
+            redditThread.Start();
 
             //DataTable of Racers for the current CMR
             racers = new DataTable();
@@ -1053,7 +1057,9 @@ namespace FurkiebotCMR {
             if (input.Length == 4) {//Commands without parameters
 
                 switch (command.ToLower()) {
-
+                    case ":.newposts":
+                        reddit.CheckForNewPosts();
+                        break;
 
                     case ":.help":
                     case ":.commands":
@@ -2175,8 +2181,6 @@ namespace FurkiebotCMR {
                 Notice(user.Name + "_", "The CMR channel has opened. You asked to be notified of this event. If you wish these messages to stop, please type \".notify false\"");
             }
         }
-
-
 
         /// <summary>
         /// Meant to be called as its own thread, this thread initializes and creates a TraxBuster.
