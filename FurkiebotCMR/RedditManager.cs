@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
+using System.Threading;
 using RedditSharp;
 
 namespace FurkiebotCMR
@@ -37,18 +39,15 @@ namespace FurkiebotCMR
         }
 
         public void CheckForNewPosts() {
-            bool newPosts = false;
             var subreddit = reddit.GetSubreddit("/r/test");
             foreach (var post in subreddit.New.Take(5)) {
                 if(!postIds.Contains(post.Id)) {
-                    postIds.Add(post.Id);
                     furkiebot.Msg("#dustforcee", "New Reddit post: \"" + post.Title + "\" by " + post.Author + " - " + post.Shortlink);
-                    newPosts = true;
+                    
+                    postIds.Add(post.Id);
+
+                    Thread.Sleep(5000);
                 }
-            }
-            if (!newPosts)
-            {
-                furkiebot.Msg("#dustforcee", "No new posts.");
             }
         }
     }
