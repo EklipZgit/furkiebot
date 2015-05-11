@@ -102,7 +102,7 @@ namespace FurkiebotCMR {
         public const string USERLIST_PATH = DATA_PATH + @"Userlist\userlistmap.json";
         #endregion
         #region LINKS
-        public const string URL_BASE = @"http://eklipz.us.to/cmr/";
+        public const string URL_BASE = @"http://eklipz.io/cmr/";
         public const string DOWNLOAD_LINK = URL_BASE + @"downloadmap.php?map=";
         public const string TEST_LINK = URL_BASE + @"maptest.php";
         public const string UPLOAD_LINK = URL_BASE + @"map.php";
@@ -213,7 +213,7 @@ namespace FurkiebotCMR {
         private FurkieBot(IRCConfig config) {
             this.config = config;   // Create a new FileSystemWatcher and set its properties.
 
-            reddit = new RedditManager("FurkieBot", @"jwlKQP.jTNdxfRNetpeB9kyu;~qL{Zk/&E/0f`V8JD>WF8j0U\hC*)mDAW}V{A9W");
+            reddit = new RedditManager("FurkieBot", GetRedditPass());
             redditThread = new Thread(() => reddit.CheckForNewPosts());
             redditThread.Start();
 
@@ -1057,8 +1057,8 @@ namespace FurkiebotCMR {
             if (input.Length == 4) {//Commands without parameters
 
                 switch (command.ToLower()) {
-                    case ":.newposts":
-                        reddit.CheckForNewPosts();
+                    case ":.new":
+                        reddit.CreateNewPost();
                         break;
 
                     case ":.help":

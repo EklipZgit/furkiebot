@@ -30,7 +30,7 @@ namespace FurkiebotCMR
         }
 
         private void GenerateList() {
-            var subreddit = reddit.GetSubreddit("/r/dustforce");
+            var subreddit = reddit.GetSubreddit("/r/test");
             foreach (var post in subreddit.New.Take(25)) {
                 postIds.Add(post.Id);
             }
@@ -42,16 +42,27 @@ namespace FurkiebotCMR
                 if (furkiebot == null) {
                     furkiebot = FurkieBot.Instance;
                 }
-                var subreddit = reddit.GetSubreddit("/r/dustforce");
+                bool postFound = false;
+                var subreddit = reddit.GetSubreddit("/r/test");
                 foreach (var post in subreddit.New.Take(5)) {
                     if (!postIds.Contains(post.Id)) {
                         furkiebot.Msg("#dustforcee", "New Reddit post: \"" + post.Title + "\" by " + post.Author + " - " + post.Shortlink);
 
                         postIds.Add(post.Id);
+                        postFound = true;
                     }
+                }
+                if (!postFound) {
+                    Console.WriteLine("No new Reddit posts found. Trying again in 30 seconds.");
                 }
                 Thread.Sleep(30000);
             }
+        }
+
+        public void CreateNewPost()
+        {
+            var subreddit = reddit.GetSubreddit("/r/test");
+            subreddit.SubmitPost("testing", "testingg");
         }
     }
 }
