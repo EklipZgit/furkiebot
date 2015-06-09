@@ -77,8 +77,9 @@ namespace FurkiebotCMR {
         private static UserManager UserMan = UserManager.Instance;
         private static MapManager MapMan = MapManager.Instance;
 
+
 #if FB_DEBUG
-        public const string BOT_NAME = "FurkieBot_";
+        public const string BOT_NAME = "FurkieeBot";
         public const string MAIN_CHAN = "#dustforcee";
         public const string CMR_CHAN = "#DFcmrr";
 #else
@@ -86,7 +87,6 @@ namespace FurkiebotCMR {
         public const string MAIN_CHAN = "#dustforce";
         public const string CMR_CHAN = "#DFcmr";
 #endif
-
 
         #region IRC VALUES
         public static string SEP = ColourChanger(" | ", "07"); //The orange | seperator also used by GLaDOS
@@ -98,10 +98,11 @@ namespace FurkiebotCMR {
         public const string DATA_PATH = @"C:\CMR\Data\";
         public const string MAPS_UPDATE_PATH = DATA_PATH + "mapupdates.txt";
         public const string PASS_PATH = DATA_PATH + "Password.txt";
+        public const string REDDIT_PASS_PATH = DATA_PATH + "Redditpassword.txt";
         public const string USERLIST_PATH = DATA_PATH + @"Userlist\userlistmap.json";
         #endregion
         #region LINKS
-        public const string URL_BASE = @"http://eklipz.us.to/cmr/";
+        public const string URL_BASE = @"http://eklipz.io/cmr/";
         public const string DOWNLOAD_LINK = URL_BASE + @"downloadmap.php?map=";
         public const string TEST_LINK = URL_BASE + @"maptest.php";
         public const string UPLOAD_LINK = URL_BASE + @"map.php";
@@ -122,7 +123,6 @@ namespace FurkiebotCMR {
         private Thread busterThread;
 
         private AtlasChecker checker;
-
         
 		//add timestamp checking, put ircwork in another thread to poll periodically
 		public DateTime lastInputTime = DateTime.UtcNow;
@@ -203,8 +203,8 @@ namespace FurkiebotCMR {
         Stopwatch stahpwatch; //Timer used for races
         Stopwatch countdown; //Timer used to countdown a race
 
-
-
+        public RedditManager reddit;
+        public Thread redditThread;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="FurkieBot"/> class.
@@ -213,7 +213,9 @@ namespace FurkiebotCMR {
         private FurkieBot(IRCConfig config) {
             this.config = config;   // Create a new FileSystemWatcher and set its properties.
 
-
+            reddit = new RedditManager("FurkieBot", GetRedditPass());
+            redditThread = new Thread(() => reddit.CheckForNewPosts());
+            redditThread.Start();
 
             //DataTable of Racers for the current CMR
             racers = new DataTable();
@@ -1055,6 +1057,9 @@ namespace FurkiebotCMR {
             if (input.Length == 4) {//Commands without parameters
 
                 switch (command.ToLower()) {
+                    case ":.new":
+                        reddit.CreateNewPost();
+                        break;
 
                     case ":.help":
                     case ":.commands":
@@ -1488,14 +1493,18 @@ namespace FurkiebotCMR {
                         break;
 
                     case ":.switchchannel": //Used to switch main channels, not really recommended to use, just make sure the right channel is properly hard coded, can be used for very quick tests
-                        if (mainchannel == "#dustforce") {
-                            mainchannel = "#dustforcee";
-                            sendData("PART", "#dustforce");
-                            sendData("JOIN", "#dustforcee");
+                        if (UserMan.IsAdmin(nickLower, nick)) {
+                            if (mainchannel == "#dustforce") {
+                                mainchannel = "#dustforcee";
+                                sendData("PART", "#dustforce");
+                                sendData("JOIN", "#dustforcee");
+                            } else {
+                                mainchannel = "#dustforce";
+                                sendData("PART", "#dustforcee");
+                                sendData("JOIN", "#dustforce");
+                            }
                         } else {
-                            mainchannel = "#dustforce";
-                            sendData("PART", "#dustforcee");
-                            sendData("JOIN", "#dustforce");
+                            Notice(nick, "No, just no. Please don't do this.");
                         }
                         break;
                     #region PING
@@ -1578,12 +1587,20 @@ namespace FurkiebotCMR {
                         break;
                         #endregion
 
-                    case ":.j61": // oin #channel
-                        sendData("JOIN", parameter);
+                    case ":.j61": // Join #channel
+                        if (UserMan.IsAdmin(nickLower, nick)) {
+                            sendData("JOIN", parameter);
+                        } else {
+                            Notice(nick, "No, just no. Please don't do this.");
+                        }
                         break;
 
                     case ":.p61": //Part #channel
-                        sendData("PART", parameter);
+                        if (UserMan.IsAdmin(nickLower, nick)) {
+                            sendData("PART", parameter);
+                        } else {
+                            Notice(nick, "No, just no. Please don't do this.");
+                        }
                         break;
 
                     case ":.deleteign":
@@ -2164,8 +2181,6 @@ namespace FurkiebotCMR {
                 Notice(user.Name + "_", "The CMR channel has opened. You asked to be notified of this event. If you wish these messages to stop, please type \".notify false\"");
             }
         }
-
-
 
         /// <summary>
         /// Meant to be called as its own thread, this thread initializes and creates a TraxBuster.
@@ -3600,7 +3615,36 @@ namespace FurkiebotCMR {
                 Environment.Exit(1);
             }
             return toReturn;
-        } 
+        }
+
+        public static string GetRedditPass()
+        {
+            string toReturn = "";
+            if (File.Exists(REDDIT_PASS_PATH))
+            {
+                Console.WriteLine("Trying to load map file.");
+                string[] passArray = File.ReadAllLines(REDDIT_PASS_PATH);
+                if (passArray[0].Trim() != "")
+                {
+                    toReturn = passArray[0].Trim();
+                }
+                else
+                {
+                    Console.WriteLine(@"Reddit password wasnt at the top line of the Password file. Default file is " + REDDIT_PASS_PATH);
+                    Console.ReadLine();
+                    Environment.Exit(1);
+                }
+            }
+            else
+            {
+                Console.WriteLine(@"Reddit password wasnt at the top line of the Password file. Default file is " + REDDIT_PASS_PATH);
+                Console.ReadLine();
+                Environment.Exit(1);
+            }
+            return toReturn;
+        }
+
+
 
 
     } /* IRCBot */
@@ -3697,7 +3741,7 @@ namespace FurkiebotCMR {
             MapManager.Instance.Init();
             DumpMongoToFile();
             //if (args.Length > 0 && args[0].ToLower().Trim() == "migrate") {
-            if (true) {
+            if (false) {
                 //handle migrate command
                 DataMigrator.InitDBFromLocalFiles();
             } else {

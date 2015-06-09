@@ -1,15 +1,17 @@
-**This Saturday, November 1st at [6:30 pm GMT (Local Time?)](http://www.timebie.com/std/gmt.php?q=18.5) we will be hosting the 40th Dustforce Custom Map Race!**
+URL has changed from eklipz.**us.to** to eklipz.**io**!
+
+**Saturday, January 10th at [6:30 pm GMT (Local Time?)](http://www.timebie.com/std/gmt.php?q=18.5) we will be hosting the 43rd Dustforce Custom Map Race!**
 
 |Rank|Name|Time|Comment|Rating
 |:-|:-|:-|:-|:-|
 
 ---
 
-* [What is a CMR?](http://eklipz.us.to/cmr/about.php)
+* [What is a CMR?](http://eklipz.io/cmr/about.php)
 
-* [I want to participate in the race! (EVEN SEASONED CMR RACERS SHOULD READ ME)](http://eklipz.us.to/cmr/participate.php)
+* [I want to participate in the race! (EVEN SEASONED CMR RACERS SHOULD READ ME)](http://eklipz.io/cmr/participate.php)
 
-* [I want to submit a map for the race!](http://eklipz.us.to/cmr/map.php)
+* [I want to submit a map for the race!](http://eklipz.io/cmr/map.php)
 
 >**If you're new to CMRs [read this race guide](http://www.reddit.com/r/dustforce/comments/19l690/dustforce_race_guide/) first.**
 
@@ -19,13 +21,13 @@
 
 Anyone is welcome to participate, as always.
 
-You are free to participate even if you submit a map or two, don't worry. Just make sure nobody else has played them before submission... [(Submit maps here!)](http://eklipz.us.to/cmr/map.php).
+You are free to participate even if you submit a map or two, don't worry. Just make sure nobody else has played them before submission... [(Submit maps here!)](http://eklipz.io/cmr/map.php).
 
 We are looking to increase the number of map submissions, so please, submit maps after reading the map rules on the "I want to make maps" link above! 
 
 FurkieBot is going through a vast number of changes at the moment, so if you've participated before, you may still want to read the "I want to participate" link, because it contains a lot of new information.
 
-Lastly, if you just want to find out more in general, or watch, make sure to be in our IRC channel #dustforce on irc.speedrunslive.com [(browser link)](http://client01.chat.mibbit.com/#dustforce@irc2.speedrunslive.com).
+Lastly, if you just want to find out more in general, or watch, make sure to be in our IRC channel #dustforce on irc.speedrunslive.com [(Join from your browser!)](http://client01.chat.mibbit.com/#dustforce@irc2.speedrunslive.com).
 
 Hope to see you all there!
 
@@ -53,3 +55,4 @@ Previous CMR Threads:
 * [CMR #37](http://redd.it/2h9hbs)
 * [CMR #38](http://redd.it/2hnatn)
 * [CMR #39](http://redd.it/2ib860)
+* **lazy**
