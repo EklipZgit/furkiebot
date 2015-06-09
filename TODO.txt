@@ -2,6 +2,7 @@ IMMEDIATE
 	Fix bug where maps with capitals in their names are not recognized by AtlasChecker ???? why shouldnt this all be case insensitive? :<<<<  TEST IF FIXED
 	When testers join IRC, notify them with download links to untested maps etc
 	Seperate mongoDB feeder that eats old save files and spits out mongo.
+	use https://github.com/thephpleague/monga as mongoDB wrapper for PHP ???
 
 FUTURE
 	When maps are deleted, archive them to a seperate deletedmaps mongo collection.

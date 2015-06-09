@@ -343,17 +343,10 @@ namespace MapCMR {
 		/// <param name="atlasId">The atlas ID number for the map.</param>
 		/// <returns>The most recent map with that ID number, or null if no match is found.</returns>
 		public CmrMap GetMapByAtlasId(int atlasId) {
-			var query =
-				(from map in GetMaps()
+			return (from map in GetMaps()
 				where map.AtlasID == atlasId
 				orderby map.LastModified
-                 select map);
-            try {
-                return query.First();
-            } catch (NullReferenceException e) {
-                //if no results in query ????
-                return null;
-            }
+                select map).FirstOrDefault();
 		}
 
 
