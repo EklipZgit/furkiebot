@@ -1,0 +1,44 @@
+<EklipZ> I want a 
+really quick-release shorthop from the ground										001100
+full length hold ground jump with jump held till firmly in the air 					0011111111222222222222222222222222222222222222222200
+a dash speed ground jump same direction as a dash									0011111111222222222222222200
+dash speed ground jump then switch directions for double jump 						001111111122222222222222222000000001222222222222222200
+																													^direction held reversed here
+a short-press airjump																00111111112222222222220000000000000000000010000000
+a long-press airjump																00111111112222222222200000000000000000000122222222222222222222222222222222222222222222222222222200000
+
+neutral airjump momentum cancel														0011111111222222222222220000000000000000000000012222000
+																											        ^direction opposite of movement held for ~8 frames here	
+Ledge jump with boost																001112222222222222220000000
+
+DashJump																			01222222222200
+																					 ^frame where dash is "1", but not downdash
+
+Vertical wall jump																	001111112222200
+Slanted Upwards jump 																001222222222200
+Slanted downwards jump 																0012222222200
+45 degree slope jump with down+direction held										0012222222222222200
+
+buffered jump (cancelling ground heavy w/ super early jump)					heavy 	00abbbbbb000000000000000000000000000000000000000
+																					000000000000011111111111111112222222222222000000
+
+Heavy
+std ground tapped 			00abb00
+std ground held				00abbbbbbbbbbbbbbbbbbbbbbbbbb00
+heavy uncancelled 			00ab00000000000000000000000000000000000000000aa9876500000000000000000000000000000000000000aaa9876543200
+
+airjump cancel heavy  jump  001111111100000000000000000001122
+							00000000aaabb000000000000000000ab
+
+Heavy cancels:
+std ground			   dash 0010000000000000000000000010000000
+							00abb000000000000000000000abbb0000
+
+jump into Heavy		  jump  001111111100
+							00000000aaabb00
+
+Accidental early dash cancel heavy  dash 	000000000000000000010000000000001
+											aaabbb00000000000000000aaaa997654000aa987754321
+
+Light ground cancels 				dash 	0010000000000000000000100000000000000000100000
+											000000abb000000000000000ab0000000000000000ab00

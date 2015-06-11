@@ -1,0 +1,8 @@
+C:\XAMPP\htdocs\Github\furkiebot\CheatrDetectr\CheatrDetectr\obj\Debug\ReplayLibrary.csprojResolveAssemblyReference.cache
+C:\XAMPP\htdocs\Github\furkiebot\CheatrDetectr\CheatrDetectr\obj\Debug\CheatrDetectr.exe
+C:\XAMPP\htdocs\Github\furkiebot\CheatrDetectr\CheatrDetectr\obj\Debug\CheatrDetectr.pdb
+C:\XAMPP\htdocs\Github\furkiebot\CheatrDetectr\CheatrDetectr\bin\Debug\CheatrDetectr.exe.config
+C:\XAMPP\htdocs\Github\furkiebot\CheatrDetectr\CheatrDetectr\bin\Debug\CheatrDetectr.exe
+C:\XAMPP\htdocs\Github\furkiebot\CheatrDetectr\CheatrDetectr\bin\Debug\CheatrDetectr.pdb
+C:\XAMPP\htdocs\Github\furkiebot\CheatrDetectr\CheatrDetectr\bin\Debug\Newtonsoft.Json.dll
+C:\XAMPP\htdocs\Github\furkiebot\CheatrDetectr\CheatrDetectr\bin\Debug\Newtonsoft.Json.xml
