@@ -42,7 +42,7 @@ namespace ReplayLibrary
         public string levelname { get; set; }
     }
 
-    public class RawJsonValues
+    public class RawReplayData
     {
         public Header header { get; set; }
         public List<string> inputs { get; set; }
