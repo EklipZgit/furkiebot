@@ -8,7 +8,6 @@ WebSublimeProject.sublime-workspace
 tdd furkiebot.sublime-project
 tdd furkiebot.sublime-workspace
 DustforceLibs/obj/*
-DustforceLibs/obj/*
 DustforceLibs/bin/*
 packages/*
 *.pdb
