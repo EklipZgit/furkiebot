@@ -7,3 +7,7 @@ FurkieBusterCMR/obj/*
 WebSublimeProject.sublime-workspace
 tdd furkiebot.sublime-project
 tdd furkiebot.sublime-workspace
+DustforceLibs/obj/*
+DustforceLibs/bin/*
+packages/*
+*.pdb

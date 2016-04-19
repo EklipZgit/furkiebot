@@ -20,8 +20,6 @@ using MongoDB.Bson.Serialization.IdGenerators;
 using MongoDB.Bson.Serialization.Options;
 using MongoDB.Bson.Serialization.Serializers;
 using MongoDB.Driver.Wrappers;
-//may not need ^
-
 using FurkiebotCMR;
 using DatabaseCMR;
 using UserCMR;
@@ -336,24 +334,18 @@ namespace MapCMR {
 
 
 
-        /// <summary>
-        /// Gets a map based on a provided atlasId number.
-        /// </summary>
-        /// <param name="atlasId">The atlas ID number for the map.</param>
-        /// <returns>The most recent map with that ID number, or null if no match is found.</returns>
-        public CmrMap GetMapByAtlasId(int atlasId) {
-            var query =
-                (from map in GetMaps()
-                where map.AtlasID == atlasId
-                orderby map.LastModified
-                 select map);
-            try {
-                return query.First();
-            } catch (NullReferenceException e) {
-                //if no results in query ????
-                return null;
-            }
-        }
+		/// <summary>
+		/// Gets a map based on a provided atlasId number.
+		/// </summary>
+		/// <param name="atlasId">The atlas ID number for the map.</param>
+		/// <returns>The most recent map with that ID number, or null if no match is found.</returns>
+		public CmrMap GetMapByAtlasId(int atlasId) {
+			return (from map in GetMaps()
+				where map.AtlasID == atlasId
+				orderby map.LastModified
+                select map).FirstOrDefault();
+		}
+
 
 
         /// <summary>
