@@ -1,36 +1,17 @@
 IMMEDIATE
-	~Fix map list not getting reset when CMR is updated to new CMR
-	Fix bug where maps published to atlas that havent been accepted yet are still registered in the race channel. **Account for maps accepted while race channel is open** in AtlasChecker
-	Fix bug where maps with capitals in their names are not recognized by AtlasChecker ???? why shouldnt this all be case insensitive? :<<<<
-	Check for .forceid == true before allowing a published atlas map to overwrite a maps mapid in AtlasChecker
-	.maps needs to print author along with map names again
-	make slap only occur when toSlap parameter is less than 3 words or something
+	Fix bug where maps with capitals in their names are not recognized by AtlasChecker ???? why shouldnt this all be case insensitive? :<<<<  TEST IF FIXED
 	When testers join IRC, notify them with download links to untested maps etc
-<<<<<<< HEAD
-=======
 	Seperate mongoDB feeder that eats old save files and spits out mongo.
 	use https://github.com/thephpleague/monga as mongoDB wrapper for PHP ???
->>>>>>> 5af08c4f4ffbbeeebc208a721f646d29efb7239e
 
 FUTURE
-	Make .acceptoverride command that admins can perform to force accept a map w/o being tester.
-	.startcmr and .cmr dont use correct map count?
-	when race is open, .cmr should list race channel.
+	When maps are deleted, archive them to a seperate deletedmaps mongo collection.
 	DQ's
 
 	Traxbuster stuff. 
-		~Auto add maps from atlas.
 		Display map download links when .maps is used in racechannel
 		maps count should update correctly now? idk?
-
-	Allow mappers to see the maps they've uploaded, and also delete uploaded maps.
-	Furkiebot code to properly handle deletes. Idk how. (done within furkiebot .deletemap command, but not when syncing and a map has been deleted from outside furkiebot)
-
-
-
-
-
-
+		replace with FurkieBot functionality, no real reason to have a seperate bot at this point.
 
 
 
@@ -43,7 +24,16 @@ etc.
 
 
 DONE
-
+	~Allow mappers to see the maps they've uploaded, and also delete uploaded maps.
+~Check for .forceid == true before allowing a published atlas map to overwrite a maps mapid in AtlasChecker
+~.maps needs to print author along with map names again
+~make slap only occur when toSlap parameter is less than 3 words or something
+~Fix map list not getting reset when CMR is updated to new CMR
+~Fix bug where maps published to atlas that havent been accepted yet are still registered in the race channel. in AtlasChecker
+~Account for maps accepted while race channel is open in AtlasChecker (SHOULD BE GOOD???????????)
+~when race is open, .cmr should list race channel.
+~.startcmr and .cmr dont use correct map count?
+~Make .acceptoverride command that admins can perform to force accept a map w/o being tester.
 ~Fix so that tester gets notified when pending maps are overwritten 
 ~remove map command. Pls.
 
@@ -54,4 +44,3 @@ DONE
 ~Make .unaccept doable by admins even if not testers.
 ~Make .deletemap command
 ~download link on accepted maps currently not working (still after new system?)
-
