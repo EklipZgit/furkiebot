@@ -75,8 +75,11 @@
     <Compile Include="DataMigrator.cs" />
     <Compile Include="FurkieDB.cs" />
     <Compile Include="IRaceManager.cs" />
+<<<<<<< HEAD
+=======
     <Compile Include="RedditManager.cs" />
     <Compile Include="UserManager.cs" />
+>>>>>>> 5af08c4f4ffbbeeebc208a721f646d29efb7239e
     <Compile Include="MapManager.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
