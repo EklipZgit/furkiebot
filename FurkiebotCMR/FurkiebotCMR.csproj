@@ -51,6 +51,7 @@
       <HintPath>JSONNet40\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.configuration" />
     <Reference Include="System.Core" />
     <Reference Include="System.Web.DataVisualization" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -65,7 +66,6 @@
     <Compile Include="DataMigrator.cs" />
     <Compile Include="FurkieDB.cs" />
     <Compile Include="IRaceManager.cs" />
-    <Compile Include="UserManager.cs" />
     <Compile Include="MapManager.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -74,6 +74,7 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
       <DependentUpon>Settings.settings</DependentUpon>
     </Compile>
+    <Compile Include="UserManager.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

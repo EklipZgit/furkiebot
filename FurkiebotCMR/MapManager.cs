@@ -25,7 +25,6 @@ using MongoDB.Driver.Wrappers;
 using FurkiebotCMR;
 using DatabaseCMR;
 using UserCMR;
-using AtlasTools;
 using System.IO;
 using Newtonsoft.Json;
 using System.Threading;
