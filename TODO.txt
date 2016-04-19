@@ -6,6 +6,11 @@ IMMEDIATE
 	.maps needs to print author along with map names again
 	make slap only occur when toSlap parameter is less than 3 words or something
 	When testers join IRC, notify them with download links to untested maps etc
+<<<<<<< HEAD
+=======
+	Seperate mongoDB feeder that eats old save files and spits out mongo.
+	use https://github.com/thephpleague/monga as mongoDB wrapper for PHP ???
+>>>>>>> 5af08c4f4ffbbeeebc208a721f646d29efb7239e
 
 FUTURE
 	Make .acceptoverride command that admins can perform to force accept a map w/o being tester.

@@ -31,6 +31,7 @@ using UserCMR;
 /// <summary>
 /// The Furkiebot namespace.
 /// </summary>
+<<<<<<< HEAD
 namespace FurkiebotCMR
 {
 	/// <summary>
@@ -101,6 +102,81 @@ namespace FurkiebotCMR
 		public const string WIKI_LINK = @"https://github.com/EklipZgit/furkiebot/wiki";
 		public const string MAP_PACK_LINK = @"http://redd.it/279zmi";
 		public const string INFO_LINK = URL_BASE;
+=======
+namespace FurkiebotCMR {
+    /// <summary>
+    /// The irc configuration parameters that get passed into FurkieBot.
+    /// </summary>
+    public struct IRCConfig {
+        public string server;
+        public int port;
+        public string nick;
+        public string name;
+        public string pass;
+        public string altNick;
+    } /* IRCConfig */
+
+    /// <summary>
+    /// A FurkieBot IRC bot.
+    /// Singleton, get with .Instance
+    /// </summary>
+    public class FurkieBot : IDisposable {
+        private static FurkieBot instance;
+        private static object _instanceLock = new Object();
+        public static FurkieBot Instance {
+            get {
+                lock (_instanceLock) {
+                    if (instance == null) {
+                        IRCConfig conf = new IRCConfig();
+                        conf.name = FurkieBot.BOT_NAME;
+                        conf.nick = FurkieBot.BOT_NAME;
+                        conf.altNick = "FurkieBot_";
+                        conf.port = 6667;
+                        conf.server = "irc2.speedrunslive.com";
+                        conf.pass = FurkieBot.GetIRCPass();
+
+                        instance = new FurkieBot(conf);
+                    }
+                }
+                return instance;
+            } 
+        }
+        private static UserManager UserMan = UserManager.Instance;
+        private static MapManager MapMan = MapManager.Instance;
+
+
+#if FB_DEBUG
+        public const string BOT_NAME = "FurkieeBot";
+        public const string MAIN_CHAN = "#dustforcee";
+        public const string CMR_CHAN = "#DFcmrr";
+#else
+        public const string BOT_NAME = "FurkieBot";
+        public const string MAIN_CHAN = "#dustforce";
+        public const string CMR_CHAN = "#DFcmr";
+#endif
+
+        #region IRC VALUES
+        public static string SEP = ColourChanger(" | ", "07"); //The orange | seperator also used by GLaDOS
+        public const char ACT = (char)1;
+        public const string MOLLY = "༼ つ ◕_◕ ༽つ MOLLY ༼ つ ◕_◕ ༽つ";
+        #endregion
+        #region PATHS
+        public const string MAPS_PATH = @"C:\CMR\Maps\";
+        public const string DATA_PATH = @"C:\CMR\Data\";
+        public const string MAPS_UPDATE_PATH = DATA_PATH + "mapupdates.txt";
+        public const string PASS_PATH = DATA_PATH + "Password.txt";
+        public const string REDDIT_PASS_PATH = DATA_PATH + "Redditpassword.txt";
+        public const string USERLIST_PATH = DATA_PATH + @"Userlist\userlistmap.json";
+        #endregion
+        #region LINKS
+        public const string URL_BASE = @"http://eklipz.io/cmr/";
+        public const string DOWNLOAD_LINK = URL_BASE + @"downloadmap.php?map=";
+        public const string TEST_LINK = URL_BASE + @"maptest.php";
+        public const string UPLOAD_LINK = URL_BASE + @"map.php";
+        public const string WIKI_LINK = @"https://github.com/EklipZgit/furkiebot/wiki";
+        public const string MAP_PACK_LINK = @"http://redd.it/279zmi";
+        public const string INFO_LINK = URL_BASE;
+>>>>>>> 5af08c4f4ffbbeeebc208a721f646d29efb7239e
 		public static string UPLOAD_INFO = @"Upload maps: " + UPLOAD_LINK + SEP + "CMR info: " + INFO_LINK + SEP + @"Command list: " + WIKI_LINK + SEP + "FurkieBot announce channel: #DFcmr";
 		#endregion
 
@@ -114,7 +190,12 @@ namespace FurkiebotCMR
 
 		private AtlasChecker checker;
 
+<<<<<<< HEAD
 
+=======
+        private AtlasChecker checker;
+        
+>>>>>>> 5af08c4f4ffbbeeebc208a721f646d29efb7239e
 		//add timestamp checking, put ircwork in another thread to poll periodically
 		public DateTime lastInputTime = DateTime.UtcNow;
 
@@ -194,8 +275,8 @@ namespace FurkiebotCMR
 		Stopwatch stahpwatch; //Timer used for races
 		Stopwatch countdown; //Timer used to countdown a race
 
-
-
+        public RedditManager reddit;
+        public Thread redditThread;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="FurkieBot"/> class.
@@ -205,6 +286,7 @@ namespace FurkiebotCMR
 		{
 			this.config = config;   
 
+<<<<<<< HEAD
 			//DataTable of Racers for the current CMR
 			racers = new DataTable();
 			racers.Columns.Add("Name", typeof(string));
@@ -216,6 +298,11 @@ namespace FurkiebotCMR
 			racers.Columns.Add("Comment", typeof(string));
 			racers.Columns.Add("Rating", typeof(int)); //Currently not being used, may or may not be used in the future, bird knows what's up
 
+=======
+            reddit = new RedditManager("FurkieBot", GetRedditPass());
+            redditThread = new Thread(() => reddit.CheckForNewPosts());
+            redditThread.Start();
+>>>>>>> 5af08c4f4ffbbeeebc208a721f646d29efb7239e
 
 			cmrId = GetCurrentCMRidFromFile();
 
@@ -897,6 +984,188 @@ namespace FurkiebotCMR
 		}
 
 
+<<<<<<< HEAD
+=======
+                char[] charSeparator = new char[] { ' ' };
+                ex = data.Split(charSeparator, 5);
+
+                if (ex.Length > 3 && ex[3].ToLower() == ":register") {
+                    Console.WriteLine("Password info hidden");
+                } else {
+                    Console.WriteLine("Outer: " + data);
+                }
+                shouldRun = ProcessInput(ex, data, charSeparator);
+
+                //Console.WriteLine("End Last Switch " + parseTimer.Elapsed);
+            }
+        }
+
+
+
+
+        /// <summary>
+        /// Processes input from the IRC server. Massive switch statement for now.
+        /// </summary>
+        /// <param name="input">The string array of split input from the IRC server.</param>
+        /// <param name="data">The whole string unsplit from IRC server.</param>
+        /// <param name="charSeparator">The character separator. Why am I passing this in? No idea.</param>
+        /// <returns>A boolean indicating whether or not to continue running.</returns>
+        private bool ProcessInput(string[] input, string data, char[] charSeparator) {
+            bool shouldRun = true;
+
+            //Just some Regex bullshit to get username from full name/hostname shit
+            string inputt = input[0];
+            string re22 = "((?:[a-z][a-z0-9_]*))";
+            Regex rr = new Regex(re22, RegexOptions.IgnoreCase | RegexOptions.Singleline);
+            Match usernamee = rr.Match(inputt);
+            string nick = usernamee.ToString();
+            string nickLower = nick.ToLower();
+
+            string op = input[1];
+            string chan = "";
+            if (input.Length > 2) {
+                chan = input[2].Trim();
+            }
+            if (chan.ToLower() == BOT_NAME.ToLower()) { //allows furkiebot to consider PM's as a "channel"
+                chan = nick;
+            }
+
+
+
+
+            if (input[0] == "PING") //Pinging server in order to stay connected
+                {
+                sendData("PONG", input[1]);
+            }
+
+
+
+
+            //Events
+            switch (op) {
+                case "001": //Autojoin channel when first response from server
+                    sendData("JOIN", mainchannel);
+                    Msg("NickServ", "ghost " + config.nick + " " + config.pass);
+                    sendData("JOIN", cmrchannel);
+
+                    //OutputMapStatus(null);
+                    break;
+                case "433": //Changes nickname to altNick when nickname is already taken
+                    //sendData("NICK", config.altNick);
+                    break;
+                case "353": //NAMES command answer from server
+                    if (comNames == "CANCEL") //Kick all irc users from channel
+                        {
+                        int amount = CountCertainCharacters(data, ' ') - 5;
+                        string r = input[4].Substring(input[4].IndexOf(@":") + 1);
+                        string[] name = r.Split(charSeparator, amount);
+                        foreach (string s in name) {
+                            char[] gottaTrimIt = new char[] { '@', '+', '%' };
+                            string n = s.Trim().TrimStart(gottaTrimIt);
+                            if (n != BOT_NAME) {
+                                sendData("KICK", realRacingChan + " " + n);
+                            }
+                        }
+                        sendData("PART", realRacingChan);
+                        dummyRacingChan = "#cmr-";
+                        realRacingChan = "";
+                        comNames = "";
+                    }
+                    break;
+                case "JOIN": //Message someone when they join a certain channel
+                    #region
+                    if (chan == ":" + realRacingChan) {
+                        if (UserMan.IsRegistered(nickLower)) {
+                            if (UserMan.GetIgnByIrc(nickLower).DustforceName == "" || UserMan.GetIgnByIrc(nickLower).DustforceName == null) { 
+                                // if they have no IGN set.
+                                Notice(nick, "You need to set your Dustforce name with FurkieBot in order to join a race. Type " + BoldText(".setign dustforcename") + " to register the name you use in Dustforce");
+                            } else {                          
+                                // let them know what their IGN currently is.
+                                Notice(nick, "Your Dustforce name is currently set to " + ColourChanger(UserMan.GetIgnByIrc(nickLower).DustforceName, "03") + ". If your name has changed, please set a new nickname using " + BoldText(".setign dustforcename"));
+                            }
+                            if (CheckEntrant(nickLower)) {
+                                sendData("MODE", realRacingChan + " +v " + nick);
+                            }
+                        } else {
+                            NoticeHelpRegister(nick);
+                        }
+                    }
+
+                    if (chan == ":" + mainchannel) {//Event: When someone joins main channel
+                        if (cmrStatus == "open") {//Message sent to someone that joins the main channel, notifying that there's a CMR open at the moment
+                            Notice(nick, "Entry currently " + ColourChanger("OPEN", "03") + " for Custom Map Race " + cmrId + ". Join the CMR at " + ColourChanger(realRacingChan, "04") + ". " + CountEntrants() + " entrants");
+                        }
+                        if (cmrStatus == "racing") {//Message sent to someone that joins the main channel, notifying that there's a CMR going on at the moment
+                            Notice(nick, "Custom Map Race " + cmrId + " is currently " + ColourChanger("In Progress", "12") + " at " + ColourChanger(realRacingChan, "04") + ". " + CountEntrants() + " entrants");
+                        }
+                    }
+                    break;
+                    #endregion
+
+                case "PART": //Update identlist on someone leaving channel
+                    #region
+                    if (identlist.ContainsKey(nickLower)) {
+                        identlist[nickLower] = false;
+                    }
+                    break;
+                    #endregion
+
+                case "QUIT": //Update identlist on QUIT
+                    #region
+                    if (identlist.ContainsKey(nickLower)) {
+                        identlist[nickLower] = false;
+                    }
+                    break;
+                    #endregion
+
+
+                case "NICK": //Message someone when they join a certain channel
+                    #region
+                    //DISABLED DUE TO PERMORMANCE ISSUES
+                    if (identlist.ContainsKey(nickLower)) {
+                        identlist[nickLower] = false;
+                    }
+                    break;
+                    #endregion
+                //default:
+                //    break;
+            }
+
+
+
+            //Console.WriteLine("End event switch " + parseTimer.Elapsed);
+
+
+
+            CheckInput(chan, nick, input, data);
+
+               
+            
+
+            string command = ""; //grab the command sent
+
+            if (input.Length > 3) {
+                command = input[3];
+            }
+
+            if (input.Length == 4) {//Commands without parameters
+
+                switch (command.ToLower()) {
+                    case ":.new":
+                        reddit.CreateNewPost();
+                        break;
+
+                    case ":.help":
+                    case ":.commands":
+                    case ":.commandlist":
+                    case ":.furkiebot": //FurkieBot Commands
+                        if (!StringCompareNoCaps(chan, realRacingChan)) {
+                            //FurkieBot commands for the main channel
+							Msg(chan, @"General commands: .cmr" + SEP + ".maps" + SEP + ".startcmr" + SEP + ".ign " + BoldText("ircname") + SEP + ".setign " + BoldText("in-game name") + SEP + ".mappack" + SEP + ".pending" + SEP + ".accepted");
+							Msg(chan, @"Map maker commands: .mymaps" + SEP + ".removemap YourMapsName" + SEP);
+							Msg(chan, UPLOAD_INFO);
+                            Msg(chan, @".help register" + SEP + ".help tester" + SEP + ".help othercommands");
+>>>>>>> 5af08c4f4ffbbeeebc208a721f646d29efb7239e
 
 
 		/// <summary>
@@ -922,6 +1191,634 @@ namespace FurkiebotCMR
 			//sendData("PRIVMSG", realRacingChan + " :" + message);
 		}
 
+<<<<<<< HEAD
+=======
+                    case ":.startcmr+": // Used for testing purposes, forces the start of a race without having to worry about the date and time, make sure to use this command when mainchannel is NOT #dustforce
+                        if (UserMan.IsAdmin(nickLower, nick)) {
+                            cmrtime = DateTime.Now.TimeOfDay;
+                            goto case ":.startcmr";
+                        }
+                        break;
+                    case ":.startcmr": //Opening that CMR hype
+                        #region
+                        if (cmrStatus == "closed") {
+                            // Veryfying whether it is Saturday and if the time matches with CMR time
+                            DateTime saturday;
+                            if (DateTime.Now.DayOfWeek != DayOfWeek.Saturday) {
+                                if (cmrtime.ToString(@"%h\:mm\:ss") == cmrtimeString) {
+                                    saturday = GetNextDateForDay(DateTime.Now, DayOfWeek.Saturday).Date;
+                                } else {
+                                    saturday = DateTime.Now.Date;
+                                }
+                            } else {
+                                saturday = DateTime.Now.Date;
+                            }
+                            DateTime cmrday = saturday.Date + cmrtime;
+                            TimeSpan duration = cmrday - DateTime.Now;
+                            string nextCmrD = duration.Days.ToString();
+                            string nextCmrH = duration.Hours.ToString();
+                            string nextCmrM = duration.Minutes.ToString();
+                            string nextCmrS = duration.Seconds.ToString();
+                            int mapCount = MapMan.GetAcceptedMaps().Count();
+                            if (mapCount < MIN_MAPS && cmrtime.ToString(@"%h\:mm\:ss") == "10:30:00") {// If there are less than MIN_MAPS maps submitted AND if command wasn't issued using .startcmr+
+                                Msg(chan, "There are not enough maps to start a CMR. We need " + (MIN_MAPS - mapCount) + " more maps to start a CMR.");
+                            } else {
+                                TimeSpan stopTheTime = new TimeSpan(20, 29, 20);
+                                DateTime stopTheSpam = saturday.Date + stopTheTime;
+                                if (DateTime.Now < cmrday && DateTime.Now > stopTheSpam) {
+                                    Msg(chan, "I get it, I can start a racechannel very soon. Jeez, stop spamming already (??;)");
+                                }
+                                if (DateTime.Now < cmrday && DateTime.Now < stopTheSpam) {
+                                    Msg(chan, "We have enough maps to start Custom Map Race " + cmrId + ", race channel can be " + BoldText("opened") + " in "
+                                        + ColourChanger(nextCmrD + " days, "
+                                        + nextCmrH + " hours, "
+                                        + nextCmrM + " minutes and "
+                                        + nextCmrS + " seconds", "03") + ". The race may be " + BoldText("started") + " " + ColourChanger("30 minutes","04") + " after it can be opened.");
+                                }
+                                if (DateTime.Now >= cmrday) {
+                                    if (UserMan.IsAdmin(nickLower, nick)) {
+                                        StartCmr();
+                                    } else {
+                                        Msg(chan, "Only an Admin can start the race for now, please contact an admin to start the race.");
+                                    }
+                                }
+                            }
+                        } else {
+                            Msg(chan, "Custom Map Race " + cmrId + " has already been iniatied. Join " + realRacingChan + " to participate.");
+                        }
+                        break;
+                        #endregion
+
+                    case ":.cancelcmr": //Shattering everyones dreams by destroying that CMR hype
+                        #region
+                        if (UserMan.IsAdmin(nickLower, nick)) {
+                            if (cmrStatus == "open" || cmrStatus == "finished" || cmrStatus == "racing") {
+                                if (chan == realRacingChan) {
+                                    cmrStatus = "closed";
+                                    Msg(chan, "Custom Map Race " + cmrId + " has been cancelled by " + nick + ".");
+                                    Msg(mainchannel, "Custom Map Race " + cmrId + " has been cancelled.");
+                                    Msg(cmrchannel, "Custom Map Race " + cmrId + " has been cancelled.");
+                                    //for (int i = 0; i < CountEntrants(racers); i++)
+                                    //{
+                                    //    string name2DeVoice = racers.Rows[i]["Name"].ToString();
+                                    //    sendData("MODE", realRacingChan + " -v " + name2DeVoice);
+                                    //}
+                                    ClearRace();
+                                } else {
+                                    Msg(chan, "" + "A race can only be cancelled in the CMR racing channel " + realRacingChan);
+                                }
+                            }
+                        }
+                        break;
+                        #endregion
+
+                        #region MAPS
+                    case ":.maps": //Shows a list of currently approved maps
+                    case ":.cmrmaps":
+                        OutputMapStatus(chan);
+                        break;
+
+                    case ":.pending":
+                        OutputPending(chan);
+                        break;
+
+                    case ":.approved":
+                    case ":.accepted":
+                        OutputAccepted(chan);
+                        break;
+                        #endregion
+
+                    case ":.entrants": //Shows a list of the users currently in a race
+                        #region
+                        if (chan == realRacingChan) {
+                            //Command only works in racing channel
+                            Msg(chan, GetEntrantString());
+                        }
+                        #endregion
+                        break;
+                        
+                        #region JOIN RACE
+                    case ":.join": //Get that fool in the CMR hype
+                    case ":.enter":
+                        if (chan == realRacingChan) {
+                            //Command only works in racing channel
+                            if (cmrStatus == "open") {
+                                //Command only works if CMR is open
+                                if (UserMan.IsRegistered(nickLower)) {
+                                    if (UserMan.GetIgnByIrc(nickLower).DustforceName != "+") {
+                                        if (!CheckEntrant(nickLower)) {//Command only works if user isn't part of the race
+                                            //Add user to race
+                                            AddEntrant(nickLower);
+                                            string extraS = "";
+                                            if (CountEntrants() > 1) {
+                                                extraS = "s";
+                                            }
+                                            Msg(chan, nick + " (" + UserMan.GetIgnByIrc(nickLower) + ") enters the race! " + CountEntrants() + " entrant" + extraS + ".");
+                                            sendData("MODE", realRacingChan + " +v " + nick);
+                                        } else {
+                                            Msg(chan, nick + " already entered the race.");
+                                        }
+                                    } else {
+                                        Msg(chan, "No ign registered.");
+                                    }
+                                } else { //user not registered
+                                    Notice(nickLower, "You are not registered, you need to register with FurkieBot to enter the race. Type \".register\" for more information.");
+                                }
+                            } else {
+                                Msg(chan, "CMR not open for registration.");
+                            }
+                        }
+                        #endregion
+                        break;
+                        
+                        #region UN JOIN RACE
+                    case ":.unjoin": //Remove that fool from the CMR hype
+                    case ":.unenter":
+                        if (chan.ToLower() == realRacingChan.ToLower()) {
+                            //Command only works in racing channel
+                            if (cmrStatus == "open") {
+                                //Command only works if CMR is open
+                                if (GetStatus(nickLower) == 6 || GetStatus(nickLower) == 3) {//Command only works if racer status is "standby" or "ready"
+                                    //Remove user from race
+                                    RemoveEntrant(nickLower);
+                                    string extraS = "";
+                                    if (CountEntrants() > 1 || CountEntrants() == 0) {
+                                        extraS = "s";
+                                    }
+                                    Msg(chan, "" + nick + " has been removed from the race. " + CountEntrants() + " entrant" + extraS + ".");
+                                    sendData("MODE", realRacingChan + " -v " + nick);
+                                }
+                                if (ComfirmMassStatus(3) && racers.Rows.Count > 1) {
+                                    goto case ":.go";
+                                }
+                            }
+                        }
+                        #endregion
+                        break;
+
+                    case ":.ready": //Gotta get them ready for the upcoming CMR maps
+                        #region
+                        if (chan == realRacingChan) { 
+                            //Command is only possible in racing channel
+                            if (cmrStatus == "open") { 
+                                //Command is only possible if CMR is open
+                                if (GetStatus(nickLower) == 6) { 
+                                    //Comment only works if racer status is "standby"
+                                    //Set racer status to "ready"
+                                    SetStatus(nickLower, 3);
+                                    int notReadyCount = CountEntrants() - CountStatus(3);
+                                    Msg(chan, "" + nick + " is ready. " + notReadyCount + " remaining.");
+                                }
+                                if (ComfirmMassStatus(3) && racers.Rows.Count > 1) {
+                                    goto case ":.go";
+                                }
+                            }
+                        }
+                        #endregion
+                        break;
+
+
+                    case ":.streams": //Gotta get them ready for the upcoming CMR maps
+                        #region
+                        if (chan == realRacingChan) { //Command is only possible in racing channel
+                            if (racers.Rows.Count > 0) {
+                                string streamsOut = "Entrants streams: ";
+                                for (int i = 0; i < racers.Rows.Count; i++) {
+                                    if (getStream(racers.Rows[i]["Name"].ToString().ToLower()) != "http://www.twitch.tv" && getStream(racers.Rows[i]["Name"].ToString().ToLower()) != "") {
+                                        streamsOut = streamsOut + SEP + getStream(racers.Rows[i]["Name"].ToString().ToLower());
+                                    }
+                                }
+                                Msg(realRacingChan, streamsOut);
+                            }
+                        }
+                        #endregion
+                        break;
+
+                    case ":.unready": //NO WAIT IM NOT READY YET
+                        #region
+                        if (chan == realRacingChan) { 
+                            //Command only works in racing channel
+                            if (cmrStatus == "open") { 
+                                //Command only works if CMR is open
+                                if (GetStatus(nickLower) == 3) { 
+                                    //Command only works if CMR is openmand only works if racer status is "ready"
+                                    //Set racer status to "standby"
+                                    SetStatus(nickLower, 6);
+                                    int notReadyCount = CountEntrants() - CountStatus(3);
+                                    Msg(chan, nick + " is not ready. " + notReadyCount + " remaining.");
+                                }
+                            }
+                        }
+                        #endregion
+                        break;
+                        
+                    case ":.quit":
+                        #region QUIT / FORFEIT RACE
+                    case ":.forfeit":
+                        if (chan == realRacingChan) { 
+                            //Command only works in racing channel
+                            if (cmrStatus == "racing") { 
+                                //Command only works if CMR is open
+                                if (GetStatus(nickLower) == 2) { 
+                                    //Command only works if racer status is "racing"
+                                    //Set racer status to "quit"
+                                    SetStatus(nickLower, 4);
+                                    Msg(chan, nick + " has forfeited from the race.");
+                                    if (ComfirmDoubleMassStatus(4, 5)) {
+                                        //Stop the race if all racers are "quit"/"dq"
+                                        StopRace(stahpwatch);
+                                        cmrStatus = "finished";
+                                        sendData("TOPIC", realRacingChan + " " + ":Status: Complete | Game: Dustforce | Goal: Custom Map Race " + cmrId + ". Download maps at http://atlas.dustforce.com/tag/custom-map-race-" + cmrId);
+                                        Msg(mainchannel, "Race Finished: Dustforce - Custom Map Race " + cmrId + " | No one was able to finish the race. The race ended at " + GetTimeRank(1));
+                                    } else {
+                                        if (ComfirmTripleMassStatus(1, 4, 5)) {
+                                            //Stop the race if all racers are "done"/"quit"/"dq"
+                                            StopRace(stahpwatch);
+                                            cmrStatus = "finished";
+                                            sendData("TOPIC", realRacingChan + " " + ":Status: Complete | Game: Dustforce | Goal: Custom Map Race " + cmrId + ". Download maps at http://atlas.dustforce.com/tag/custom-map-race-" + cmrId);
+                                            Msg(mainchannel, "Race Finished: Dustforce - Custom Map Race " + cmrId + " | " + GetNameRank(1) + " won with a time of " + GetTimeRank(1));
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        #endregion
+                        break;
+
+                    case ":.startrace":
+                    case ":.go": //Starts race and timer
+                        #region
+                        if (chan == realRacingChan) { //Command only works in racing channel
+                            if (cmrStatus == "open") { //Command only works if CMR is open
+                                if (CountEntrants() > 1) { //Command only works if there is at least 1 racer
+                                    if (ComfirmMassStatus(3)) { //Command only works if all racers have status on "ready"
+                                        bool valid = true;
+                                        foreach (CmrMap map in MapMan.GetMaps(cmrId)) {
+                                            if (map.AtlasID <= 0) valid = false;
+                                        }
+                                        if (valid) {    // All maps have an atlas link recognized
+                                            checker.StopChecking();
+                                            cmrStatus = "racing";
+                                            Msg(chan, BoldText(ColourChanger("The race will begin in 10 seconds!", "04")));
+                                            Thread.Sleep(5000);
+                                            Msg(chan, BoldText(ColourChanger("5", "04")));
+                                            Thread.Sleep(990);
+                                            Msg(chan, BoldText(ColourChanger("4", "04")));
+                                            Thread.Sleep(990);
+                                            Msg(chan, BoldText(ColourChanger("3", "04")));
+                                            Thread.Sleep(990);
+                                            Msg(chan, BoldText(ColourChanger("2", "04")));
+                                            Thread.Sleep(990);
+                                            Msg(chan, BoldText(ColourChanger("1", "04")));
+                                            Thread.Sleep(990);
+                                            StartRace(racers, stahpwatch);
+                                            Msg(chan, BoldText(ColourChanger("GO!", "04")));
+                                            sendData("TOPIC", realRacingChan + " " + ":Status: IN PROGRESS | Game: Dustforce | Goal: Custom Map Race " + cmrId + ". Download maps at http://atlas.dustforce.com/tag/custom-map-race-" + cmrId);
+                                        } else {
+                                            Msg(chan, "There are still some maps whose atlas ID's have not been linked. Use .setmap <atlas ID #> <map name> or .removemap <mapname> to remove it from the race.");
+                                        }
+                                        
+                                    } else {
+                                        Msg(chan, "Not everyone is ready yet.");
+                                    }
+                                }
+                            }
+                        }
+                        #endregion
+                        break;
+
+                    case ":.time": //Shows elapsed time in CMRs
+                        #region
+                        if (chan == realRacingChan) { 
+                            //Command only works in racing channel
+                            if (cmrStatus == "racing" || cmrStatus == "finished") { 
+                                //Command only works if CMR is open or finished
+                                Msg(chan, "" + GetTime(stahpwatch));
+                            }
+                        }
+                        #endregion
+                        break;
+
+                    case ":.done": //When someone gets an SS on every CMR map
+                        #region
+                        if (chan == realRacingChan) { 
+                            //Command only works in racing channel
+                            if (cmrStatus == "racing") { 
+                                //Command only works if CMR is racing
+                                if (GetStatus(nickLower) == 2) { //Command only works if racer status is "racing"
+                                    //Set racer status to "done"
+                                    SetTime(nickLower, stahpwatch);
+                                    //Msg("TRAXBUSTER", ".proofcall " + getUserIgn(nickLower));
+                                    Msg(chan, nick + " has finished in " + GetRanking(nickLower) + " place with a time of " + GetTime(stahpwatch) + ".");
+                                    if (ComfirmTripleMassStatus(1, 4, 5)) {
+                                        //Stop the race if all racers are "done"/"quit"/"dq"
+                                        //Set race status to "finished"
+                                        StopRace(stahpwatch);
+                                        cmrStatus = "finished";
+                                        sendData("TOPIC", realRacingChan + " " + ":Status: Complete | Game: Dustforce | Goal: Custom Map Race " + cmrId + ". Download maps at http://atlas.dustforce.com/tag/custom-map-race-" + cmrId);
+                                        Msg(mainchannel, "Race Finished: Dustforce - Custom Map Race " + cmrId + " | " + GetNameRank(1) + " won with a time of " + GetTimeRank(1));
+                                    }
+                                }
+                            }
+                        }
+                        #endregion
+                        break;
+
+                    case ":.undone": //Not quite done or continue racing after quitting
+                        #region
+                        if (chan == realRacingChan) { //Command only works in racing channel
+                            if (cmrStatus == "racing") { //Command only works if CMR is open
+                                if (GetStatus(nickLower) == 1 || GetStatus(nickLower) == 4) { //Command only works if racer status is "done" or "quit"
+                                    //Set racer status to "racing"
+                                    SetStatus(nickLower, 2);
+                                    Msg(chan, "" + nick + " isn't done yet.");
+                                }
+                            }
+                        }
+                        #endregion
+                        break;
+
+                    case ":.record": //Used to record a race, outputting the final results in .xlsx
+                        #region
+                        if (UserMan.IsAdmin(nickLower, nick)) {
+                            if (cmrStatus == "finished") {
+                                Msg(chan, "Recording race...");
+                                RecordResultsReddit(cmrId);
+                                //RecordResultsJson(UpdateJsonToDtMaps(cmrId.ToString()), cmrId);
+                                cmrStatus = "closed";
+                                Msg(chan, "Custom Map Race " + cmrId + " has been succesfully recorded by " + nick + ".");
+                                sendData("TOPIC", realRacingChan + " " + ":Status: Closed | Game: Dustforce | Goal: Custom Map Race " + cmrId + ". Download maps at http://atlas.dustforce.com/tag/custom-map-race-" + cmrId);
+                                Msg(chan, "This channel will be cleared in 5 seconds.");
+                                Thread.Sleep(5000);
+                                ClearRace();
+                                IncrementCmr();
+                            }
+                        }
+                        #endregion
+                        break;
+
+                    case ":.mappack":
+                    case ":.mappacks":
+                        #region
+                        Msg(chan, "Download map packs here: " + MAP_PACK_LINK);
+                        #endregion
+                        break;
+
+                    case ":.faq":
+                        Msg(chan, @"Wiki: " + WIKI_LINK);
+                        break;
+                    case ":.hype":
+                        if (!hype) {
+                            Msg(chan, "GET HYPE!!!!!");
+                            hype = true;
+                        } else {
+                            Msg(chan, "THE HYPE IS REAL!");
+                        }
+                        break;
+                    case ":.unhype":
+                        if (hype) {
+                            Msg(chan, "Aww :c");
+                            hype = false;
+                        }
+                        break;
+
+                    case ":.switchchannel": //Used to switch main channels, not really recommended to use, just make sure the right channel is properly hard coded, can be used for very quick tests
+                        if (UserMan.IsAdmin(nickLower, nick)) {
+                            if (mainchannel == "#dustforce") {
+                                mainchannel = "#dustforcee";
+                                sendData("PART", "#dustforce");
+                                sendData("JOIN", "#dustforcee");
+                            } else {
+                                mainchannel = "#dustforce";
+                                sendData("PART", "#dustforcee");
+                                sendData("JOIN", "#dustforce");
+                            }
+                        } else {
+                            Notice(nick, "No, just no. Please don't do this.");
+                        }
+                        break;
+                    #region PING
+                    case ":.ping":
+                        Msg(chan, "pong");
+                        break;
+                    case ":.pong":
+                        Msg(chan, "ping");
+                        break;
+                    #endregion
+                    case ":.updatebot": //doesn't actually update anything, just shuts down Furkiebot with a fancy update message, I always whisper this because it would look stupid to type a command like this in channel lol
+                        if (UserMan.IsAdmin(nickLower, nick)) {
+                            sendData("QUIT", " Updating FurkieBot (????)");
+                        }
+                        break;
+                    case ":.adminlist":
+                    case ":.admins":
+                        OutputAdmins(chan);
+                        break;
+                    case ":.testerlist":
+                    case ":.testers":
+                        OutputTesters(chan);
+                        break;
+                    case ":.trustedlist":
+                    case ":.trusted":
+                    case ":.trusteds":
+                        OutputTrusted(chan);
+                        break;
+                    case ":.molly":
+                        Msg(chan, MOLLY);
+                        break;
+                    //case ":.pastas":
+                    //case ":.pasta":
+                    //    PastaNoParam(nick, chan);
+                    //    break;
+
+                }
+            }
+            //Console.WriteLine("End no-params command switch " + parseTimer.Elapsed);
+
+
+
+
+
+            
+
+
+            string parameter = "";
+            string paramLower = "";
+
+
+            if (input.Length > 4) {
+                parameter = input[4].Trim();
+                paramLower = parameter.ToLower();
+            }
+
+
+            if (input.Length > 4) { //Commands with parameters
+
+                switch (command.ToLower()) {
+                    case ":.help":
+                        #region
+                        switch (paramLower) {
+                            case "register":
+                                NoticeHelpRegister(nick);
+                                break;
+                            case "tester":
+                                if (!IsIdentified(nickLower, nick)) {
+                                    NoticeNotIdentified(nick);
+                                }
+                                Msg(chan, "Tester Commands:" + SEP + "Test maps at " + TEST_LINK + SEP + "To accept via IRC \".accept <mapAuthor>-<mapName>\"" + SEP + "\".unaccept <mapAuthor>-<mapName>\"");
+                                Msg(chan, ".settester <trueOrFalse> -  sets you as a DEDICATED tester for the next CMR. This is not undoable.");
+                                Msg(chan, "To be a map tester you must currently be a trusted community member. Ask a FurkieBot administrator if you cannot use .settester and believe you should be able to.");
+                                break;
+                            case "othercommands":
+                                Msg(chan, "Other Commands:" + SEP + "\".setnotify <trueORfalse>\" to be notified when the CMR race channel opens" + SEP + "\".slap <name>\" is a useless command to slap people");
+                                break;
+                        }
+
+                        break;
+                        #endregion
+
+                    case ":.j61": // Join #channel
+                        if (UserMan.IsAdmin(nickLower, nick)) {
+                            sendData("JOIN", parameter);
+                        } else {
+                            Notice(nick, "No, just no. Please don't do this.");
+                        }
+                        break;
+
+                    case ":.p61": //Part #channel
+                        if (UserMan.IsAdmin(nickLower, nick)) {
+                            sendData("PART", parameter);
+                        } else {
+                            Notice(nick, "No, just no. Please don't do this.");
+                        }
+                        break;
+
+                    case ":.deleteign":
+                    case ":.freeign":
+                    case ":.removeign":
+                        if (UserMan.IsAdmin(nickLower, nick)) {
+                            UserMan.RemoveIGN(parameter, nick);
+                        } else {
+                            Notice(nick, "Ask an admin to perform this for you.");
+                        }
+                        break;
+
+                    case ":.ign":
+                        #region
+                        string ign_ex4 = parameter;
+                        User user = UserMan[ign_ex4.Trim()];
+                        if (user != null) {
+                            IGN ign = UserMan.GetIgns().Where<IGN>(i => i.IrcUserId == user.Id).First();
+                            if (ign != null) {
+                                Msg(chan, ColourChanger(user.Name, "03") + " > " + ColourChanger(ign.DustforceName, "03") + "");
+                            } else {
+                                Msg(chan, "No in-game name registered for " + parameter + "");
+                            }
+                        } else {
+                            Msg(chan, parameter + " is not a registered nickname.");                        
+                        }
+                        #endregion
+                        break;
+
+                    case ":.setign":
+                        #region
+                        if (UserMan.IsRegistered(nickLower)) {
+                            if (IsIdentified(nickLower, nick)) {
+                                if (UserMan.SetIgnByIrc(nick, parameter)) { 
+                                    Msg(chan, "New IGN registered: " + ColourChanger(nick, "03") + " > " + ColourChanger(parameter, "03") + ""); 
+                                }
+                            } else {
+                                NoticeNotIdentified(nick);
+                            }
+                        } else {
+                            NoticeNotRegistered(nick);
+                        }
+
+                        #endregion
+                        break;
+                    case ":.setnotify":
+                    case ":.notify":
+                        #region
+
+                        if (UserMan.IsRegistered(nickLower)) {
+                            if (IsIdentified(nickLower, nick)) {
+                                if (StringCompareNoCaps(parameter, "on") || StringCompareNoCaps(parameter, "true")) {
+                                    UserMan.SetUserNotify(nickLower, true);
+                                    Msg(chan, nick + " will be notified via IRC when the CMR channel opens.");
+                                } else if (StringCompareNoCaps(parameter, "off") || StringCompareNoCaps(parameter, "false")) {
+                                    UserMan.SetUserNotify(nickLower, false);
+                                    Msg(chan, nick + " will NOT be notified via IRC when the CMR channel opens.");
+                                } else {
+                                    Msg(chan, "Syntax is \".notify " + BoldText("false/true") + "\"");
+                                    break;
+                                }
+                            } else { NoticeNotIdentified(nick); }
+                        } else { NoticeNotRegistered(nick); }
+                        #endregion
+                        break;
+                                
+                                
+
+
+                    case ":.comment": //Adds a comment after a racer is done
+                        #region
+                        if (GetStatus(nickLower) == 1 || GetStatus(nickLower) == 4) {
+                            AddComment(nickLower, parameter);
+                            Msg(chan, "Comment for " + nick + " added.");
+                        }
+                        #endregion
+                        break;
+
+                    //case ":.dq": //DQ's a racer from race, should hardly be used, especially in combination with TRAXBUSTER, unless someone is clearly being a dick or something
+                    //    #region
+                    //    if (chan == realRacingChan) { //Command only works in racing channel
+                    //        if (IsAdmin(nickLower, nick)) {
+
+                    //            DQEntrant(parameter, nickLower);
+                    //            Msg(chan, "" + nick + " disqualified PLACEHOLDER for reason: PLACEHOLDER");
+                    //            if (ComfirmTripleMassStatus(1, 4, 5)) { //Stop the race if all racers are "done"/"quit"/"dq"
+                    //                //Set race status to "finished"
+                    //                StopRace(stahpwatch);
+                    //                cmrStatus = "finished";
+                    //                sendData("TOPIC", realRacingChan + " :" + "Status: Complete" + SEP + "Game: Dustforce" + SEP + "Goal: Custom Map Race " + cmrId + ". Download maps at http://atlas.dustforce.com/tag/custom-map-race-" + cmrId);
+                    //                sendData("PRIVMSG", mainchannel + " :" + "Race Finished: Dustforce - Custom Map Race " + cmrId + SEP + GetNameRank(1) + " won with a time of " + GetTimeRank(1));
+                    //            }
+                    //        }
+                    //    }
+                    //    #endregion
+                    //    break;
+
+                    case ":.setcmr": //Set CMR ID for whatever reason there might 
+                        #region
+                        if (UserMan.IsAdmin(nickLower, nick)) {
+                            if (int.TryParse(parameter, out cmrId)) {
+                                UserMan.ResetTesters();
+                                SetCMR(cmrId);
+                                Msg(chan, "Custom Map Race has been set to " + parameter);
+                                InitDirectories();
+                            }
+                        }
+
+                        #endregion
+                        break;
+
+                    case ":.quit61": //Quit 
+                        #region
+                        if (UserMan.IsAdmin(nickLower, nick)) {
+                            sendData("QUIT", parameter);
+                            shouldRun = false; //turn shouldRun to false - the server will stop sending us data so trying to read it will not work and result in an error. This stops the loop from running and we will close off the connections properly
+                        }
+                        #endregion
+                        break;
+                    case ":.removemap":
+                    case ":.deletemap":
+                    case ":.delmap": //used to remove a map from the .cmrmaps command list
+                        #region
+						CmrMap map = MapMan[parameter];
+						if ((map != null && IsIdentified(nickLower) && map.AuthorId == UserMan[nickLower].Id) ||
+							UserMan.IsAdmin(nickLower, nick) || UserMan.IsTester(nickLower, nick)) {
+							//if the user is the maps author, or an admin, or a tester.
+>>>>>>> 5af08c4f4ffbbeeebc208a721f646d29efb7239e
 
 		/// <summary>
 		/// Messages the racechan. Intended to be called by outside classes and threads to cause FurkieBot to notify the race channel about specific things.
@@ -1049,10 +1946,148 @@ namespace FurkiebotCMR
 			}
 
 
+<<<<<<< HEAD
 			if (input[0] == "PING") //Pinging server in order to stay connected
 			{
 				sendData("PONG", input[1]);
 			}
+=======
+		/// <summary>
+		/// Called when the race starts. Will eventually initialize a RaceManager object.
+		/// </summary>
+        private void StartRace() {
+            checker.StopChecking();
+        }
+
+
+        /// <summary>
+        /// Notifies the users who asked to be notified of the start of a CMR.
+        /// </summary>
+        private void NotifyCmrStarting(){
+            foreach (User user in UserMan.GetUsers().Where(u => u.Notify == true)) {
+                Notice(user.Name, "The CMR channel has opened. You asked to be notified of this event. If you wish these messages to stop, please type \".notify false\"");
+                Notice(user.Name + "_", "The CMR channel has opened. You asked to be notified of this event. If you wish these messages to stop, please type \".notify false\"");
+            }
+        }
+
+        /// <summary>
+        /// Meant to be called as its own thread, this thread initializes and creates a TraxBuster.
+        /// ALWAYS CALL THIS IN A SEPARATE THREAD! WILL TOTALLY BLOCK FURKIEBOT OTHERWISE.
+        /// </summary>
+        public void StartTraxBuster(string racechan) {
+            IRCConfig conf = new IRCConfig();
+            conf.name = "TRAXBUSTER";
+            conf.nick = "TRAXBUSTER";
+            conf.port = 6667;
+            conf.server = "irc2.speedrunslive.com";
+            conf.pass = GetIRCPass();
+            using (buster = new TraxBuster(conf, this)) {
+                buster.Connect();
+                buster.IRCWork();
+            }
+            Console.WriteLine("TraxBuster quit/crashed");
+            Console.ReadLine();
+        } /* StartTraxBuster */
+
+
+        private string getStream(string nickname) {
+            User user = UserMan[nickname];
+            if (user != null) {
+                return user.Streamurl;
+            } else {
+                return "Error, " + nickname + " wasnt in the userlist.";
+            }
+        }
+
+        private void NoticeHelpRegister(string nickname) {
+            if (!IsIdentified(nickname, nickname)) {
+                NoticeNotIdentified(nickname);
+            }
+            sendData("NOTICE", nickname + " :To register with FurkieBot the password does not need to be the same as your SRL password. This is the username and password that you will use in IRC and on the CMR website.");
+            sendData("NOTICE", nickname + " :\"/msg FurkieBot REGISTER password\".");
+            sendData("NOTICE", nickname + " :DO NOT FORGET THE /msg PART, YOU DONT WANT TO SEND YOUR PASSWORD TO THE WHOLE CHANNEL.");
+        }
+
+        private void setRandmapRating(string nickname, string rating) {
+            throw new NotImplementedException();
+            if (UserMan.IsRegistered(nickname)) {
+                User user = UserMan[nickname];
+            }
+        }
+
+        private void setRating(string nickname, string rating) {
+            throw new NotImplementedException();
+            if (UserMan.IsRegistered(nickname)) {
+                User user = UserMan[nickname];
+            }
+        }
+
+        private void setAdmin(string nickname, string tOrF) {
+            if (UserMan.IsRegistered(nickname)) {
+                User user = UserMan[nickname];
+                user.Admin = (tOrF.ToLower() == "true" ? true : false);
+                UserMan.SaveUser(user);    
+            }
+        }
+
+        private void setTrusted(string nickname, string tOrF) {
+            if (UserMan.IsRegistered(nickname)) {
+                User user = UserMan[nickname];
+                user.Trusted = (tOrF.ToLower() == "true" ? true : false);
+                UserMan.SaveUser(user);
+            }
+        }
+
+        private void setTester(string nickname, string tOrF) {
+            if (UserMan.IsRegistered(nickname)) {
+                User user = UserMan[nickname];
+                user.Tester = (tOrF.ToLower() == "true" ? true : false);
+                UserMan.SaveUser(user);
+            }
+        }
+
+        private void setStream(string nickname, string url) {
+            if (UserMan.IsRegistered(nickname)) {
+                User user = UserMan[nickname];
+                user.Streamurl = FormatStreamURL(url);
+                UserMan.SaveUser(user);    
+            }
+        }
+
+
+
+
+        /// <summary>
+        /// Outputs info about the current CMR
+        /// </summary>
+        /// <param name="chan">The channel.</param>
+        /// <param name="cmrtime">The cmrtime.</param>
+        /// <param name="cmrtimeString">The cmrtime string.</param>
+        /// <param name="nickname">The nickname.</param>
+        private void OutputCMRinfo(string chan, TimeSpan cmrtime, string cmrtimeString, string nickname) {
+            //Veryfying whether it is Saturday and if the time matches with CMR time
+            DateTime saturday;
+            if (DateTime.Now.DayOfWeek != DayOfWeek.Saturday) {
+				//???
+                if (cmrtime.ToString(@"%h\:mm\:ss") == cmrtimeString)
+                    saturday = GetNextDateForDay(DateTime.Now, DayOfWeek.Saturday).Date;
+                else
+                    saturday = DateTime.Now.Date;
+            } else {
+				//Is saturday? ??
+                saturday = DateTime.Now.Date;
+            }
+            DateTime cmrday = saturday.Date + cmrtime;
+            TimeSpan duration = DateTime.Now.Date + cmrtime - DateTime.Now;
+            string nextCmrD = duration.Days.ToString();
+            string nextCmrH = duration.Hours.ToString();
+            string nextCmrM = duration.Minutes.ToString();
+            string nextCmrS = duration.Seconds.ToString();
+
+            if (CmrAcceptedCount(cmrId) < MIN_MAPS) { 
+				//If there are less than 6 maps submitted
+                Msg(chan, "Upcoming race is Custom Map Race " + cmrId + ". There are only " + MapMan.GetAcceptedMaps().Count() + " maps currently accepted, and we need at least " + MIN_MAPS + ".");
+>>>>>>> 5af08c4f4ffbbeeebc208a721f646d29efb7239e
 
 
 			//Events
@@ -4268,8 +5303,209 @@ namespace FurkiebotCMR
 
 
 
+<<<<<<< HEAD
 	internal class Program
 	{
+=======
+                if (rss["best_scores"].ToString() != "[]") {
+                    var query =
+                        from p in rss["best_scores"]
+                        where (string)p["name"] == user
+                        select new {
+                            finesse = (string)p["score_finesse"],
+                            thoroughness = (string)p["score_thoroughness"]
+                        };
+
+                    foreach (var item in query) {
+                        res = item.finesse + item.thoroughness;
+                    }
+
+                    if (res == "") {
+                        page++;
+                    }
+                } else {
+                    res = "User not found.";
+                }
+            }
+            return res;
+        }
+
+
+
+        static int DaysToAdd(DayOfWeek current, DayOfWeek desired) {
+            int c = (int)current;
+            int d = (int)desired;
+            int n = (7 - c + d);
+
+            return (n > 7) ? n % 7 : n;
+        }
+
+
+
+        static DateTime GetNextDateForDay(DateTime startDate, DayOfWeek desiredDay) {
+            return startDate.AddDays(DaysToAdd(startDate.DayOfWeek, desiredDay));
+        }
+
+
+
+
+        /// <summary>
+        /// Formats the provided string into a full twitch or hitbox url.
+        /// </summary>
+        /// <param name="streamURL">The provided portion of a url.</param>
+        /// <returns>The final stream url.</returns>
+        public static string FormatStreamURL(string streamURL) {
+
+            string streamLower = streamURL.ToLower();
+            string finalURL = "";
+            if (streamLower.StartsWith(@"http://") || streamLower.StartsWith(@"https://")) { //Already starts with http://
+                return streamURL;
+            } else {
+                finalURL = @"http://";
+                if (streamLower.StartsWith(@"www.")) {
+                    return finalURL + streamURL;
+                } else {
+                    finalURL = finalURL + @"www.";
+                }
+                if (!streamLower.StartsWith(@"twitch.tv/") && !streamLower.StartsWith(@"hitbox.tv/")) {
+                    finalURL = finalURL + @"twitch.tv/";
+                }
+                finalURL = finalURL + streamURL;
+                return finalURL;
+            }
+        }
+
+
+        static void Simulation() {
+            DataTable dt = new DataTable();
+
+            dt.Columns.Add("Name", typeof(string));
+            dt.Columns.Add("Hour", typeof(int));
+            dt.Columns.Add("Min", typeof(int));
+            dt.Columns.Add("Sec", typeof(int));
+            dt.Columns.Add("OldRating", typeof(decimal));
+            dt.Columns.Add("NewRating", typeof(decimal));
+
+            dt.Rows.Add("Tropicallo", 0, 10, 5, 38, 0);
+            dt.Rows.Add("Itay", 0, 11, 6, 32, 0);
+            dt.Rows.Add("Bird", 0, 13, 30, 41, 0);
+            dt.Rows.Add("Calistus", 0, 15, 55, 24, 0);
+            dt.Rows.Add("Furkie", 0, 18, 45, 24, 0);
+            dt.Rows.Add("Krankdud", 0, 23, 30, 22, 0);
+            dt.Rows.Add("Lawatson", 0, 26, 30, 0, 0);
+            dt.Rows.Add("Virgate", 0, 29, 30, 15, 0);
+            dt.Rows.Add("Ravencoff", 0, 34, 40, 12, 0);
+            dt.Rows.Add("Lightningy", 0, 45, 30, 0, 0); // Please, anybody but Marksel!
+
+            decimal maxRating = 50M;
+            decimal range = maxRating / (decimal)dt.Rows.Count;
+            decimal expectedRating;
+            decimal avgRating;
+            decimal expectedRangeMin;
+            decimal expectedRangeMax;
+            decimal birdInt = 2M;
+
+            for (int i = 0; i < dt.Rows.Count; i++) {
+                decimal j = (decimal)i;
+                decimal currentPlayerRating = (decimal)dt.Rows[i]["OldRating"];
+                expectedRating = maxRating - ((j + 1) * range);
+                avgRating = (range / birdInt) + expectedRating;
+                expectedRangeMin = expectedRating;
+                expectedRangeMax = maxRating - (j * range);
+
+                if (expectedRating > currentPlayerRating) {
+                    dt.Rows[i]["NewRating"] = currentPlayerRating + ((avgRating - currentPlayerRating) / birdInt);
+                } else {
+                    dt.Rows[i]["NewRating"] = currentPlayerRating - (currentPlayerRating - avgRating);
+                }
+
+                for (int comparedPlayer = 0; i < comparedPlayer; comparedPlayer++) {
+                    decimal comparedPlayerRating = (decimal)dt.Rows[comparedPlayer]["OldRating"];
+                    if (currentPlayerRating > comparedPlayerRating) {
+                        dt.Rows[comparedPlayer]["NewRating"] = comparedPlayerRating + ((currentPlayerRating - comparedPlayerRating) / birdInt);
+                        int comparedPlayerTime = (Convert.ToInt32(dt.Rows[comparedPlayer]["Hour"]) * 60) + (Convert.ToInt32(dt.Rows[comparedPlayer]["Min"]) * 60) + (Convert.ToInt32(dt.Rows[comparedPlayer]["Sec"]));
+                        int currentPlayerTime = (Convert.ToInt32(dt.Rows[i]["Hour"]) * 60) + (Convert.ToInt32(dt.Rows[i]["Min"]) * 60) + (Convert.ToInt32(dt.Rows[i]["Sec"]));
+                        int timeDifference = currentPlayerTime - comparedPlayerTime;
+                        dt.Rows[comparedPlayer]["NewRating"] = comparedPlayerRating + ((decimal)timeDifference / 100);
+                    }
+                    if (currentPlayerRating == comparedPlayerRating) {
+                        int comparedPlayerTime = (Convert.ToInt32(dt.Rows[comparedPlayer]["Hour"]) * 60) + (Convert.ToInt32(dt.Rows[comparedPlayer]["Min"]) * 60) + (Convert.ToInt32(dt.Rows[comparedPlayer]["Sec"]));
+                        int currentPlayerTime = (Convert.ToInt32(dt.Rows[i]["Hour"]) * 60) + (Convert.ToInt32(dt.Rows[i]["Min"]) * 60) + (Convert.ToInt32(dt.Rows[i]["Sec"]));
+                        int timeDifference = currentPlayerTime - comparedPlayerTime;
+                        dt.Rows[i]["NewRating"] = currentPlayerRating - ((decimal)timeDifference / 100);
+                    }
+                }
+
+                Console.WriteLine((decimal)dt.Rows[i]["OldRating"] + "\t" + (decimal)dt.Rows[i]["NewRating"] + "\t" + ((decimal)dt.Rows[i]["NewRating"] - (decimal)dt.Rows[i]["OldRating"]));
+            }
+
+        }
+
+
+
+
+
+        /// <summary>
+        /// Gets the irc password for the bot (so that its not stored publicly in the code).
+        /// </summary>
+        /// <returns>the IRC pass loaded from the default IRC password file location</returns>
+        public static string GetIRCPass() {
+            string toReturn = "";
+            if (File.Exists(PASS_PATH)) {
+                Console.WriteLine("Trying to load map file.");
+                string[] passArray = File.ReadAllLines(PASS_PATH);
+                if (passArray[0].Trim() != "") {
+                    toReturn = passArray[0].Trim();
+                } else {
+                    Console.WriteLine(@"Password wasnt at the top line of the Password file. Default file is " + PASS_PATH);
+                    Console.ReadLine();
+                    Environment.Exit(1);
+                }
+            } else {
+                Console.WriteLine(@"Password wasnt at the top line of the Password file. Default file is " + PASS_PATH);
+                Console.ReadLine();
+                Environment.Exit(1);
+            }
+            return toReturn;
+        }
+
+        public static string GetRedditPass()
+        {
+            string toReturn = "";
+            if (File.Exists(REDDIT_PASS_PATH))
+            {
+                Console.WriteLine("Trying to load map file.");
+                string[] passArray = File.ReadAllLines(REDDIT_PASS_PATH);
+                if (passArray[0].Trim() != "")
+                {
+                    toReturn = passArray[0].Trim();
+                }
+                else
+                {
+                    Console.WriteLine(@"Reddit password wasnt at the top line of the Password file. Default file is " + REDDIT_PASS_PATH);
+                    Console.ReadLine();
+                    Environment.Exit(1);
+                }
+            }
+            else
+            {
+                Console.WriteLine(@"Reddit password wasnt at the top line of the Password file. Default file is " + REDDIT_PASS_PATH);
+                Console.ReadLine();
+                Environment.Exit(1);
+            }
+            return toReturn;
+        }
+
+
+
+
+    } /* IRCBot */
+
+
+
+
+    internal class Program {
+>>>>>>> 5af08c4f4ffbbeeebc208a721f646d29efb7239e
 		//if furkiebot hasnt recieved a message from the server after this many seconds,
 		//begin attempting to reconnect to the server.
 		const int TIMEOUT_AFTER_SECONDS = 150;
@@ -4323,6 +5559,7 @@ namespace FurkiebotCMR
 		}
 
 
+<<<<<<< HEAD
 		public class Argument
 		{
 			public string Command { get; set; }
@@ -4461,6 +5698,118 @@ namespace FurkiebotCMR
 				Console.ReadLine();
 			}
 
+=======
+        public class Argument {
+            public string Command { get; set; }
+            public string Value { get; set; }
+            public List<Flag> Flags { get; set; }
+        }
+
+        public class Flag {
+            public string FlagVal { get; set; }
+            public string Param { get; set; }
+        }
+
+        public static HashSet<Argument> ParseArgs(string[] args) {
+            Console.WriteLine("Parsing Args:");
+            for (int i = 0; i < args.Length; i++) {
+                Console.WriteLine(i + "\"" + args[i] + "\"");
+            }
+
+            HashSet<Argument> arglist = new HashSet<Argument>();
+            string argString = "";
+            for (int i = 0; i < args.Length - 1; i++) {
+                argString += args[i] + " ";
+            }
+            if (args.Length > 0) {
+                argString += args[args.Length - 1];
+            }
+
+            return arglist;
+        }
+
+
+        public static void DumpMongoToFile() {
+            UserManager.Instance.DumpStateToFile(@"C:\CMR\MongoUserDump.txt");
+            MapManager.Instance.DumpStateToFile(@"C:\CMR\MongoMapDump.txt");
+
+        }
+
+
+		private static void Main(string[] args) {
+            HashSet<Argument> arglist = ParseArgs(args);
+            MapManager.Instance.Init();
+            DumpMongoToFile();
+            //if (args.Length > 0 && args[0].ToLower().Trim() == "migrate") {
+            if (false) {
+                //handle migrate command
+                DataMigrator.InitDBFromLocalFiles();
+            } else {
+                //run normally
+                exceptionMessages = new List<string>();
+                using (FurkieBot bot = FurkieBot.Instance) {
+                    FurkieBotIrcWork = new Thread(RunBot);
+                    FurkieBotIrcWork.Start();
+                    Thread.Sleep(1000); // dickbutt. Makes sure to give the bot ample time to connect.
+
+
+
+                    TimeSpan timeout_span = TimeSpan.FromSeconds(TIMEOUT_AFTER_SECONDS);
+                    bool exit = false;
+                    while (!exit) {
+                        if (!FurkieBotIrcWork.IsAlive && (!crashed)) {
+                            //bot terminated normally ???
+                            Console.WriteLine("Bot terminated gracefully.");
+                            exit = true;
+                        } else if (crashed) {
+                            FurkieBotIrcWork.Join();
+                            if (exceptionCount >= MAX_EXCEPTIONS_BEFORE_QUIT) {
+                                Console.WriteLine("FurkieBot reached the exception limit.");
+                                PrintExceptions();
+                                exit = true;
+                            } else {
+                                FurkieBotIrcWork = new Thread(RunBot);
+                                FurkieBotIrcWork.Start();
+                                crashed = false;
+                                Thread.Sleep(1000); // dickbutt. Makes sure to give the bot ample time to connect.
+                            }
+                        } else if (bot.lastInputTime + timeout_span < DateTime.UtcNow) {
+                            //Then furkiebot has timed out. Attempt reconnects.
+                            Console.WriteLine("HOLY SHIT WE TIMED OUT ATTEMPT RECONNECT PANIC PANIC PANIC");
+                            disconnectCount++;
+                            int attemptNumber = 0;
+                            bool success = false;
+
+                            FurkieBotIrcWork.Abort();
+
+                            while (attemptNumber <= MAX_CONSECUTIVE_RECONNECT_FAILURES && (!success)) {
+                                attemptNumber++;
+                                Thread.Sleep(RECONNECT_INTERVAL_MS);
+                                try {
+                                    bot.Connect();
+                                    success = true;
+                                } catch (Exception e) {
+                                    Console.WriteLine("Attempt #" + attemptNumber + ", yo dawg we threw an exception trying to reconnect after a disconnect:\n" + e.Message + "\n" + e.StackTrace);
+                                }
+                            }
+                            if (success) {
+                                FurkieBotIrcWork = new Thread(RunBot);
+                                FurkieBotIrcWork.Start();
+                                crashed = false;
+                                Thread.Sleep(1000);
+                            } else {
+                                Console.WriteLine("MAX_CONSECUTIVE_RECONNECT_FAILURES exceeded (" + MAX_CONSECUTIVE_RECONNECT_FAILURES + "). Terminating...");
+                                exit = true;
+                            }
+                        }
+                        Thread.Sleep(CHECK_TIMEOUT_EVERY_MS);
+                    }
+                }
+                Console.WriteLine("Furkiebot quit/crashed");
+                Console.ReadLine();
+            }
+			
+>>>>>>> 5af08c4f4ffbbeeebc208a721f646d29efb7239e
 		} /* Main() */
 	} /* Program */
 }
